@@ -1,0 +1,42 @@
+{
+  "meta": {
+    "name": "Motor driver standby input left unwired",
+    "description": "Deliberately incorrect checker fixture. Never use as a build guide."
+  },
+  "parts": [
+    {
+      "id": "supply",
+      "library": "dc-adapter-5v-3a"
+    },
+    {
+      "id": "driver",
+      "library": "tb6612fng-breakout"
+    }
+  ],
+  "wires": [
+    {
+      "id": "w1",
+      "from": "supply.V+",
+      "to": "driver.VM"
+    },
+    {
+      "id": "w2",
+      "from": "supply.V+",
+      "to": "driver.VCC"
+    },
+    {
+      "id": "w3",
+      "from": "supply.GND",
+      "to": "driver.GND"
+    }
+  ],
+  "expect": [
+    {
+      "rule": "required-pin",
+      "level": "warning",
+      "pins": [
+        "driver.STBY"
+      ]
+    }
+  ]
+}

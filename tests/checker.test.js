@@ -266,6 +266,27 @@ test('required pin left floating: driver STBY', () => {
   assert.ok(!has(res, 'flyback'), 'driver with built-in diodes protects the motor');
 });
 
+test('two DC motors add to the motor rail once per motor', () => {
+  const driverOutputs = Object.fromEntries(['AO1', 'AO2', 'BO1', 'BO2'].map((pin) => [
+    pin, { kind: 'motor', dir: 'out', voltage_ref: 'VM' },
+  ]));
+  const motors = ['left', 'right'].map((id) => P(id, 'motor', {
+    pins: { 'M-': { current: 0.2, current_peak: 1.5 } },
+  }));
+  const motorFeed = W('supply.V+', 'drv.VM', { gauge: 18 });
+  const parts = [P('supply', 'psu5'), P('drv', 'drv', { pins: driverOutputs }), ...motors];
+  const wires = [motorFeed, W('supply.GND', 'drv.GND'), W('drv.AO1', 'left.M+'), W('drv.AO2', 'left.M-'),
+    W('drv.BO1', 'right.M+'), W('drv.BO2', 'right.M-')];
+  const result = run(parts, wires);
+  const motorRail = result.power.rails.find((rail) => rail.source === 'supply.V+');
+  assert.equal(motorRail.load, 0.8);
+  assert.equal(motorRail.loadPeak, 5);
+  assert.equal(result.wireInfo[motorFeed.id].currentPeak, 5);
+
+  const incomplete = run(parts, wires.slice(0, -1));
+  assert.equal(incomplete.power.rails[0].loadPeak, 3.5);
+});
+
 test('missing protection: LiPo with no fuse is an error, no switch a warning; motor without flyback warns', () => {
   const res = run([P('b', 'lipo2s'), P('buck', 'buck'), P('m', 'motor'), P('mcu', 'mcu33')],
     [W('b.BAT+', 'buck.IN+'), W('b.BAT-', 'buck.IN-'), W('m.M+', 'mcu.IO1'), W('m.M-', 'mcu.GND')]);
@@ -277,6 +298,18 @@ test('missing protection: LiPo with no fuse is an error, no switch a warning; mo
     [W('b.BAT+', 'f.IN'), W('f.OUT', 'sw.IN'), W('sw.OUT', 'buck.IN+'), W('b.BAT-', 'buck.IN-')]);
   assert.ok(!has(fixed, 'missing-fuse'));
   assert.ok(!has(fixed, 'missing-switch'));
+  assert.ok(has(fixed, 'missing-bms', 'error'), 'a fuse and switch do not prevent over-discharge');
+  const protectedLib = {
+    ...LIB,
+    cutoff: { ...LIB.sw, id: 'cutoff', protection: 'low-voltage-cutoff' },
+  };
+  const protectedProject = {
+    parts: [P('b', 'lipo2s'), P('f', 'fuse'), P('sw', 'sw'), P('cutoff', 'cutoff'), P('buck', 'buck')],
+    wires: [W('b.BAT+', 'f.IN'), W('f.OUT', 'sw.IN'), W('sw.OUT', 'cutoff.IN'), W('cutoff.OUT', 'buck.IN+'), W('b.BAT-', 'buck.IN-')],
+  };
+  assert.ok(!has(checkProject(protectedProject, protectedLib), 'missing-bms'));
+  protectedProject.wires.push(W('sw.OUT', 'buck.IN+'));
+  assert.ok(has(checkProject(protectedProject, protectedLib), 'missing-bms', 'error'), 'a parallel connection bypasses the cutoff');
   assert.ok(res.power.runtime.length >= 0);
 });
 

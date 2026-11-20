@@ -1,0 +1,28 @@
+{
+  "meta": {
+    "name": "Power adapter shorted to ground",
+    "description": "Deliberately incorrect checker fixture. Never use as a build guide."
+  },
+  "parts": [
+    {
+      "id": "supply",
+      "library": "dc-adapter-5v-3a"
+    }
+  ],
+  "wires": [
+    {
+      "id": "w1",
+      "from": "supply.V+",
+      "to": "supply.GND"
+    }
+  ],
+  "expect": [
+    {
+      "rule": "short",
+      "level": "error",
+      "wires": [
+        "w1"
+      ]
+    }
+  ]
+}

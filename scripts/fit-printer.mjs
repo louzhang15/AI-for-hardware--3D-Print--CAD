@@ -1,13 +1,13 @@
 #!/usr/bin/env node
 // wiremap fit-printer: check parts against a printer's build volume and materials.
 // Exit 0 = everything fits, 1 = something does not fit / material not allowed, 2 = bad usage.
-import { existsSync } from 'node:fs';
-import { dirname, resolve, join } from 'node:path';
+import { resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { parseArgs } from 'node:util';
-import { fitPart, materialCheck } from '../lib/printer.js';
+import { fitPart, materialCheck, printPlacement } from '../lib/printer.js';
 import { loadPrinters, readProject } from '../lib/node/library.js';
-import { readSTL } from '../lib/node/stl.js';
+import { printSTLs, preparePrintMesh, resolveProjectPath } from '../lib/node/print.js';
+import { checkClosed, readSTL } from '../lib/node/stl.js';
 
 const HELP = `Usage:
   wiremap fit-printer --printer <id> (--size 200x120x40 | --stl part.stl) [--material PETG] [--margin 5] [--nozzle left|right|both]
@@ -37,13 +37,6 @@ export function parseSize(s) {
   return parts;
 }
 
-/** Resolve a path written in a project file: relative to cwd, the project's root (parent of projects/), or the project dir. */
-export function resolveProjectPath(projectFile, p) {
-  const pdir = dirname(resolve(projectFile));
-  for (const c of [resolve(p), resolve(pdir, '..', p), resolve(pdir, p)]) if (existsSync(c)) return c;
-  return null;
-}
-
 function getProfile(id) {
   const all = loadPrinters();
   const p = all[id];
@@ -64,6 +57,14 @@ function describe(name, r, mat) {
   return lines.join('\n');
 }
 
+function meshFit(path, profile, placement, opts) {
+  const mesh = readSTL(path);
+  const { fit } = preparePrintMesh(mesh, profile, placement, opts);
+  const { closed } = checkClosed(mesh);
+  if (!closed) fit.warnings.push('Mesh has open or mismatched edges. Repair the STL before slicing.');
+  return { ...fit, closed };
+}
+
 export async function main(argv = []) {
   let a;
   try { a = parseArgs({ args: argv, options: OPTS, allowPositionals: true }).values; } catch (e) { console.error(e.message + '\n\n' + HELP); return 2; }
@@ -77,40 +78,56 @@ export async function main(argv = []) {
       const profile = getProfile(pid);
       const nozzle = a.nozzle || (project.printer?.nozzle && project.printer.nozzle !== 'single' ? project.printer.nozzle : undefined);
       const margin = a.margin !== undefined ? Number(a.margin) : undefined;
+      const opts = { nozzle, allowDiagonal: !a['no-diagonal'] };
+      const placement = printPlacement(profile, { margin, nozzle });
       for (const pr of project.prints || []) {
-        let size = pr.size, from = 'size';
-        const stl = (pr.files || []).find((f) => /\.stl$/i.test(f));
-        const stlPath = stl ? resolveProjectPath(a.project, stl) : null;
-        if (stlPath) { size = readSTL(stlPath).bbox.size.map((v) => +v.toFixed(3)); from = stl; }
-        const material = pr.material || project.printer?.material;
-        if (!Array.isArray(size)) {
-          results.push({ id: pr.id, name: pr.name, skipped: true, reason: `no size and no readable STL${stl ? ` (${stl} not found)` : ''}` });
-          continue;
+        const material = a.material || pr.material || project.printer?.material;
+        const part = { id: pr.id, name: pr.name, material: material ? materialCheck(material, profile) : null };
+        const files = printSTLs(pr);
+        for (const from of files) {
+          try {
+            const path = resolveProjectPath(a.project, from);
+            if (!path) throw new Error('STL file not found');
+            results.push({ ...part, from, ...meshFit(path, profile, placement, opts) });
+          } catch (e) {
+            results.push({ ...part, from, fits: false, error: e.message });
+          }
         }
-        const r = fitPart(size, profile, { margin, nozzle, allowDiagonal: !a['no-diagonal'] });
-        results.push({ id: pr.id, name: pr.name, from, ...r, material: material ? materialCheck(material, profile) : null });
+        if (!files.length) {
+          if (Array.isArray(pr.size) && !pr.pieces?.length) {
+            const fit = fitPart(pr.size, profile, { ...opts, margin });
+            fit.warnings.push('Checked planned dimensions only. Add an STL for a slicer-ready export.');
+            results.push({ ...part, from: 'size', ...fit });
+          } else {
+            results.push({ ...part, fits: false, error: 'No STL or planned dimensions to check' });
+          }
+        }
       }
       if (!results.length) results.push({ id: null, skipped: true, reason: 'project has no prints' });
     } else {
       if (!a.printer) { console.error('fit-printer: --printer is required (or --project)\n\n' + HELP); return 2; }
       const profile = getProfile(a.printer);
-      let size;
-      if (a.stl) size = readSTL(a.stl).bbox.size.map((v) => +v.toFixed(3));
-      else if (a.size) size = parseSize(a.size);
-      else { console.error('fit-printer: give --size or --stl\n\n' + HELP); return 2; }
-      const r = fitPart(size, profile, { margin: a.margin !== undefined ? Number(a.margin) : undefined, nozzle: a.nozzle, allowDiagonal: !a['no-diagonal'] });
+      if (!a.stl && !a.size) { console.error('fit-printer: give --size or --stl\n\n' + HELP); return 2; }
+      const opts = { nozzle: a.nozzle, allowDiagonal: !a['no-diagonal'] };
+      const margin = a.margin !== undefined ? Number(a.margin) : undefined;
+      const r = a.stl
+        ? meshFit(a.stl, profile, printPlacement(profile, { nozzle: a.nozzle, margin }), opts)
+        : fitPart(parseSize(a.size), profile, { ...opts, margin });
       results.push({ id: a.stl || 'part', from: a.stl ? a.stl : 'size', ...r, material: a.material ? materialCheck(a.material, profile) : null });
     }
   } catch (e) {
     if (a.json) console.log(JSON.stringify({ error: e.message })); else console.error(`fit-printer: ${e.message}`);
     return 2;
   }
-  const bad = results.some((r) => r.fits === false || r.material?.status === 'no');
+  const bad = results.some((r) => r.fits === false || r.closed === false || r.material?.status === 'no');
   if (a.json) console.log(JSON.stringify({ ok: !bad, results }, null, 2));
   else {
     for (const r of results) {
       if (r.skipped) console.log(`${r.id ?? ''}: skipped (${r.reason})`);
-      else console.log(describe(r.name ? `${r.id} (${r.name})` : r.id, r, r.material));
+      else {
+        const name = [r.name ? `${r.id} (${r.name})` : r.id, r.from !== r.id && r.from !== 'size' ? r.from : null].filter(Boolean).join(' / ');
+        console.log(r.error ? `${name}: ${r.error}` : describe(name, r, r.material));
+      }
     }
   }
   return bad ? 1 : 0;

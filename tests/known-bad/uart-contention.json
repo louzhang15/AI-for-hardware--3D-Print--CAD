@@ -1,0 +1,57 @@
+{
+  "meta": {
+    "name": "Two UART TX outputs tied together",
+    "description": "Deliberately incorrect checker fixture. Never use as a build guide."
+  },
+  "parts": [
+    {
+      "id": "a",
+      "library": "esp32-devkit-v1"
+    },
+    {
+      "id": "b",
+      "library": "esp32-devkit-v1"
+    },
+    {
+      "id": "supply",
+      "library": "dc-adapter-5v-3a"
+    }
+  ],
+  "wires": [
+    {
+      "id": "w1",
+      "from": "supply.V+",
+      "to": "a.VIN"
+    },
+    {
+      "id": "w2",
+      "from": "supply.V+",
+      "to": "b.VIN"
+    },
+    {
+      "id": "w3",
+      "from": "supply.GND",
+      "to": "a.GND"
+    },
+    {
+      "id": "w4",
+      "from": "supply.GND",
+      "to": "b.GND"
+    },
+    {
+      "id": "w5",
+      "from": "a.GPIO1",
+      "to": "b.GPIO1"
+    }
+  ],
+  "expect": [
+    {
+      "rule": "outputs-fight",
+      "level": "error",
+      "pins": [
+        "a.GPIO1",
+        "b.GPIO1"
+      ]
+    }
+  ]
+}

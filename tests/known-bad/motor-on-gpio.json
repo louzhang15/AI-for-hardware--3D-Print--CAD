@@ -1,0 +1,52 @@
+{
+  "meta": {
+    "name": "Brushed motor tied directly to a microcontroller output",
+    "description": "Deliberately incorrect checker fixture. Never use as a build guide."
+  },
+  "parts": [
+    {
+      "id": "esp",
+      "library": "esp32-devkit-v1"
+    },
+    {
+      "id": "supply",
+      "library": "dc-adapter-5v-3a"
+    },
+    {
+      "id": "motor",
+      "library": "dc-motor-tt"
+    }
+  ],
+  "wires": [
+    {
+      "id": "w1",
+      "from": "supply.V+",
+      "to": "esp.VIN"
+    },
+    {
+      "id": "w2",
+      "from": "supply.GND",
+      "to": "esp.GND"
+    },
+    {
+      "id": "w3",
+      "from": "esp.GPIO25",
+      "to": "motor.M+"
+    },
+    {
+      "id": "w4",
+      "from": "esp.GND",
+      "to": "motor.M-"
+    }
+  ],
+  "expect": [
+    {
+      "rule": "motor-on-gpio",
+      "level": "error",
+      "pins": [
+        "esp.GPIO25",
+        "motor.M+"
+      ]
+    }
+  ]
+}

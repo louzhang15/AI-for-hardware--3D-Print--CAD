@@ -1,5 +1,6 @@
-// Left panel (Parts / Power / Issues) and the part side sheet.
+// Project sidebar and the part side sheet.
 import { h, clear, icon, fmtV, fmtA, fmtMoney, plural, partColor, CATEGORY_LABEL, splitKey } from './util.js';
+import { renderCorrections } from './corrections.js';
 
 const CONF = {
   verified: { label: 'Verified', tip: 'Pinout and limits come from the datasheet and a reviewed library entry.' },
@@ -19,39 +20,113 @@ export function renderLeftPanel(app, el) {
   if (prevBody) el.dataset[scrollKey.replace(/\W/g, '')] = String(prevBody.scrollTop);
   clear(el);
   const counts = { error: c.errors, warning: c.warnings };
-  const tab = (id, label, extra) => h(`button.tab${app.ui.left === id ? '.active' : ''}`, { role: 'tab', 'aria-selected': String(app.ui.left === id), onclick: () => { app.ui.left = id; renderLeftPanel(app, el); } }, label, extra);
+  const tab = (id, label, extra) => h(`button.tab${app.ui.left === id ? '.active' : ''}`, { role: 'tab', 'aria-selected': String(app.ui.left === id), onclick: () => app.setLeftPanel(id) }, label, extra);
   const issueCount = counts.error ? h('span.count.error', null, String(counts.error)) : counts.warning ? h('span.count.warn', null, String(counts.warning)) : null;
   el.append(h('div.tabs', { role: 'tablist' },
     tab('parts', 'Parts', h('span.count', null, String(c.model.partList.length))),
     tab('power', 'Power'),
-    tab('issues', 'Issues', issueCount)));
+    tab('issues', 'Issues', issueCount),
+    tab('requirements', 'Requirements'),
+    tab('corrections', 'Corrections')));
   const body = h('div.side-body.scroll');
   el.append(body);
   if (app.ui.left === 'power') renderPower(app, body);
   else if (app.ui.left === 'issues') renderIssues(app, body);
+  else if (app.ui.left === 'requirements') renderRequirements(app, body);
+  else if (app.ui.left === 'corrections') renderCorrections(app, body);
   else renderParts(app, body);
   const saved = Number(el.dataset[`scroll${app.ui.left}`] || 0);
   if (saved) body.scrollTop = saved;
   body.addEventListener('scroll', () => { el.dataset[`scroll${app.ui.left}`] = String(body.scrollTop); }, { passive: true });
 }
 
+const REQUIREMENTS = [
+  ['size', 'Size'], ['payload', 'Payload'], ['runtime', 'Runtime'],
+  ['budget', 'Budget'], ['power', 'Power source'], ['on_hand', 'Parts on hand'],
+];
+
+function requirementText(value, delimiter = ', ') {
+  if (value == null) return '';
+  if (Array.isArray(value)) return value.join(delimiter);
+  return typeof value === 'object' ? JSON.stringify(value) : String(value);
+}
+
+function renderRequirements(app, body) {
+  const requirements = app.data.project.meta?.requirements || {};
+  body.append(h('section.requirements-card', null,
+    h('h2', null, 'Project requirements'),
+    h('dl', null, REQUIREMENTS.map(([key, label]) => [
+      h('dt', null, label), h('dd', null, requirementText(requirements[key]) || '—'),
+    ])),
+    h('button.btn.small', { onclick: () => editRequirements(app, requirements) }, 'Edit requirements')));
+}
+
+function editRequirements(app, requirements) {
+  const fields = REQUIREMENTS.map(([key, label]) => {
+    const value = requirementText(requirements[key], '\n');
+    const input = key === 'on_hand'
+      ? h('textarea', { rows: 4, placeholder: 'One item per line' })
+      : h('input.input', { type: 'text', maxlength: Math.max(500, value.length) });
+    input.value = value;
+    return { key, label, input, value };
+  });
+  const error = h('p.form-error', { role: 'alert', hidden: true });
+  const save = h('button.btn.primary', { form: 'requirements-form', type: 'submit' }, 'Save requirements');
+  const form = h('form#requirements-form.intake-form', { onsubmit: async (event) => {
+    event.preventDefault();
+    save.disabled = true;
+    error.hidden = true;
+    const edited = fields.filter(({ input, value }) => input.value !== value);
+    const changes = Object.fromEntries(edited.map(({ key, input }) => {
+      const value = input.value.trim();
+      return [key, !value ? null : key === 'on_hand' ? value.split('\n').map((item) => item.trim()).filter(Boolean) : value];
+    }));
+    try {
+      if (edited.length) await app.saveRequirements(changes);
+      if (form.isConnected) app.closeModal();
+    } catch (failure) {
+      error.textContent = failure.message;
+      error.hidden = false;
+      save.disabled = false;
+    }
+  } }, fields.map(({ label, input }) => h('label.intake-field', null, label, input)), error);
+  app.openModal({ title: 'Edit project requirements', body: form, actions: [
+    h('button.btn.ghost', { onclick: app.closeModal }, 'Cancel'), save,
+  ] });
+  fields[0].input.focus();
+}
+
 // ------------------------------------------------------------------ parts / BOM
+
+function purchaseHref(value) {
+  if (typeof value !== 'string' || !/^https?:\/\//i.test(value.trim())) return null;
+  return value.trim();
+}
+
+const PURCHASE_TIERS = { budget: 'Budget', recommended: 'Recommended', 'already-have': 'Already have' };
 
 function renderParts(app, body) {
   const d = app.data;
   const c = d.check;
   const focus = app.focus;
   const projectParts = new Map((d.project.parts || []).map((p) => [p.id, p]));
-  let total = 0; let have = 0; let currency = 'USD'; let unknown = 0;
+  const totals = new Map();
+  let unknown = 0;
   const list = h('div.bom');
   for (const def of c.model.partList) {
     const raw = projectParts.get(def.id) || {};
     const bom = raw.bom || def.bom || {};
     const qty = raw.qty || def.qty || 1;
-    const price = typeof bom.price === 'number' ? bom.price * qty : null;
-    if (bom.currency) currency = bom.currency;
+    const price = Number.isFinite(bom.price) && bom.price >= 0 ? bom.price * qty : null;
+    const currency = typeof bom.currency === 'string' && bom.currency.trim() ? bom.currency.trim().toUpperCase() : 'USD';
+    const link = purchaseHref(bom.link);
     if (price == null) unknown++;
-    else { total += price; if (raw.have) have += price; }
+    else {
+      const subtotal = totals.get(currency) || { total: 0, have: 0 };
+      subtotal.total += price;
+      if (raw.have) subtotal.have += price;
+      totals.set(currency, subtotal);
+    }
     const conf = c.confidence?.[def.id] || (def.verify ? 'confirm' : def.confidence) || 'checked';
     const selected = app.selection && app.selection.type === 'part' && app.selection.id === def.id;
     const dim = focus.kind && focus.kind !== 'step' && focus.parts.size && !focus.parts.has(def.id);
@@ -69,18 +144,21 @@ function renderParts(app, body) {
         h('span.badge.neutral', null, `${qty} ×`),
         h('span.small.muted', null, CATEGORY_LABEL[def.category] || def.category || 'Part'),
         confidenceBadge(conf),
-        bom.link ? h('a.small', { href: bom.link, target: '_blank', rel: 'noopener noreferrer', onclick: (e) => e.stopPropagation() }, 'Buy') : null)),
+        link ? h('a.small', { href: link, target: '_blank', rel: 'noopener noreferrer', onclick: (e) => e.stopPropagation() }, 'Buy') : null,
+        bom.checked ? h('span.small.muted', null, `Price checked ${bom.checked}`) : null)),
     h('div.right', null,
-      h('span.price', null, price == null ? '–' : fmtMoney(price, bom.currency || currency)),
+      h('span.price', null, price == null ? '–' : fmtMoney(price, currency)),
       h('label.have', { onclick: (e) => e.stopPropagation() }, tick, 'Have'))));
   }
   body.append(h('div.section-title', null, 'Bill of materials', h('span.grow'), h('span.small', { style: { textTransform: 'none', letterSpacing: 0 } }, plural(c.model.partList.length, 'part'))));
   body.append(list);
-  body.append(h('div.totals', null,
-    h('span', null, 'Total'), h('span.big', null, fmtMoney(total, currency)),
-    h('span.muted', null, 'Already have'), h('span.muted', null, fmtMoney(have, currency)),
-    h('span', null, 'Still to buy'), h('b', null, fmtMoney(total - have, currency)),
-    unknown ? h('span.small.muted', { style: { gridColumn: '1 / -1' } }, `${plural(unknown, 'part')} without a price`) : null));
+  for (const [currency, { total, have }] of totals) {
+    body.append(h('div.totals', null,
+      h('span', null, `Total (${currency})`), h('span.big', null, fmtMoney(total, currency)),
+      h('span.muted', null, 'Already have'), h('span.muted', null, fmtMoney(have, currency)),
+      h('span', null, 'Still to buy'), h('b', null, fmtMoney(total - have, currency))));
+  }
+  if (unknown) body.append(h('p.small.muted', null, `${plural(unknown, 'part')} without a price`));
 
   const fasteners = d.project.fasteners || [];
   if (fasteners.length) {
@@ -273,6 +351,8 @@ export function renderPartSheet(app, id, onClose) {
   if (raw.qty > 1) facts.push(['Quantity', String(raw.qty)]);
   const issues = c.issues.filter((i) => i.parts.includes(id) && i.level !== 'info');
   const bom = raw.bom || def.bom || {};
+  const buyLink = purchaseHref(bom.link);
+  const buyingOptions = Array.isArray(bom.options) ? bom.options.filter((option) => option && typeof option === 'object') : [];
   return h('div.sheet', { role: 'dialog', 'aria-label': `${def.name} details` },
     h('div.sheet-head', null,
       h('h2', null, def.name || id),
@@ -286,9 +366,19 @@ export function renderPartSheet(app, id, onClose) {
       h('dl.kv', null, facts.map(([k, v]) => [h('dt', null, k), h('dd', null, v)])),
       h('div', { style: { display: 'flex', gap: '6px', flexWrap: 'wrap', margin: '12px 0 4px' } },
         def.datasheet ? h('a.btn.small', { href: def.datasheet, target: '_blank', rel: 'noopener noreferrer' }, icon('external', 13), 'Datasheet') : null,
-        bom.link ? h('a.btn.small', { href: bom.link, target: '_blank', rel: 'noopener noreferrer' }, icon('external', 13), 'Where to buy') : null,
+        buyLink ? h('a.btn.small', { href: buyLink, target: '_blank', rel: 'noopener noreferrer' }, icon('external', 13), 'Where to buy') : null,
         h('button.btn.small', { onclick: () => app.inbox({ kind: 'explain', target: `part:${id}`, text: `Explain what part ${id} (${def.name}) does in this build and how it is wired.`, title: def.name }) }, icon('help', 13), 'Explain'),
         h('button.btn.small', { onclick: () => app.askWithNote({ kind: 'swap', target: `part:${id}`, context: `Suggest a replacement for part ${id} (${def.name}) that keeps the wiring valid.`, title: `Swap ${def.name}` }) }, icon('external', 13), 'Swap part')),
+      buyingOptions.length ? [h('div.section-title', null, 'Buying options'), h('ul.not-checked', null, buyingOptions.map((option) => {
+        const tier = Object.hasOwn(PURCHASE_TIERS, option.tier) ? PURCHASE_TIERS[option.tier] : null;
+        const label = option.name || tier || 'Option';
+        const link = purchaseHref(option.link);
+        return h('li', null, option.name && tier ? `${tier} · ` : null,
+          link ? h('a', { href: link, target: '_blank', rel: 'noopener noreferrer' }, label) : h('b', null, label),
+          Number.isFinite(option.price) ? ` · ${fmtMoney(option.price, option.currency || bom.currency || 'USD')}` : null,
+          option.checked ? ` · Checked ${option.checked}` : null,
+          option.why ? h('div.small.muted', null, option.why) : null);
+      }))] : null,
       h('div.section-title', null, 'Pins', h('span.grow'), h('span.small', { style: { textTransform: 'none', letterSpacing: 0 } }, 'Grey = not used')),
       h('table.pin-table', null, h('thead', null, h('tr', null, h('th', null, 'Pin'), h('th', null, 'Kind'), h('th', null, 'Volts'), h('th', null, 'Goes to'))), h('tbody', null, rows)),
       (def.notes || []).length ? [h('div.section-title', null, 'Notes'), h('ul.not-checked', null, def.notes.map((n) => h('li', null, n)))] : null));

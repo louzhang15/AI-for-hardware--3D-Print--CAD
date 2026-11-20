@@ -1,0 +1,49 @@
+{
+  "meta": {
+    "name": "Fuse rating below the normal load",
+    "description": "Deliberately incorrect checker fixture. Never use as a build guide."
+  },
+  "parts": [
+    {
+      "id": "supply",
+      "library": "dc-adapter-5v-3a"
+    },
+    {
+      "id": "servo",
+      "library": "servo-mg996r"
+    },
+    {
+      "id": "fuse",
+      "library": "fuse-inline",
+      "params": {
+        "rating_a": 0.1
+      }
+    }
+  ],
+  "wires": [
+    {
+      "id": "w1",
+      "from": "supply.V+",
+      "to": "fuse.IN",
+      "gauge": 18
+    },
+    {
+      "id": "w2",
+      "from": "fuse.OUT",
+      "to": "servo.V+",
+      "gauge": 18
+    },
+    {
+      "id": "w3",
+      "from": "supply.GND",
+      "to": "servo.GND",
+      "gauge": 18
+    }
+  ],
+  "expect": [
+    {
+      "rule": "fuse-rating",
+      "level": "error"
+    }
+  ]
+}

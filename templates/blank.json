@@ -1,0 +1,12 @@
+{
+  "$schema": "../schema/project.schema.json",
+  "meta": {
+    "name": "Untitled project",
+    "phase": "define",
+    "requirements": {}
+  },
+  "parts": [],
+  "wires": [],
+  "prints": [],
+  "steps": []
+}

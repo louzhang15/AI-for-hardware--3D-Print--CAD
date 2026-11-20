@@ -1,0 +1,52 @@
+{
+  "meta": {
+    "name": "Fused battery feed with no disconnect switch",
+    "description": "Deliberately incorrect checker fixture. Never use as a build guide."
+  },
+  "parts": [
+    {
+      "id": "battery",
+      "library": "lipo-2s"
+    },
+    {
+      "id": "fuse",
+      "library": "fuse-inline",
+      "params": {
+        "rating_a": 2
+      }
+    },
+    {
+      "id": "buck",
+      "library": "buck-lm2596"
+    }
+  ],
+  "wires": [
+    {
+      "id": "w1",
+      "from": "battery.BAT+",
+      "to": "fuse.IN",
+      "gauge": 18
+    },
+    {
+      "id": "w2",
+      "from": "fuse.OUT",
+      "to": "buck.IN+",
+      "gauge": 18
+    },
+    {
+      "id": "w3",
+      "from": "battery.BAT-",
+      "to": "buck.IN-",
+      "gauge": 18
+    }
+  ],
+  "expect": [
+    {
+      "rule": "missing-switch",
+      "level": "warning",
+      "pins": [
+        "battery.BAT+"
+      ]
+    }
+  ]
+}

@@ -62,6 +62,7 @@
     "Active chamber heating up to 65 °C."
   ],
   "sources": [
+    "https://cdn1.bambulab.com/documentation/h2d/en/H2D_Laser_Full_Combo_20250305.pdf",
     "https://eu.store.bambulab.com/products/h2d",
     "https://bambulab.com/es/h2d/tech-specs",
     "https://www.tomshardware.com/3d-printing/bambu-lab-h2d-review",
@@ -80,6 +81,6 @@
     "bambu-lan",
     "3mf"
   ],
-  "spec_checked": false,
-  "spec_note": "Numbers cross-checked via web search against Bambu official listings in search snippets (2026-11-20); bambulab.com itself could not be fetched from this session. Re-check against the official tech-specs page."
+  "spec_checked": true,
+  "spec_note": "Nominal build volume, included nozzle, hotend and bed limits checked against the first listed Bambu Lab document on 2026-11-20. Slicer exclusions, clearance values and optional transfer compatibility are separate from manufacturer hardware specifications."
 }

@@ -8,8 +8,17 @@
     256
   ],
   "enclosed": true,
+  "slicer_height_mm": 250,
+  "keepout": [
+    {
+      "rect": [0, 0, 18, 28],
+      "corner": "front-left",
+      "note": "Bed exclusion from the bundled 0.4 mm nozzle profile in Bambu Studio 02.09.01.70."
+    }
+  ],
   "heated_bed": {
-    "max_temp": 110
+    "max_temp": 110,
+    "note": "Conservative across voltage regions. Bambu specifies 110 °C at 220 V and 120 °C at 110 V."
   },
   "nozzle_temp_max": 300,
   "materials": {
@@ -40,10 +49,12 @@
     "note": "End of life 31 March 2026; spare parts and support until 31 March 2031, security patches until May 2029 (Bambu blog)."
   },
   "notes": [
+    "The bundled 0.4 mm nozzle profile in Bambu Studio 02.09.01.70 defaults to 250 mm of printable height.",
     "Enclosed; hardened steel nozzle stock, so carbon-fibre filaments are OK.",
     "End of life (March 2026); Bambu supports it until March 2031."
   ],
   "sources": [
+    "https://public-cdn.bambulab.com/store/bambulab-X1-carbon-tech-specs.pdf?v=20250715085516",
     "https://blog.bambulab.com/the-x1-series-is-eol-the-standard-it-set-will-remain-forever",
     "https://www.hackster.io/news/bambu-lab-retires-the-x1-series-of-fff-3d-printers-but-promises-spares-out-to-2031-ccce61958d08",
     "https://bambuhub.net/tools/printer-comparison",
@@ -61,6 +72,6 @@
     "bambu-lan",
     "3mf"
   ],
-  "spec_checked": false,
-  "spec_note": "Numbers cross-checked via web search against Bambu official listings in search snippets (2026-11-20); bambulab.com itself could not be fetched from this session. Re-check against the official tech-specs page."
+  "spec_checked": true,
+  "spec_note": "Nominal build volume, included nozzle, hotend and bed limits checked against the first listed Bambu Lab document on 2026-11-20. Slicer exclusions, clearance values and optional transfer compatibility are separate from manufacturer hardware specifications."
 }

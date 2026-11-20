@@ -317,7 +317,10 @@ test('library parts (optional, skipped when missing)', async (t) => {
   const c = layoutBreadboard({ parts: [{ id: 'esp', library: 'esp32-devkitc-v4' }], wires: [] }, lib);
   assert.ok(byRule(c, 'too-wide').length >= 1, 'DevKitC should be too wide');
   const v1 = layoutBreadboard({ parts: [{ id: 'esp', library: 'esp32-devkit-v1' }], wires: [] }, lib);
-  assert.equal(byRule(v1, 'too-wide').length, 0, 'DOIT 30-pin board should leave a free row');
+  // The stock 28.2 mm board overhangs its header rows, unlike the narrow
+  // synthetic board. It leaves a row on one side of a standard board only.
+  assert.deepEqual(Object.values(v1.placements.esp.free).sort(), [0, 1]);
+  assert.equal(byRule(v1, 'too-wide').length, 1);
   const mix = layoutBreadboard({ parts: [{ id: 'drv', library: 'l293d' }, { id: 'us', library: 'hc-sr04' }], wires: [] }, lib);
   assert.equal(mix.issues.filter((i) => i.level === 'error').length, 0, JSON.stringify(mix.issues));
 });

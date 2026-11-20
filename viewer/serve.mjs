@@ -5,7 +5,7 @@
 //   node viewer/serve.mjs [--port 4321] [--projects ./projects] [--open]
 //
 // Binds 127.0.0.1 only. Writes are limited to step/position/phase state in a
-// project file and to the .wiremap/inbox.jsonl request queue.
+// project file, creating projects from local templates, and the inbox queue.
 
 import http from 'node:http';
 import fs from 'node:fs';
@@ -14,6 +14,8 @@ import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { randomBytes } from 'node:crypto';
 import { spawn } from 'node:child_process';
+import { createProject, listTemplates, projectSlug } from '../scripts/new-project.mjs';
+import { listFeedback, recordFeedback, reviewFeedback } from '../lib/node/feedback.js';
 
 const VIEWER_DIR = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(VIEWER_DIR, '..');
@@ -22,6 +24,9 @@ const MAX_BODY = 1024 * 1024;
 const PHASES = ['define', 'parts', 'power', 'wire', 'firmware', 'print', 'assemble', 'test'];
 const INBOX_KINDS = ['explain', 'fix', 'swap', 'stuck', 'ask'];
 const TARGET_RE = /^(wire|part|pin|step|issue|project|print):[^\n]{1,200}$/;
+const REQUIREMENT_FIELDS = new Set(['size', 'payload', 'runtime', 'budget', 'power', 'on_hand']);
+const RESERVED_FILENAME = /^(?:con|prn|aux|nul|com[1-9]|lpt[1-9])(?:\.|$)/i;
+const FEEDBACK_ROUTE = /^\/api\/project\/([^/]+)\/feedback(?:\/(f-[0-9a-f-]{36})\/review)?$/i;
 
 const MIME = {
   '.html': 'text/html; charset=utf-8',
@@ -210,6 +215,7 @@ export async function startServer(opts = {}) {
 
   let port = 0;
   const clients = new Set();
+  const pendingWrites = new Map();
 
   // ---------- change detection: fs.watch + polling fallback, deduped by mtime/size
   const sigs = new Map();
@@ -345,7 +351,42 @@ export async function startServer(opts = {}) {
       project.meta.phase = body.phase;
       changed.push('meta.phase');
     }
+    if (body.requirements !== undefined) {
+      const fields = body.requirements;
+      const bad = (message) => Object.assign(new Error(message), { status: 400 });
+      if (!fields || typeof fields !== 'object' || Array.isArray(fields)) throw bad('requirements must be an object');
+      const meta = project.meta && typeof project.meta === 'object' && !Array.isArray(project.meta) ? project.meta : {};
+      const current = meta.requirements;
+      const next = current && typeof current === 'object' && !Array.isArray(current) ? { ...current } : {};
+      for (const [key, value] of Object.entries(fields)) {
+        if (!REQUIREMENT_FIELDS.has(key)) throw bad(`Unknown requirement field: ${key}`);
+        const valid = key === 'on_hand'
+          ? Array.isArray(value) && value.length <= 30 && value.every((item) => typeof item === 'string' && item.length <= 160)
+          : typeof value === 'string' && value.length <= 500;
+        if (value !== null && !valid) throw bad(`Invalid value for ${key}`);
+        if (value === null) delete next[key];
+        else next[key] = value;
+        changed.push(`meta.requirements.${key}`);
+      }
+      project.meta = { ...meta, requirements: next };
+    }
     return changed;
+  }
+
+  async function updateState(file, body) {
+    const previous = pendingWrites.get(file);
+    const write = (previous || Promise.resolve()).catch(() => {}).then(async () => {
+      const text = await fsp.readFile(file, 'utf8');
+      let project;
+      try { project = JSON.parse(text); }
+      catch (error) { throw Object.assign(new Error(`Project file is not valid JSON, not writing: ${error.message}`), { status: 409 }); }
+      const changed = mergeState(project, body);
+      if (changed.length) await writeAtomic(file, `${JSON.stringify(project, null, 2)}\n`);
+      return changed;
+    });
+    pendingWrites.set(file, write);
+    try { return await write; }
+    finally { if (pendingWrites.get(file) === write) pendingWrites.delete(file); }
   }
 
   async function appendInboxEntry(body) {
@@ -401,6 +442,25 @@ export async function startServer(opts = {}) {
     if (req.method === 'GET' && pathname === '/api/projects') {
       return json(res, 200, { projectsDir: path.relative(repoDir, projectsDir) || '.', projects: await listProjects() });
     }
+    if (req.method === 'GET' && pathname === '/api/templates') {
+      return json(res, 200, { templates: [...listTemplates().keys()].filter((name) => NAME_RE.test(name) && !name.startsWith('.')).sort() });
+    }
+    if (req.method === 'POST' && pathname === '/api/projects') {
+      const body = await readJsonBody(req);
+      const name = typeof body.name === 'string' ? body.name.trim() : '';
+      if (!name || name.length > 80 || /[/\\\p{Cc}]/u.test(name)) return fail(res, 400, 'Enter a name of 1–80 characters without slashes or control characters.');
+      const slug = projectSlug(name);
+      if (RESERVED_FILENAME.test(slug) || slug.endsWith('.json') || !projectFile(slug)) return fail(res, 400, 'Choose a different project name.');
+      const templateName = body.template;
+      const template = typeof templateName === 'string' && NAME_RE.test(templateName) && !templateName.startsWith('.') && listTemplates().get(templateName);
+      if (!template) return fail(res, 400, 'Choose an available template.');
+      try { createProject(template, name, projectsDir); }
+      catch (error) {
+        if (error.code === 'EEXIST') return fail(res, 409, 'That project already exists. Choose a different name.');
+        throw error;
+      }
+      return json(res, 201, { name: slug });
+    }
     if (req.method === 'GET' && pathname === '/api/events') {
       res.writeHead(200, {
         'Content-Type': 'text/event-stream; charset=utf-8',
@@ -412,6 +472,29 @@ export async function startServer(opts = {}) {
       clients.add(res);
       req.on('close', () => clients.delete(res));
       return;
+    }
+    const feedback = FEEDBACK_ROUTE.exec(pathname);
+    if (feedback) {
+      let raw;
+      try { raw = decodeURIComponent(feedback[1]); } catch { return fail(res, 400, 'Bad project name'); }
+      const pf = projectFile(raw);
+      if (!pf) return fail(res, 400, 'Bad project name');
+      const real = await safeResolve(projectsDir, `${pf.name}.json`);
+      if (!real) return fail(res, 404, `No project "${pf.name}"`);
+      const project = pf.name;
+      const id = feedback[2];
+      if (req.method === 'GET' && !id) return json(res, 200, { records: listFeedback(repoDir, { project, all: true }) });
+      if (req.method !== 'POST') return fail(res, 405, 'Method not allowed');
+      const body = await readJsonBody(req);
+      try {
+        if (!id) return json(res, 201, recordFeedback(repoDir, { project, original: body.original, correction: body.correction, evidence: body.evidence }));
+        const ownRecord = listFeedback(repoDir, { project, all: true }).some((entry) => entry.id === id && entry.project === project);
+        if (!ownRecord) return fail(res, 404, 'Correction not found in this project');
+        return json(res, 200, reviewFeedback(repoDir, id, { status: body.status, scope: body.scope }));
+      } catch (error) {
+        if (error.code) throw error;
+        return fail(res, 400, error.message);
+      }
     }
     let m = /^\/api\/project\/([^/]+)$/.exec(pathname);
     if (m && req.method === 'GET') {
@@ -433,11 +516,7 @@ export async function startServer(opts = {}) {
       const body = await readJsonBody(req);
       const real = await safeResolve(projectsDir, `${pf.name}.json`);
       if (!real) return fail(res, 404, `No project "${pf.name}"`);
-      let project;
-      try { project = JSON.parse(await fsp.readFile(real, 'utf8')); }
-      catch (e) { return fail(res, 409, `Project file is not valid JSON, not writing: ${e.message}`); }
-      const changed = mergeState(project, body);
-      if (changed.length) await writeAtomic(real, `${JSON.stringify(project, null, 2)}\n`);
+      const changed = await updateState(real, body);
       return json(res, 200, { ok: true, changed });
     }
     if (pathname === '/api/inbox' && req.method === 'POST') {

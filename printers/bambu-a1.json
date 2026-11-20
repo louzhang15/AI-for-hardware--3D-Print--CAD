@@ -34,23 +34,12 @@
     ]
   },
   "margin_mm": 5,
-  "keepout": [
-    {
-      "rect": [
-        0,
-        0,
-        20,
-        30
-      ],
-      "corner": "front-left",
-      "note": "Filament cut / prime area excluded by the slicer (size not officially published; check your Bambu Studio printer profile)."
-    }
-  ],
   "notes": [
     "Open frame: ABS/ASA not recommended.",
     "Bed slinger: keep tall parts stable and low."
   ],
   "sources": [
+    "https://cdn1.bambulab.com/documentation/quick-start-f507128172bdf/Quick%20start%20guide%20-%20A1%20combo-EN.pdf",
     "https://3dpros.com/printers/bambu-lab-a1",
     "https://wiki.bambulab.com/en/a1/manual/faq",
     "https://forum.bambulab.com/t/whats-preventing-me-from-moving-the-purge-tower-further-left-and-back/214951",
@@ -68,6 +57,6 @@
     "bambu-lan",
     "3mf"
   ],
-  "spec_checked": false,
-  "spec_note": "Numbers cross-checked via web search against Bambu official listings in search snippets (2026-11-20); bambulab.com itself could not be fetched from this session. Re-check against the official tech-specs page."
+  "spec_checked": true,
+  "spec_note": "Nominal build volume, included nozzle, hotend and bed limits checked against the first listed Bambu Lab document on 2026-11-20. Slicer exclusions, clearance values and optional transfer compatibility are separate from manufacturer hardware specifications."
 }

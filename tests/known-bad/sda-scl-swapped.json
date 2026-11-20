@@ -1,0 +1,62 @@
+{
+  "meta": {
+    "name": "I2C data and clock are crossed",
+    "description": "Deliberately incorrect checker fixture. Never use as a build guide."
+  },
+  "parts": [
+    {
+      "id": "supply",
+      "library": "dc-adapter-5v-3a"
+    },
+    {
+      "id": "esp",
+      "library": "esp32-devkit-v1"
+    },
+    {
+      "id": "pwm",
+      "library": "pca9685-breakout"
+    }
+  ],
+  "wires": [
+    {
+      "id": "w1",
+      "from": "supply.V+",
+      "to": "esp.VIN"
+    },
+    {
+      "id": "w2",
+      "from": "supply.GND",
+      "to": "esp.GND"
+    },
+    {
+      "id": "w3",
+      "from": "esp.3V3",
+      "to": "pwm.VCC"
+    },
+    {
+      "id": "w4",
+      "from": "esp.GND",
+      "to": "pwm.GND"
+    },
+    {
+      "id": "w5",
+      "from": "esp.GPIO21",
+      "to": "pwm.SCL"
+    },
+    {
+      "id": "w6",
+      "from": "esp.GPIO22",
+      "to": "pwm.SDA"
+    }
+  ],
+  "expect": [
+    {
+      "rule": "bus-mixup",
+      "level": "error",
+      "pins": [
+        "esp.GPIO21",
+        "pwm.SCL"
+      ]
+    }
+  ]
+}

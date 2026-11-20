@@ -57,9 +57,10 @@ export const VIEWS = [
   { id: '3d', label: '3D', icon: 'explode' },
   { id: 'power', label: 'Power tree', icon: 'bolt' },
   { id: 'assembly', label: 'Assembly', icon: 'print' },
+  { id: 'preview', label: 'Motion preview', icon: 'motion' },
 ];
 const PHASE_VIEW = { define: 'sketch', parts: '3d', power: 'power', wire: 'sketch', firmware: 'sketch', print: 'assembly', assemble: 'assembly', test: 'sketch' };
-const PHASE_LEFT = { parts: 'parts', power: 'power' };
+const PHASE_LEFT = { define: 'requirements', parts: 'parts', power: 'power' };
 
 // ------------------------------------------------------------------ app object
 
@@ -70,9 +71,9 @@ const app = {
   route: { page: 'home' },
   data: null, // { name, project, check, bb, bbError, mtime }
   ui: {
-    theme: document.documentElement.dataset.theme || 'dark',
+    theme: document.documentElement.dataset.theme || 'light',
     reduceMotion: store.get('reduceMotion', false),
-    view: 'sketch', left: 'parts', phase: 'define', stepIdx: {}, leftCollapsed: false, rightCollapsed: false,
+    view: 'sketch', left: 'parts', phase: 'define', stepIdx: {},
   },
   selection: null, // { type: 'wire'|'pin'|'part'|'issue'|'rail'|'net', id, issue? }
   focus: emptyFocus(),
@@ -253,10 +254,11 @@ function computeFocus() {
 }
 
 app.select = (sel, opts = {}) => {
+  if (sel && opts.sheet !== false) setNarrowPanel('center');
   app.selection = sel && sel.type ? sel : null;
   app.focus = computeFocus();
   applyFocusEverywhere();
-  if (sel && sel.type === 'part' && opts.sheet !== false) app.openPart(sel.id);
+  if (sel && sel.type === 'part' && opts.sheet !== false && app.ui.view !== '3d') app.openPart(sel.id);
   renderInfoCard();
   if (app.els.left) renderLeft(); // keep panel highlights in sync
 };
@@ -345,6 +347,21 @@ app.setHave = async (partId, have) => {
   catch (e) { toast(`Could not save: ${e.message}`, 'error'); }
 };
 
+app.saveRequirements = async (changes) => {
+  const { name } = app.data;
+  await postJSON(`/api/project/${encodeURIComponent(name)}/state`, { requirements: changes });
+  if (app.data?.name !== name) return;
+  const project = app.data.project;
+  const requirements = { ...project.meta?.requirements };
+  for (const [key, value] of Object.entries(changes)) {
+    if (value === null) delete requirements[key];
+    else requirements[key] = value;
+  }
+  project.meta = { ...project.meta, requirements };
+  renderLeft();
+  toast('Requirements saved', 'ok');
+};
+
 app.savePositions = async (positions) => {
   for (const [id, pos] of Object.entries(positions)) {
     const p = (app.data.project.parts || []).find((x) => x.id === id) || (app.data.project.prints || []).find((x) => x.id === id);
@@ -417,6 +434,12 @@ function hasAssembly() {
   return prints.some((p) => Array.isArray(p.position));
 }
 app.hasAssembly = hasAssembly;
+
+function viewAvailable(view) {
+  if (view.id === 'assembly') return hasAssembly();
+  if (view.id === 'preview') return ['arm', 'rover'].includes(app.data?.project.preview?.type);
+  return true;
+}
 
 // ------------------------------------------------------------------ inbox (ask the AI)
 
@@ -569,6 +592,7 @@ app.openPart = (id) => {
 
 function renderInfoCard() {
   if (app.els.info) { app.els.info.remove(); app.els.info = null; }
+  if (app.ui.view === '3d') return;
   const sel = app.selection;
   if (!sel || !app.els.stage || (sel.type !== 'wire' && sel.type !== 'pin')) return;
   let card;
@@ -620,72 +644,113 @@ async function renderHome() {
   app.data = null;
   document.title = 'Wiremap';
   const root = clear(app.root);
-  const list = h('div.cards');
-  const inner = h('div.home-inner', null,
-    h('div.home-head', null,
-      logo(36),
-      h('div', { style: { flex: 1 } }, h('h1', null, 'Wiremap'), h('div.tag-line', null, 'Your hardware build, checked and shown step by step.')),
-      themeButtons()),
-    h('div.section-title', null, 'Projects', h('span.grow')),
-    list,
-    startBox());
-  root.append(h('div.home', null, inner));
+  const list = h('section.home-projects', { 'aria-label': 'Saved projects' }, h('p.home-empty', { role: 'status' }, 'Loading projects…'));
+  root.append(h('div.home.home-page', null,
+    h('header.home-header', null, h('div.home-header-inner', null,
+      h('div.home-wordmark', null, logo(30), 'Wiremap'), themeButtons())),
+    h('main.home-main', null,
+      h('div.home-intro', null,
+        h('div', null, h('h1', null, 'Build workspace'),
+          h('p', null, 'Open a project to review its wiring, check the parts, or pick up a build.')),
+        h('button.btn.primary.home-start', { type: 'button', onclick: openNewProject }, icon('plus', 18), 'Start a project')),
+      list,
+      startBox())));
   let data;
   try {
     data = JSON.parse(await api('/api/projects'));
   } catch (e) {
-    list.replaceWith(h('div.empty-home', null, `Could not list projects: ${e.message}`));
+    list.replaceChildren(h('p.home-empty', { role: 'alert' }, `Could not list projects. ${e.message}`));
     return;
   }
   if (!data.projects.length) {
-    list.replaceWith(h('div.empty-home', null, h('p', { style: { fontSize: '15px', margin: '0 0 6px', color: 'var(--text)' } }, 'No projects yet.'), h('p', { style: { margin: 0 } }, `Ask your AI to start one. It writes ${data.projectsDir}/<name>.json and this page fills in by itself.`)));
+    list.replaceChildren(h('div.home-empty', null, h('h2', null, 'No saved projects'),
+      h('p', null, 'Start with a template or ask your AI to save a project in ', h('code', null, `${data.projectsDir}/`), '.')));
     return;
   }
-  for (const p of data.projects) list.append(projectCard(p));
+  list.replaceChildren(...data.projects.map(projectCard));
+}
+
+async function openNewProject(event) {
+  const button = event.currentTarget;
+  button.disabled = true;
+  let templates;
+  try { ({ templates } = JSON.parse(await api('/api/templates'))); }
+  catch (error) { toast(`Could not load templates: ${error.message}`, 'error'); return; }
+  finally { button.disabled = false; }
+  if (app.route.page !== 'home') return;
+  if (!templates.length) { toast('No local templates are available.'); return; }
+  const templateTitles = { blank: 'Blank project', 'robot-arm': '4-servo robot arm', rover: 'Two-motor rover' };
+  const template = h('select.input', { 'aria-label': 'Template' }, templates.map((name) => h('option', { value: name },
+    Object.hasOwn(templateTitles, name) ? templateTitles[name] : name.replaceAll('-', ' '))));
+  const name = h('input.input', { required: true, maxlength: 80, type: 'text', placeholder: 'My robot arm' });
+  const error = h('p.form-error', { role: 'alert', hidden: true });
+  const create = h('button.btn.primary', { form: 'new-project-form', type: 'submit' }, 'Create project');
+  const form = h('form#new-project-form.intake-form', { onsubmit: async (event) => {
+    event.preventDefault();
+    create.disabled = true;
+    error.hidden = true;
+    try {
+      const project = await postJSON('/api/projects', { name: name.value, template: template.value });
+      if (form.isConnected) location.hash = `#/p/${encodeURIComponent(project.name)}`;
+    } catch (failure) {
+      error.textContent = failure.message;
+      error.hidden = false;
+      create.disabled = false;
+    }
+  } }, h('label.intake-field', null, 'Template', template), h('label.intake-field', null, 'Project name', name), error);
+  openModal({ title: 'New project from template', body: form, actions: [h('button.btn.ghost', { onclick: closeModal }, 'Cancel'), create] });
+  name.focus();
 }
 
 function logo(size = 28) {
-  const span = h('span', { style: { display: 'inline-flex' } });
-  span.innerHTML = `<svg width="${size}" height="${size}" viewBox="0 0 32 32"><rect width="32" height="32" rx="8" fill="var(--bg-2)" stroke="var(--line)"/><path d="M7 22c5 0 5-12 9-12s4 12 9 12" fill="none" stroke="var(--accent)" stroke-width="2.6" stroke-linecap="round"/><circle cx="7" cy="22" r="2.6" fill="#e5484d"/><circle cx="25" cy="22" r="2.6" fill="#3e8ef7"/></svg>`;
+  const span = h('span', { style: { display: 'inline-flex' }, 'aria-hidden': 'true' });
+  span.innerHTML = `<svg width="${size}" height="${size}" viewBox="0 0 32 32"><rect width="32" height="32" rx="7" fill="#2454ca"/><path d="M8 22h6l4-12h6M8 13h3m10 6h3" fill="none" stroke="#fff" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><circle cx="8" cy="22" r="2" fill="#fff"/><circle cx="24" cy="10" r="2" fill="#fff"/></svg>`;
   return span;
 }
 
 function projectCard(p) {
-  const thumb = h('div.thumb.grid-bg');
-  const pill = h('span.pill.neutral', null, p.error ? 'Invalid JSON' : 'Checking…');
-  if (p.error) pill.className = 'pill error';
-  const phaseIdx = PHASES.indexOf(p.phase);
-  const mini = h('div.mini-phases', { title: `Phase: ${PHASE_TITLES[p.phase] || p.phase}` }, PHASES.map((ph, i) => h(`span${i < phaseIdx ? '.done' : i === phaseIdx ? '.current' : ''}`)));
-  const card = h('button.card', { onclick: () => { location.hash = `#/p/${encodeURIComponent(p.name)}`; } },
+  const title = p.meta?.name || p.name;
+  const phase = PHASE_TITLES[p.phase] || p.phase;
+  const thumb = h('div.home-thumb', { 'aria-hidden': 'true' });
+  const previewText = h('span', null, p.error ? 'Preview unavailable' : 'Loading preview…');
+  const preview = h('span.home-preview-empty', null, icon('chip', 24), previewText);
+  thumb.append(preview);
+  const status = h(`span.home-check.${p.error ? 'error' : 'neutral'}`, null, p.error ? 'Invalid JSON' : 'Checking…');
+  const card = h('a.home-card', { href: `#/p/${encodeURIComponent(p.name)}`, 'aria-label': `Open ${title}` },
     thumb,
-    h('div.card-body', null,
-      h('div.row', null, h('h3', null, (p.meta && p.meta.name) || p.name), pill),
-      h('div.desc', null, p.error || (p.meta && p.meta.description) || `projects/${p.name}.json`),
-      h('div.row', null, mini, h('span.small.muted', null, `${PHASE_TITLES[p.phase] || p.phase} · ${fmtAgo(p.mtime)}`)),
-      p.counts ? h('div.small.muted', null, `${plural(p.counts.parts, 'part')} · ${plural(p.counts.wires, 'wire')} · ${p.counts.stepsDone}/${p.counts.steps} steps done`) : null));
+    h('div.home-card-body', null,
+      h('div.home-card-head', null, h('h2', null, title), status),
+      h('p.home-description', null, p.error || p.meta?.description || `projects/${p.name}.json`),
+      p.counts ? h('div.home-card-data', null, plural(p.counts.parts, 'part'), h('span', null, plural(p.counts.wires, 'wire')),
+        p.counts.steps ? h('span', null, `${p.counts.stepsDone}/${p.counts.steps} steps done`) : null) : null,
+      h('div.home-card-footer', null,
+        h('span.home-card-phase', null, phase, h('span.home-card-date', null, ` · ${fmtAgo(p.mtime)}`)),
+        h('span.home-card-open', { 'aria-hidden': 'true' }, 'Open project', icon('right', 16)))));
   if (!p.error) {
     loadProjectData(p.name).then((d) => {
       const c = d.check;
-      pill.className = `pill ${c.errors ? 'error' : c.warnings ? 'warn' : 'ok'}`;
-      pill.textContent = c.errors ? plural(c.errors, 'error') : c.warnings ? plural(c.warnings, 'warning') : '0 errors';
-      try { thumb.append(sketchThumb(d.check)); } catch (e) { console.warn(e); }
-    }).catch((e) => { pill.className = 'pill error'; pill.textContent = 'Error'; pill.title = e.message; });
+      const state = c.errors ? 'error' : c.warnings ? 'warn' : c.lite ? 'neutral' : 'ok';
+      status.className = `home-check ${state}`;
+      status.textContent = c.errors ? plural(c.errors, 'error') : c.warnings ? plural(c.warnings, 'warning') : c.lite ? 'Structural check' : '0 checker errors';
+      if (c.model.partList.length) thumb.replaceChildren(sketchThumb(c));
+      else previewText.textContent = 'No circuit to preview';
+    }).catch((e) => {
+      status.className = 'home-check error';
+      status.textContent = 'Could not check';
+      status.title = e.message;
+      previewText.textContent = 'Preview unavailable';
+    });
   }
   return card;
 }
 
 function startBox() {
-  const prompt = 'Use wiremap: 4-servo robot arm with an ESP32. I have a breadboard and a Bambu A1 mini, and I use Fusion.';
-  return h('div.start-box', null,
-    h('div', null,
-      h('h2', null, 'How to start'),
-      h('ol', null,
-        h('li', null, 'Open Claude Code or Codex in your project folder.'),
-        h('li', null, 'Describe what you want to build (paste the prompt and edit it).'),
-        h('li', null, 'Your AI writes the project file and runs the checker until there are 0 errors.'),
-        h('li', null, 'This page updates live. Follow the steps on the right.'))),
-    h('div', null, h('h2', null, 'Prompt to copy'), promptBox(prompt),
-      h('p.small.muted', { style: { marginTop: '10px' } }, 'Clicking "Explain" or "Fix this" anywhere in the viewer queues a request for your AI in .wiremap/inbox.jsonl.')));
+  const prompt = 'Use Wiremap to plan a 4-servo ESP32 robot arm. I have a breadboard and a Bambu A1 mini. Ask me about my parts and CAD tools before choosing a design.';
+  return h('details.home-ai', null,
+    h('summary', null, icon('help', 18), 'Start from an idea with Claude Code or Codex', icon('right', 16)),
+    h('div.home-ai-body', null,
+      h('p', null, 'Open your project folder in Claude Code or Codex. Describe your build and ask it to save a Wiremap project. The design will appear here when it is saved.'),
+      promptBox(prompt)));
 }
 
 // ------------------------------------------------------------------ rendering: project
@@ -719,6 +784,8 @@ function saveUi() {
 function renderTop() {
   const d = app.data;
   if (!d || !app.els.top) return;
+  const restorePhaseFocus = app.els.top.contains(document.activeElement) && document.activeElement.matches('.phase');
+  const phaseScroll = app.els.top.querySelector('.stepper')?.scrollLeft || 0;
   const top = clear(app.els.top);
   const meta = d.project.meta || {};
   const c = d.check;
@@ -732,32 +799,38 @@ function renderTop() {
     const locked = isLocked(ph);
     const cls = ['phase', done ? 'done' : '', ph === projPhase ? 'current' : '', ph === app.ui.phase ? 'viewing' : '', locked ? 'locked' : '', errs[ph] ? 'has-error' : ''].filter(Boolean).join('.');
     const title = locked ? lockReason(ph) : `${PHASE_TITLES[ph]}${list.length ? ` · ${list.filter((s) => s.done).length}/${list.length} steps done` : ''}${ph === projPhase ? ' · current phase' : ''}${errs[ph] ? ` · ${plural(errs[ph], 'error')}` : ''}`;
-    if (i > 0) stepper.append(h(`span.phase-sep${done ? '.done' : ''}`));
     stepper.append(h(`button.${cls}`, { 'data-phase': ph, title, 'aria-current': ph === app.ui.phase ? 'step' : null, onclick: () => app.setPhase(ph) },
-      h('span.num', null, locked ? icon('lock', 11) : done ? icon('check', 12) : String(i + 1)), h('span.name', null, PHASE_TITLES[ph])));
+      h('span.num', { 'aria-hidden': 'true' }, locked ? icon('lock', 12) : done ? icon('check', 13) : String(i + 1).padStart(2, '0')),
+      h('span.name', null, PHASE_TITLES[ph])));
   });
   const pillCls = c.errors ? 'error' : c.warnings ? 'warn' : 'ok';
-  const pillText = c.errors ? `${plural(c.errors, 'error')}${c.warnings ? `, ${plural(c.warnings, 'warning')}` : ''}` : c.warnings ? `0 errors, ${plural(c.warnings, 'warning')}` : '0 errors';
-  top.append(
-    h('button.btn.ghost.icon-only.collapse-btn', { title: 'Panels', 'aria-label': 'Show left panel', onclick: () => toggleNarrow('left') }, icon('panel')),
-    h('div.brand', null,
-      h('span.brand-mark', { title: 'All projects', role: 'button', tabindex: 0, onclick: () => { location.hash = '#/'; }, onkeydown: (e) => { if (e.key === 'Enter') location.hash = '#/'; } }, logo(26)),
-      h('div.brand-title', null, h('h1', null, meta.name || d.name), h('div.sub', null, `projects/${d.name}.json${c.lite ? ' · structural check only' : ''}`))),
-    h('span.spacer'),
-    stepper,
-    h('span.spacer'),
-    h(`button.pill.${pillCls}`, { title: c.summary || 'Open the issues list', onclick: () => { app.ui.left = 'issues'; if (innerWidth <= 980) toggleNarrow('left', true); renderLeft(); } }, h('span.dot'), pillText),
-    themeButtons(),
-    h('button.btn.ghost.icon-only.collapse-btn', { title: 'Steps', 'aria-label': 'Show steps panel', onclick: () => toggleNarrow('right') }, icon('panelR')));
+  const pillText = c.errors ? plural(c.errors, 'checker error') : c.warnings ? plural(c.warnings, 'warning') : c.lite ? 'Structural check' : '0 checker errors';
+  const projectTitle = meta.name || d.name;
+  top.append(h('div.project-bar', null,
+    h('a.project-back', { href: '#/', 'aria-label': 'All projects' }, logo(30), h('span', null, 'Projects')),
+    h('div.brand-title', { title: `projects/${d.name}.json` }, h('h1', null, projectTitle),
+      h('div.sub', null, `${plural(c.model.partList.length, 'part')} · ${plural((d.project.wires || []).length, 'connection')}`)),
+    h(`button.check-status.${pillCls}`, { title: c.summary || 'Open the issues list', onclick: () => {
+      app.setLeftPanel('issues');
+      setNarrowPanel('left');
+      app.els.left.querySelector('[aria-selected="true"]')?.focus();
+    } }, icon(c.errors || c.warnings ? 'alert' : 'check', 15), pillText),
+    themeButtons()), stepper);
+  stepper.scrollLeft = phaseScroll;
+  const active = stepper.querySelector('[aria-current="step"]');
+  if (active && active.offsetLeft + active.offsetWidth > stepper.scrollLeft + stepper.clientWidth) {
+    stepper.scrollLeft = active.offsetLeft + active.offsetWidth - stepper.clientWidth + 12;
+  } else if (active && active.offsetLeft < stepper.scrollLeft) stepper.scrollLeft = active.offsetLeft;
+  if (restorePhaseFocus) active?.focus({ preventScroll: true });
 }
 
-function toggleNarrow(side, force) {
+function setNarrowPanel(panel) {
   const ws = app.els.ws;
-  if (!ws) return;
-  const cls = `show-${side}`;
-  const on = force ?? !ws.classList.contains(cls);
-  ws.classList.remove('show-left', 'show-right');
-  if (on) ws.classList.add(cls);
+  if (!ws || !matchMedia('(max-width: 1050px)').matches) return;
+  ws.dataset.panel = panel;
+  for (const button of app.els.dock.querySelectorAll('button')) {
+    button.setAttribute('aria-pressed', String(button.dataset.panel === panel));
+  }
 }
 
 function renderLeft() {
@@ -770,32 +843,67 @@ function renderRight() {
 }
 app.renderLeft = renderLeft;
 app.renderRight = renderRight;
+app.setLeftPanel = (panel) => {
+  app.ui.left = panel;
+  saveUi();
+  renderLeft();
+};
 
 function renderCenterBar() {
+  const focused = app.els.centerBar.contains(document.activeElement) && document.activeElement.matches('[role="tab"]');
+  const scrollLeft = app.els.centerBar.querySelector('.view-tabs')?.scrollLeft || 0;
   const bar = clear(app.els.centerBar);
-  const tabs = h('div.view-tabs', { role: 'tablist' });
-  for (const v of VIEWS) {
-    if (v.id === 'assembly' && !hasAssembly()) continue;
-    tabs.append(h(`button.view-tab${app.ui.view === v.id ? '.active' : ''}`, { role: 'tab', 'aria-selected': String(app.ui.view === v.id), onclick: () => switchView(v.id) }, icon(v.icon, 14), h('span.lbl', null, v.label)));
+  const views = VIEWS.filter(viewAvailable);
+  const tabs = h('div.view-tabs', { role: 'tablist', 'aria-label': 'Diagram views', onkeydown: (event) => {
+    const index = views.findIndex((v) => v.id === app.ui.view);
+    const nav = { ArrowLeft: (index + views.length - 1) % views.length, ArrowRight: (index + 1) % views.length, Home: 0, End: views.length - 1 };
+    if (!Object.hasOwn(nav, event.key)) return;
+    event.preventDefault();
+    switchView(views[nav[event.key]].id);
+  } });
+  for (const v of views) {
+    const selected = app.ui.view === v.id;
+    tabs.append(h(`button.view-tab${selected ? '.active' : ''}`, { role: 'tab', 'aria-selected': String(selected), tabindex: selected ? 0 : -1,
+      onclick: () => switchView(v.id) }, icon(v.icon, 14), h('span.lbl', null, v.label)));
   }
-  bar.append(tabs, h('span.spacer'));
+  bar.append(tabs);
   const view = app.views[app.ui.view];
   if (view && view.tools) {
     const t = view.tools();
     if (t) bar.append(h('div.view-tools', null, t));
+  }
+  tabs.scrollLeft = scrollLeft;
+  const active = tabs.querySelector('.active');
+  if (active && focused) {
+    active.focus({ preventScroll: true });
+    const viewport = tabs.getBoundingClientRect();
+    const target = active.getBoundingClientRect();
+    if (target.right > viewport.right) tabs.scrollLeft += target.right - viewport.right;
+    else if (target.left < viewport.left) tabs.scrollLeft -= viewport.left - target.left;
   }
 }
 app.renderCenterBar = renderCenterBar;
 
 function switchView(id) {
   if (id === app.ui.view) return;
+  if (id === '3d') closeSheet();
   app.ui.view = id;
   saveUi();
-  mountView();
+  const mounted = mountView();
   renderCenterBar();
+  renderInfoCard();
+  return mounted;
 }
 
 app.switchView = switchView;
+app.inspectPins = async (partId) => {
+  if (!app.part(partId)) return;
+  app.select({ type: 'part', id: partId }, { sheet: false });
+  await switchView('3d');
+  if (app.ui.view === '3d' && app.selection?.type === 'part' && app.selection.id === partId) {
+    app.views['3d']?.focusPart?.(partId);
+  }
+};
 
 async function ensureView(id) {
   if (app.views[id]) return app.views[id];
@@ -804,6 +912,10 @@ async function ensureView(id) {
   if (id === 'sketch') view = new SketchView(app, host);
   else if (id === 'breadboard') view = new BreadboardView(app, host);
   else if (id === 'power') view = new PowerTreeView(app, host);
+  else if (id === 'preview') {
+    const { MotionPreview } = await import('./motion-preview.js');
+    view = new MotionPreview(app, host);
+  }
   else if (id === '3d' || id === 'assembly') {
     try {
       const { Scene3DView } = await import('./scene3d.js');
@@ -855,12 +967,15 @@ function renderProjectShell() {
     app.els.right = h('aside.side.right', { 'aria-label': 'Build step' });
     app.els.centerBar = h('div.center-bar');
     app.els.stage = h('div.stage.grid-bg');
-    app.els.center = h('section.center', null, app.els.centerBar, app.els.stage);
-    app.els.ws = h('main.workspace', null, app.els.left, app.els.center, app.els.right);
-    app.els.center.addEventListener('pointerdown', () => app.els.ws.classList.remove('show-left', 'show-right'));
-    root.append(app.els.top, app.els.ws);
+    app.els.center = h('section.center', { 'aria-label': 'Diagram workspace' }, app.els.centerBar, app.els.stage);
+    app.els.ws = h('main.workspace', { 'data-panel': 'center' }, app.els.left, app.els.center, app.els.right);
+    app.els.dock = h('nav.workspace-dock', { 'aria-label': 'Workspace panels' },
+      ...[['left', 'panel', 'Project'], ['center', 'chip', 'Diagram'], ['right', 'steps', 'Build guide']].map(([panel, symbol, label]) =>
+        h('button', { type: 'button', 'data-panel': panel, 'aria-pressed': String(panel === 'center'), onclick: () => setNarrowPanel(panel) }, icon(symbol, 17), label)));
+    root.append(app.els.top, app.els.ws, app.els.dock);
   }
   if (app.ui.view === 'assembly' && !hasAssembly()) app.ui.view = '3d';
+  if (app.ui.view === 'preview' && !['arm', 'rover'].includes(d.project.preview?.type)) app.ui.view = 'sketch';
   document.title = `${(d.project.meta && d.project.meta.name) || d.name} · Wiremap`;
   renderTop();
   renderLeft();
@@ -932,12 +1047,13 @@ document.addEventListener('keydown', (e) => {
     return;
   }
   if (!app.data || modalEl || e.metaKey || e.ctrlKey || e.altKey) return;
+  if (e.target.closest?.('button, a, [role="button"], [role="tab"]')) return;
   const view = app.views[app.ui.view];
   if (view && view.key && view.key(e)) { e.preventDefault(); return; }
   if (e.key === 'ArrowRight' || e.key === 'ArrowDown') { e.preventDefault(); app.nextStep(1); }
   else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') { e.preventDefault(); app.nextStep(-1); }
-  else if (/^[1-5]$/.test(e.key)) {
-    const avail = VIEWS.filter((v) => v.id !== 'assembly' || hasAssembly());
+  else if (/^[1-6]$/.test(e.key)) {
+    const avail = VIEWS.filter(viewAvailable);
     const v = avail[Number(e.key) - 1];
     if (v) switchView(v.id);
   }

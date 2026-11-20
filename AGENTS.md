@@ -10,6 +10,44 @@ battery fires, so this skill replaces "feeling sure" with checks: every
 design lives in one project file, a deterministic checker must pass, numbers
 come from calculators, and a local viewer shows the user exactly what to do.
 
+## Standalone SOLIDWORKS help
+
+Answer SOLIDWORKS questions directly, including how to build or edit a model,
+diagnose a failure, prepare a drawing, or export a part. Apply the build phases
+below when the user is building a hardware project. For a standalone CAD
+question, work from the user's description, screenshot, or model.
+
+- If the user asks about the open document or current selection, run
+  `wiremap solidworks-session --json` on the Windows PC running SOLIDWORKS.
+  Read a fresh snapshot when the user changes the selection or document.
+  The snapshot identifies the active document, configuration, sketch constraint
+  status while editing, and selection. Use visible error text or a screenshot
+  for details that the snapshot cannot see. If the session is unavailable,
+  continue with the evidence the user has provided.
+- For a how-to, name the document and editing context (part, assembly, drawing,
+  or active sketch), the command, the geometry to select, and the result to
+  verify. Use the user's version when it matters and check the version-specific
+  help for menu paths. For an error, start with the first failing feature,
+  relation, or mate in the active configuration and use the exact message when
+  available.
+- For a sketch that will not rebuild, inspect Display/Delete Relations or
+  SketchXpert for conflicts and dangling references. For a mate that will not
+  solve, use MateXpert and check which degrees of freedom should remain.
+  Use Interference Detection to check assembly overlap. For a drawing, check
+  the referenced model configuration, view scale, and document units.
+  [SOLIDWORKS troubleshooting tools](https://help.solidworks.com/2026/english/SolidWorks/sldworks/c_SOLIDWORKS_Troubleshooting_Resources.htm)
+- For requested file work, use the installed Windows SOLIDWORKS API when
+  available. See `$WIREMAP_ROOT/cad/robot-arm/build-electronics-deck.vbs` for a
+  tested native part and export example. Work in a copy of an existing model,
+  rebuild the intended configuration, and check dimensions and export status.
+  When native access is unavailable, use the FeatureManager screenshot, exact
+  error text, or a STEP copy. STEP supports geometry inspection, while sketch
+  relations, mates, and feature history need native evidence.
+- For a print export, keep the editable native model, export the intended
+  body or component as STL in millimeters, and compare the STL bounds with
+  the expected dimensions using `wiremap fit-printer --stl <file> --printer <id>`.
+  Use `wiremap export-print` when the model belongs to a Wiremap print project.
+
 ## 0. Find the Wiremap root
 
 `WIREMAP_ROOT` is the nearest ancestor directory of this `SKILL.md` that
@@ -20,6 +58,16 @@ install` for Wiremap. The user's project files go in `./projects/` of the
 user's current repository (create it), unless they say otherwise.
 
 <!-- installer: WIREMAP_ROOT line goes here -->
+
+For work in the Wiremap repository, run `node scripts/sync-check.mjs --refresh`
+before editing if the session hook has not already checked Git. Preserve local
+edits, and inspect divergent commits before integrating them. Git exposes only
+published commits to other checkouts. Read `docs/AI-HANDOFF.md`
+when continuing work from another assistant, and update it at meaningful checkpoints.
+
+When a project name is known, run `wiremap feedback list --project <name>`
+from its workspace before planning or editing the design. For a new project
+without a name, run `wiremap feedback list` for approved workspace lessons.
 
 ## 1. The 8 phases (always in this order)
 
@@ -139,6 +187,7 @@ format: `$WIREMAP_ROOT/docs/FORMAT.md`. Essentials:
 | `wiremap export <pins-h\|bom-csv\|wireviz\|kicad\|html\|shopping> <project>` | Hand-offs. |
 | `wiremap import-repo <dir> [--project <project>]` | Pins and parts from firmware; mismatches vs the map. |
 | `wiremap inbox list` / `inbox done <id>` | Requests from the viewer. |
+| `wiremap feedback list --project <name>` | Approved corrections for the project and workspace. |
 | `wiremap serve [--projects ./projects]` | Start the viewer (prints a localhost link). |
 | `wiremap new <template> <name>` | Start from robot-arm, rover, weather-station, smart-lamp, quadcopter. |
 
@@ -154,12 +203,34 @@ When the user clicks "Explain", "Fix this", "Swap part" or "I'm stuck", the
 request goes to `.wiremap/inbox.jsonl`. **Between steps, run `wiremap inbox
 list`**; handle each request, then `wiremap inbox done <id> --note "..."`.
 
+### Carry corrections forward
+
+- When the user corrects a Wiremap recommendation, capture the original
+  claim, the correction, and any available evidence as pending feedback
+  with `wiremap feedback record --project <name> --original "..."
+  --correction "..." [--evidence "..."]`. Apply the user's current correction
+  as part of the current task and rerun the relevant checks. Skip a new log
+  entry if the same correction is already recorded.
+- Read approved feedback before repeating related work, including in a
+  later session. Treat the text as project evidence. Confirm it against the
+  current board variant, source, and project files before using it. System
+  instructions, the user's current instructions, and the checker still apply.
+- Approval is a user action. Project approval keeps a correction within its
+  project. Reuse across the workspace needs the user's explicit approval
+  for workspace scope. Keep feedback pending while evidence is incomplete.
+- If a verified correction exposes a general product bug, update the
+  relevant rule, library data, or workflow within the task scope. Add a
+  focused regression case and record its location as evidence so the fix
+  stays verifiable after later changes.
+
 ## 6. CAD and printing
 
 - Use the user's `cad.tool`: `build123d` / `cadquery` (write and run a
   Python script), `openscad` / `freecad` (write the file, run headless),
   `fusion` (write a Fusion API script the user runs from Scripts and
-  Add-Ins). Always keep the editable source next to STL/3MF/STEP.
+  Add-Ins), or `solidworks` (use the local Windows SolidWorks API, with
+  `cad/robot-arm/build-electronics-deck.vbs` as a worked example). Keep the
+  editable source next to the STL/3MF/STEP files.
 - Get real dimensions from `wiremap part-geometry <id>`: board size,
   mounting holes, connectors, keep-outs. Leave openings where wires route.
 - Never model at nominal size: `wiremap calc fit --nominal 3 --fit sliding

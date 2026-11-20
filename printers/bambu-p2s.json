@@ -38,6 +38,7 @@
     "Nozzle max 300 °C, bed max 110 °C (Bambu P2S FAQ)."
   ],
   "sources": [
+    "https://blog.bambulab.com/the-icon-redefined-meet-the-p2s-a-completely-reengineered-version-of-the-ultra-productive-p1-series/",
     "https://wiki.bambulab.com/en/p2s/manual/p2s-faq",
     "https://blog.bambulab.com/the-icon-redefined-meet-the-p2s-a-completely-reengineered-version-of-the-ultra-productive-p1-series",
     "https://wiki.bambulab.com/en/general/filament-guide-material-table"
@@ -54,6 +55,6 @@
     "bambu-lan",
     "3mf"
   ],
-  "spec_checked": false,
-  "spec_note": "Numbers cross-checked via web search against Bambu official listings in search snippets (2026-11-20); bambulab.com itself could not be fetched from this session. Re-check against the official tech-specs page."
+  "spec_checked": true,
+  "spec_note": "Nominal build volume, included nozzle, hotend and bed limits checked against the first listed Bambu Lab document on 2026-11-20. Slicer exclusions, clearance values and optional transfer compatibility are separate from manufacturer hardware specifications."
 }

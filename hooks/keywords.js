@@ -12,7 +12,8 @@ const WORDS = [
   'pcb', 'kicad', 'fritzing', 'logic level', 'level shifter', '3.3v', '5v', '12v', 'ground loop', 'common ground', 'relay', 'robot', 'robotic',
   'drone', 'quadcopter', 'rover', 'iot', 'smart lamp', 'weather station', 'electronics', 'hardware build', 'firmware pins', 'pins.h',
   // CAD / printing
-  'cad', 'stl', 'step file', '3mf', 'build123d', 'cadquery', 'openscad', 'freecad', 'fusion 360', 'fusion360', 'onshape', 'bracket', 'mount',
+  'cad', 'solidworks', 'solid works', 'sldprt', 'sldasm', 'slddrw', 'matexpert', 'sketchxpert',
+  'stl', 'step file', '3mf', 'build123d', 'cadquery', 'openscad', 'freecad', 'fusion 360', 'fusion360', 'onshape', 'bracket', 'mount',
   'enclosure', 'case for', 'housing', 'standoff', 'heat-set', 'heat set insert', 'threaded insert', '3d print', '3d-print', '3d printer',
   '3d printed', 'printable', 'slicer', 'bambu', 'a1 mini', 'p1s', 'p2s', 'x1c', 'x1 carbon', 'h2d', 'orcaslicer', 'prusaslicer', 'prusa',
   'ender', 'klipper', 'octoprint', 'filament', 'pla', 'petg', 'abs', 'asa', 'tpu', 'infill', 'supports', 'build plate', 'build volume',
@@ -42,4 +43,4 @@ export function matchHardware(prompt) {
   return { match: false };
 }
 
-export const REMINDER = 'This looks like a hardware, electronics, CAD or 3D printing task. Use the wiremap skill: keep the design in a project file, run `wiremap check` until 0 errors, use `wiremap calc` for every number, and show the user the local viewer.';
+export const REMINDER = 'This looks like a hardware, electronics, CAD or 3D printing task. Use the wiremap skill. For standalone CAD questions, use its direct assistance workflow. For hardware build projects, follow its project phases and checks.';

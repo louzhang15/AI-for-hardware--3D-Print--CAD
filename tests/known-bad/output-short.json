@@ -1,0 +1,42 @@
+{
+  "meta": {
+    "name": "GPIO output hardwired to ground",
+    "description": "Deliberately incorrect checker fixture. Never use as a build guide."
+  },
+  "parts": [
+    {
+      "id": "esp",
+      "library": "esp32-devkit-v1"
+    },
+    {
+      "id": "supply",
+      "library": "dc-adapter-5v-3a"
+    }
+  ],
+  "wires": [
+    {
+      "id": "w1",
+      "from": "supply.V+",
+      "to": "esp.VIN"
+    },
+    {
+      "id": "w2",
+      "from": "supply.GND",
+      "to": "esp.GND"
+    },
+    {
+      "id": "w3",
+      "from": "esp.GPIO1",
+      "to": "esp.GND"
+    }
+  ],
+  "expect": [
+    {
+      "rule": "output-shorted",
+      "level": "error",
+      "pins": [
+        "esp.GPIO1"
+      ]
+    }
+  ]
+}

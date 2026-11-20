@@ -1,0 +1,698 @@
+{
+  "$schema": "../schema/project.schema.json",
+  "meta": {
+    "name": "4-servo ESP32 robot arm",
+    "description": "Low-load tabletop arm with a PCA9685 and four SG90-class micro servos.",
+    "phase": "define",
+    "requirements": {
+      "size": "Tabletop",
+      "payload": "Demonstration only with a light gripper",
+      "runtime": "Wall powered",
+      "budget": "Set your parts budget",
+      "power": "Separate 5 V supplies for the controller and servos",
+      "on_hand": [
+        "USB data cable",
+        "Multimeter"
+      ]
+    }
+  },
+  "printer": {
+    "profile": "bambu-a1-mini",
+    "material": "PLA"
+  },
+  "cad": {
+    "tool": "solidworks"
+  },
+  "preview": {
+    "type": "arm",
+    "title": "See how the arm moves",
+    "joints": [
+      { "label": "Base rotation", "part": "servo-base", "min": -90, "max": 90, "neutral": 0 },
+      { "label": "Shoulder", "part": "servo-shoulder", "min": -55, "max": 65, "neutral": 30 },
+      { "label": "Elbow", "part": "servo-elbow", "min": -85, "max": 85, "neutral": -35 },
+      { "label": "Gripper opening", "part": "servo-gripper", "min": 5, "max": 60, "neutral": 25 }
+    ]
+  },
+  "prints": [
+    {
+      "id": "electronics-deck",
+      "name": "Electronics tie-down deck",
+      "source": "cad/robot-arm/electronics-deck.SLDPRT",
+      "files": [
+        "cad/robot-arm/electronics-deck.stl",
+        "cad/robot-arm/electronics-deck.step",
+        "cad/robot-arm/build-electronics-deck.vbs"
+      ],
+      "material": "PLA",
+      "status": "designed",
+      "size": [85, 60, 3.2],
+      "settings": { "orientation": "Flat", "supports": false, "infill": 15, "layer": 0.2 },
+      "position": [-66, -3.2, -45],
+      "explode": [0, -30, 0],
+      "color": "#394e63"
+    }
+  ],
+  "breadboard": {
+    "model": "full-830"
+  },
+  "parts": [
+    {
+      "id": "usb",
+      "library": "usb-5v",
+      "position": [
+        -158,
+        0,
+        -52
+      ],
+      "bom": {
+        "why": "Separately powers and programs the controller through micro-USB."
+      },
+      "name": "5 V USB controller supply",
+      "verify": true,
+      "notes": ["Use a USB 5 V source rated at least 1 A for this design. Keep the motor power supply disconnected during flashing."],
+      "pins": {
+        "5V": {
+          "current_max": 1
+        }
+      }
+    },
+    {
+      "id": "esp",
+      "library": "esp32-devkit-v1",
+      "position": [
+        -102,
+        0,
+        -52
+      ],
+      "bom": {
+        "why": "Runs firmware and provides 3.3 V logic."
+      },
+      "verify": true,
+      "bb": {
+        "offboard": true
+      }
+    },
+    {
+      "id": "pwm",
+      "library": "pca9685-breakout",
+      "position": [
+        -30,
+        0,
+        -38
+      ],
+      "bom": {
+        "why": "Creates independent servo pulses and keeps motor current off the controller."
+      },
+      "bb": {
+        "offboard": true
+      }
+    },
+    {
+      "id": "oe-pullup",
+      "library": "resistor",
+      "position": [
+        -52,
+        0,
+        6
+      ],
+      "bom": {
+        "why": "Keeps PCA9685 outputs disabled during resets and I2C bring-up."
+      },
+      "params": {
+        "ohms": 1000
+      }
+    },
+    {
+      "id": "servo-supply",
+      "library": "dc-adapter-5v-3a",
+      "position": [
+        -144,
+        0,
+        52
+      ],
+      "bom": {
+        "why": "Feeds a separate servo distribution block and covers four 0.7 A estimated peaks."
+      },
+      "name": "Regulated 5 V 4 A servo supply",
+      "verify": true,
+      "notes": ["Verify the 4 A rating and confirm the loaded output stays between 4.85 V and 5.15 V before attaching the servos."],
+      "pins": {
+        "V+": {
+          "current_max": 4,
+          "voltage_min": 4.85,
+          "voltage_max": 5.15
+        }
+      }
+    },
+    {
+      "id": "servo-fuse",
+      "library": "fuse-inline",
+      "position": [
+        -88,
+        0,
+        52
+      ],
+      "bom": {
+        "why": "Protects the servo distribution feed from a short."
+      },
+      "name": "3 A DC fuse and holder",
+      "params": {
+        "rating_a": 3
+      }
+    },
+    {
+      "id": "servo-switch",
+      "library": "switch-rocker",
+      "position": [
+        -35,
+        0,
+        52
+      ],
+      "bom": {
+        "why": "Lets you disconnect servo power during setup."
+      },
+      "name": "DC-rated servo supply switch",
+      "params": {
+        "rating_a": 4
+      }
+    },
+    {
+      "id": "servo-base",
+      "library": "servo-sg90",
+      "position": [
+        75,
+        0,
+        -56
+      ],
+      "bom": {
+        "why": "Base joint actuator."
+      },
+      "name": "Base SG90 servo",
+      "verify": true
+    },
+    {
+      "id": "servo-shoulder",
+      "library": "servo-sg90",
+      "position": [
+        75,
+        0,
+        -18
+      ],
+      "bom": {
+        "why": "Shoulder joint actuator."
+      },
+      "name": "Shoulder SG90 servo",
+      "verify": true
+    },
+    {
+      "id": "servo-elbow",
+      "library": "servo-sg90",
+      "position": [
+        75,
+        0,
+        20
+      ],
+      "bom": {
+        "why": "Elbow joint actuator."
+      },
+      "name": "Elbow SG90 servo",
+      "verify": true
+    },
+    {
+      "id": "servo-gripper",
+      "library": "servo-sg90",
+      "position": [
+        75,
+        0,
+        58
+      ],
+      "bom": {
+        "why": "Gripper joint actuator."
+      },
+      "name": "Gripper SG90 servo",
+      "verify": true
+    }
+  ],
+  "wires": [
+    {
+      "id": "usb-power",
+      "from": "usb.5V",
+      "to": "esp.VIN",
+      "color": "red",
+      "label": "Controller USB 5 V",
+      "gauge": 24,
+      "length_mm": 250
+    },
+    {
+      "id": "usb-ground",
+      "from": "usb.GND",
+      "to": "esp.GND",
+      "color": "black",
+      "label": "Controller USB return",
+      "gauge": 24,
+      "length_mm": 250
+    },
+    {
+      "id": "logic-power",
+      "from": "esp.3V3",
+      "to": "pwm.VCC",
+      "color": "red",
+      "label": "3.3 V logic",
+      "gauge": 24,
+      "length_mm": 100
+    },
+    {
+      "id": "logic-ground",
+      "from": "esp.GND",
+      "to": "pwm.GND",
+      "color": "black",
+      "label": "PCA9685 logic ground",
+      "gauge": 24,
+      "length_mm": 100
+    },
+    {
+      "id": "shared-ground",
+      "from": "servo-supply.GND",
+      "to": "esp.GND",
+      "color": "black",
+      "label": "Common signal reference",
+      "gauge": 24,
+      "length_mm": 200
+    },
+    {
+      "id": "fuse-feed",
+      "from": "servo-supply.V+",
+      "to": "servo-fuse.IN",
+      "color": "red",
+      "label": "Fused supply feed",
+      "gauge": 18,
+      "length_mm": 100
+    },
+    {
+      "id": "switch-feed",
+      "from": "servo-fuse.OUT",
+      "to": "servo-switch.IN",
+      "color": "red",
+      "label": "Switched servo supply",
+      "gauge": 18,
+      "length_mm": 100
+    },
+    {
+      "id": "sda",
+      "from": "esp.GPIO21",
+      "to": "pwm.SDA",
+      "color": "blue",
+      "label": "I2C data"
+    },
+    {
+      "id": "scl",
+      "from": "esp.GPIO22",
+      "to": "pwm.SCL",
+      "color": "yellow",
+      "label": "I2C clock"
+    },
+    {
+      "id": "oe-source",
+      "from": "esp.3V3",
+      "to": "oe-pullup.1",
+      "color": "red",
+      "label": "Output-enable pull-up feed",
+      "gauge": 24,
+      "length_mm": 100
+    },
+    {
+      "id": "oe-resistor",
+      "from": "oe-pullup.2",
+      "to": "pwm.OE",
+      "color": "white",
+      "label": "Default hardware disable"
+    },
+    {
+      "id": "oe-control",
+      "from": "esp.GPIO23",
+      "to": "pwm.OE",
+      "color": "white",
+      "label": "Open-drain output enable"
+    },
+    {
+      "id": "base-power",
+      "from": "servo-switch.OUT",
+      "to": "servo-base.V+",
+      "color": "red",
+      "label": "Base 5 V branch",
+      "gauge": 22,
+      "length_mm": 180
+    },
+    {
+      "id": "base-ground",
+      "from": "servo-supply.GND",
+      "to": "servo-base.GND",
+      "color": "black",
+      "label": "Base ground branch",
+      "gauge": 22,
+      "length_mm": 180
+    },
+    {
+      "id": "base-signal",
+      "from": "pwm.PWM0",
+      "to": "servo-base.SIG",
+      "color": "orange",
+      "label": "Base PWM"
+    },
+    {
+      "id": "shoulder-power",
+      "from": "servo-switch.OUT",
+      "to": "servo-shoulder.V+",
+      "color": "red",
+      "label": "Shoulder 5 V branch",
+      "gauge": 22,
+      "length_mm": 180
+    },
+    {
+      "id": "shoulder-ground",
+      "from": "servo-supply.GND",
+      "to": "servo-shoulder.GND",
+      "color": "black",
+      "label": "Shoulder ground branch",
+      "gauge": 22,
+      "length_mm": 180
+    },
+    {
+      "id": "shoulder-signal",
+      "from": "pwm.PWM1",
+      "to": "servo-shoulder.SIG",
+      "color": "orange",
+      "label": "Shoulder PWM"
+    },
+    {
+      "id": "elbow-power",
+      "from": "servo-switch.OUT",
+      "to": "servo-elbow.V+",
+      "color": "red",
+      "label": "Elbow 5 V branch",
+      "gauge": 22,
+      "length_mm": 180
+    },
+    {
+      "id": "elbow-ground",
+      "from": "servo-supply.GND",
+      "to": "servo-elbow.GND",
+      "color": "black",
+      "label": "Elbow ground branch",
+      "gauge": 22,
+      "length_mm": 180
+    },
+    {
+      "id": "elbow-signal",
+      "from": "pwm.PWM2",
+      "to": "servo-elbow.SIG",
+      "color": "orange",
+      "label": "Elbow PWM"
+    },
+    {
+      "id": "gripper-power",
+      "from": "servo-switch.OUT",
+      "to": "servo-gripper.V+",
+      "color": "red",
+      "label": "Gripper 5 V branch",
+      "gauge": 22,
+      "length_mm": 180
+    },
+    {
+      "id": "gripper-ground",
+      "from": "servo-supply.GND",
+      "to": "servo-gripper.GND",
+      "color": "black",
+      "label": "Gripper ground branch",
+      "gauge": 22,
+      "length_mm": 180
+    },
+    {
+      "id": "gripper-signal",
+      "from": "pwm.PWM3",
+      "to": "servo-gripper.SIG",
+      "color": "orange",
+      "label": "Gripper PWM"
+    }
+  ],
+  "steps": [
+    {
+      "id": "scope",
+      "phase": "define",
+      "title": "Plan a light demonstration arm",
+      "text": "Use this example for low-load motion on a fixed tabletop base. Measure each actual servo and bracket before choosing a mounting pattern.",
+      "parts": [],
+      "wires": [],
+      "warnings": [],
+      "tools": [],
+      "done": false
+    },
+    {
+      "id": "parts",
+      "phase": "parts",
+      "title": "Identify connectors and supplies",
+      "text": "Confirm the ESP32 silkscreen and servo pin order. Verify that each servo accepts 5 V and that the switch, fuse holder and terminal blocks have DC ratings suitable for this circuit.",
+      "parts": [
+        "esp",
+        "pwm",
+        "servo-supply",
+        "servo-fuse",
+        "servo-switch"
+      ],
+      "wires": [],
+      "warnings": [],
+      "tools": [],
+      "done": false
+    },
+    {
+      "id": "controller-power",
+      "phase": "power",
+      "title": "Prepare independent logic power",
+      "text": "The two USB lines describe a normal cable to the ESP32 USB socket. Keep the cable unplugged while wiring the PCA9685 VCC and GND. Use a source rated for the controller peak current.",
+      "parts": [
+        "usb",
+        "esp",
+        "pwm"
+      ],
+      "wires": [
+        "usb-power",
+        "usb-ground",
+        "logic-power",
+        "logic-ground"
+      ],
+      "warnings": [],
+      "tools": [],
+      "done": false
+    },
+    {
+      "id": "servo-power",
+      "phase": "power",
+      "title": "Prepare the servo supply and return",
+      "text": "Use a sealed regulated adapter. Bring its positive output through the fuse and switch to a rated positive distribution block. Fit a separate return block from adapter ground and join it to the ESP32 ground for the signal reference.",
+      "parts": [
+        "servo-supply",
+        "servo-fuse",
+        "servo-switch",
+        "esp"
+      ],
+      "wires": [
+        "fuse-feed",
+        "switch-feed",
+        "shared-ground"
+      ],
+      "warnings": [
+        "Keep both supplies disconnected during wiring. Servo current flows directly to the return block."
+      ],
+      "tools": [
+        "Multimeter",
+        "DC terminal blocks"
+      ],
+      "done": false
+    },
+    {
+      "id": "i2c",
+      "phase": "wire",
+      "title": "Wire I2C and the hardware disable",
+      "text": "Wire SDA and SCL to the 3.3 V PCA9685 logic interface. Use the 1 kΩ pull-up with GPIO23 configured as open-drain so OE stays high while the controller boots. Confirm OE measures a valid high before attaching servos.",
+      "parts": [
+        "esp",
+        "pwm",
+        "oe-pullup"
+      ],
+      "wires": [
+        "sda",
+        "scl",
+        "oe-source",
+        "oe-resistor",
+        "oe-control"
+      ],
+      "warnings": [
+        "Leave servo power switched off."
+      ],
+      "tools": [
+        "Multimeter",
+        "1 kΩ resistor"
+      ],
+      "done": false
+    },
+    {
+      "id": "wire-base",
+      "phase": "wire",
+      "title": "Connect the base servo",
+      "text": "Connect V+ and ground to the rated distribution blocks. Connect only the servo signal lead to PCA9685 channel 0 and verify the three leads before turning on power. Leave the driver board servo V+ terminal unused.",
+      "parts": [
+        "pwm",
+        "servo-switch",
+        "servo-supply",
+        "servo-base"
+      ],
+      "wires": [
+        "base-power",
+        "base-ground",
+        "base-signal"
+      ],
+      "warnings": [
+        "Disconnect both supplies before changing wiring."
+      ],
+      "tools": [],
+      "done": false
+    },
+    {
+      "id": "wire-shoulder",
+      "phase": "wire",
+      "title": "Connect the shoulder servo",
+      "text": "Connect V+ and ground to the rated distribution blocks. Connect only the servo signal lead to PCA9685 channel 1 and verify the three leads before turning on power. Leave the driver board servo V+ terminal unused.",
+      "parts": [
+        "pwm",
+        "servo-switch",
+        "servo-supply",
+        "servo-shoulder"
+      ],
+      "wires": [
+        "shoulder-power",
+        "shoulder-ground",
+        "shoulder-signal"
+      ],
+      "warnings": [
+        "Disconnect both supplies before changing wiring."
+      ],
+      "tools": [],
+      "done": false
+    },
+    {
+      "id": "wire-elbow",
+      "phase": "wire",
+      "title": "Connect the elbow servo",
+      "text": "Connect V+ and ground to the rated distribution blocks. Connect only the servo signal lead to PCA9685 channel 2 and verify the three leads before turning on power. Leave the driver board servo V+ terminal unused.",
+      "parts": [
+        "pwm",
+        "servo-switch",
+        "servo-supply",
+        "servo-elbow"
+      ],
+      "wires": [
+        "elbow-power",
+        "elbow-ground",
+        "elbow-signal"
+      ],
+      "warnings": [
+        "Disconnect both supplies before changing wiring."
+      ],
+      "tools": [],
+      "done": false
+    },
+    {
+      "id": "wire-gripper",
+      "phase": "wire",
+      "title": "Connect the gripper servo",
+      "text": "Connect V+ and ground to the rated distribution blocks. Connect only the servo signal lead to PCA9685 channel 3 and verify the three leads before turning on power. Leave the driver board servo V+ terminal unused.",
+      "parts": [
+        "pwm",
+        "servo-switch",
+        "servo-supply",
+        "servo-gripper"
+      ],
+      "wires": [
+        "gripper-power",
+        "gripper-ground",
+        "gripper-signal"
+      ],
+      "warnings": [
+        "Disconnect both supplies before changing wiring."
+      ],
+      "tools": [],
+      "done": false
+    },
+    {
+      "id": "detect",
+      "phase": "firmware",
+      "title": "Detect the PWM driver with outputs disabled",
+      "text": "With servo power off, upload firmware/arm_bringup/arm_bringup.ino and open the 115200 baud serial monitor. The sketch reads the PCA9685 MODE1 register at address 0x40. Confirm OE stays high.",
+      "parts": [
+        "esp",
+        "pwm",
+        "oe-pullup"
+      ],
+      "wires": [
+        "sda",
+        "scl",
+        "oe-resistor",
+        "oe-control"
+      ],
+      "warnings": [
+        "The detection sketch does not move any servo."
+      ],
+      "tools": [],
+      "done": false
+    },
+    {
+      "id": "prototype",
+      "phase": "print",
+      "title": "Slice the electronics deck and check the servo fit",
+      "text": "Export the electronics deck to 3MF and preview the plate in your slicer. Print it flat and check that the straps clear the switch and connector openings. Measure the servos and horns before designing or selecting the arm links.",
+      "parts": [],
+      "wires": [],
+      "prints": ["electronics-deck"],
+      "warnings": [],
+      "tools": [],
+      "done": false
+    },
+    {
+      "id": "assemble",
+      "phase": "assemble",
+      "title": "Assemble the arm with power disconnected",
+      "text": "Use the slots to secure the electronics with straps, and keep the connector openings free. Secure the arm base and route leads clear of moving joints. Check each joint by hand before fitting the servo horns.",
+      "parts": [],
+      "wires": [],
+      "prints": ["electronics-deck"],
+      "warnings": [],
+      "tools": [],
+      "done": false
+    },
+    {
+      "id": "meter",
+      "phase": "test",
+      "title": "Measure power and confirm output disable",
+      "text": "With servo outputs disconnected, check ground continuity and no short between 5 V and ground. Energize the controller and confirm 3.3 V logic and a high OE. Separately measure the servo source before attaching a load.",
+      "parts": [
+        "esp",
+        "pwm",
+        "servo-supply",
+        "servo-switch"
+      ],
+      "wires": [
+        "usb-power",
+        "logic-power",
+        "shared-ground",
+        "oe-control"
+      ],
+      "warnings": [
+        "Keep clearance around joints. Use only one uncoupled servo for the first motion test."
+      ],
+      "tools": [
+        "Multimeter"
+      ],
+      "done": false
+    }
+  ]
+}

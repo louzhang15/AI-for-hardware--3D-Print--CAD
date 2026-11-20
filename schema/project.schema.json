@@ -219,6 +219,7 @@
               "fuse",
               "switch",
               "bms",
+              "low-voltage-cutoff",
               "diode"
             ]
           },
@@ -651,10 +652,48 @@
             "cadquery",
             "openscad",
             "freecad",
-            "fusion"
+            "fusion",
+            "solidworks"
           ]
         }
       }
+    },
+    "preview": {
+      "oneOf": [
+        {
+          "type": "object",
+          "required": ["type", "joints"],
+          "properties": {
+            "type": { "const": "arm" },
+            "title": { "type": "string" },
+            "joints": {
+              "type": "array", "minItems": 4, "maxItems": 4,
+              "items": {
+                "type": "object", "required": ["label"],
+                "properties": {
+                  "label": { "type": "string" }, "part": { "type": "string" },
+                  "min": { "type": "number" }, "max": { "type": "number" }, "neutral": { "type": "number" }
+                }
+              }
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": ["type", "motors"],
+          "properties": {
+            "type": { "const": "rover" },
+            "title": { "type": "string" },
+            "motors": {
+              "type": "array", "minItems": 2, "maxItems": 2,
+              "items": {
+                "type": "object", "required": ["label"],
+                "properties": { "label": { "type": "string" }, "part": { "type": "string" } }
+              }
+            }
+          }
+        }
+      ]
     },
     "assembly": {
       "type": [

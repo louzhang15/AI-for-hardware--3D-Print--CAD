@@ -1,0 +1,86 @@
+.sketch-view,
+.sketch-diagram {
+  --sketch-paper: #f7f8fa;
+  --sketch-grid: #d6dfec;
+  --sketch-ink: #192944;
+  --sketch-sub: #536982;
+  --sketch-card: #fff;
+  --sketch-border: #cbd6e4;
+  --sketch-signal: #647793;
+  --sketch-ground: #566475;
+  --sketch-yellow: #9b710d;
+  --sketch-orange: #bf6318;
+}
+
+:root[data-theme="dark"] :is(.sketch-view, .sketch-diagram) {
+  --sketch-paper: #152133;
+  --sketch-grid: #324258;
+  --sketch-ink: #ecf3ff;
+  --sketch-sub: #afbed4;
+  --sketch-card: #202e43;
+  --sketch-border: #4f6582;
+  --sketch-signal: #bdcbe1;
+  --sketch-ground: #8a9bb3;
+  --sketch-yellow: #eec858;
+  --sketch-orange: #f9ab58;
+}
+
+.sketch-view {
+  display: flex;
+  flex-direction: column;
+  background-color: var(--sketch-paper);
+}
+
+.sketch-controls {
+  display: flex;
+  align-items: center;
+  flex: 0 0 auto;
+  flex-wrap: wrap;
+  gap: 8px 12px;
+  min-height: 39px;
+  padding: 5px 12px;
+  border-bottom: 1px solid var(--sketch-border);
+  background-color: var(--sketch-card);
+  color: var(--sketch-sub);
+  font-size: 12px;
+}
+
+.sketch-filter,
+.sketch-unused {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+
+.sketch-filter select {
+  flex: 0 1 auto;
+  color: var(--sketch-ink);
+  background: var(--sketch-card);
+  border: 1px solid var(--sketch-border);
+  border-radius: 4px;
+  padding: 3px 5px;
+  font: inherit;
+}
+
+.sketch-count { font-variant-numeric: tabular-nums; }
+.sketch-unused { margin-left: auto; cursor: pointer; }
+.sketch-unused input { margin: 0; }
+
+.sketch-viewport {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: auto;
+  scrollbar-gutter: stable;
+  background-color: var(--sketch-paper);
+  background-image: radial-gradient(circle at 1px 1px, var(--sketch-grid) .85px, transparent 1px);
+  background-size: 16px 16px;
+}
+
+.sketch-viewport:focus-visible { outline-offset: -2px; }
+.sketch-viewport .sketch-diagram { max-width: none; height: auto; margin-inline: auto; }
+.sketch-diagram .sk-part:hover .sk-card-body,
+.sketch-diagram .sk-part.lit .sk-card-body { stroke: var(--accent, #275bae); stroke-width: 1.7; }
+.sketch-diagram .sk-pin:is(:hover, .lit) .pin-dot { fill: var(--accent, #275bae); }
+.sketch-diagram g[data-wire]:is(:hover, :focus-visible, .lit) .sk-wire { stroke-width: 3.4; }
+.sketch-diagram g[data-wire]:is(:hover, :focus-visible, .lit) .sk-wire-keyline { stroke-width: 5.6; }

@@ -10,6 +10,7 @@ import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { matchHardware } from '../hooks/keywords.js';
 import { plan, GLOBAL_LINE } from '../scripts/install.mjs';
+import { renderAgents } from '../scripts/sync-skill.mjs';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 
@@ -61,11 +62,43 @@ test('prompt hook returns valid hook JSON for hardware and nothing otherwise', (
   assert.equal(r3.status, 0, 'never blocks a prompt');
 });
 
+test('standalone SolidWorks questions activate Wiremap without requiring a build project', () => {
+  for (const prompt of [
+    'Help me with SOLIDWORKS',
+    'Why is my sketch over defined in Solid Works?',
+    'Can you open bracket.SLDPRT?',
+    'What changed in arm.SLDASM?',
+    'Help me update the dimensions on Sheet1.SLDDRW',
+    'How do I use MateXpert?',
+  ]) {
+    assert.ok(matchHardware(prompt).match, prompt);
+  }
+  const hook = join(root, 'hooks', 'prompt-hook.mjs');
+  const run = spawnSync(process.execPath, [hook], { input: JSON.stringify({ prompt: 'Help me with SolidWorks' }) });
+  assert.equal(run.status, 0);
+  assert.match(JSON.parse(run.stdout).hookSpecificOutput.additionalContext, /standalone CAD questions/i);
+  assert.equal(matchHardware('Parse a solid worker configuration in TypeScript').match, false);
+});
+
+test('SolidWorks session CLI reports availability as JSON without requiring the app', () => {
+  const cli = join(root, 'bin', 'wiremap.mjs');
+  const help = spawnSync(process.execPath, [cli, 'solidworks-session', '--help'], { encoding: 'utf8' });
+  assert.equal(help.status, 0);
+  assert.match(help.stdout, /Usage: wiremap solidworks-session/);
+  const run = spawnSync(process.execPath, [cli, 'solidworks-session', '--json'], { encoding: 'utf8', timeout: 10_000 });
+  assert.ifError(run.error);
+  const report = JSON.parse(run.stdout);
+  if (process.platform !== 'win32') assert.equal(report.status, 'unsupported');
+  else assert.ok(['active', 'no_document', 'unavailable', 'busy'].includes(report.status));
+  assert.equal(run.status, report.status === 'active' ? 0 : 1);
+});
+
 test('skill mirrors (AGENTS.md, .claude/skills) are in sync with skills/wiremap/SKILL.md', () => {
   const r = spawnSync(process.execPath, [join(root, 'scripts', 'sync-skill.mjs'), '--check']);
   assert.equal(r.status, 0, r.stderr.toString() + ' — run `node scripts/sync-skill.mjs`');
-  const skill = readFileSync(join(root, 'skills', 'wiremap', 'SKILL.md'), 'utf8');
+  const skill = readFileSync(join(root, 'skills', 'wiremap', 'SKILL.md'), 'utf8').replace(/\r\n/g, '\n');
   assert.match(skill, /^---\nname: wiremap\ndescription: .+\n---\n/);
+  assert.equal(renderAgents(skill.replace(/\n/g, '\r\n')), renderAgents(skill));
 });
 
 test('every command the skill names exists in the CLI', () => {
