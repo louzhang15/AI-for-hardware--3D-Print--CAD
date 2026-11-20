@@ -1,0 +1,188 @@
+{
+  "id": "level-shifter-bss138",
+  "name": "4-channel bidirectional logic level shifter (BSS138)",
+  "category": "module",
+  "description": "Safely connects 5 V signals to 3.3 V pins (and back), e.g. HC-SR04 ECHO to an ESP32 or I2C between 3.3 V and 5 V devices.",
+  "datasheet": "https://cdn.sparkfun.com/datasheets/BreakoutBoards/Logic_Level_Bidirectional.pdf",
+  "sources": [
+    "https://learn.sparkfun.com/tutorials/bi-directional-logic-level-converter-hookup-guide",
+    "https://www.sparkfun.com/products/12009",
+    "https://www.nxp.com/docs/en/application-note/AN10441.pdf"
+  ],
+  "confidence": "verified",
+  "notes": [
+    "Connect HV to the 5 V supply, LV to the 3.3 V supply and GND to the common ground. Both references are required for it to work.",
+    "Each channel is one BSS138 MOSFET with 10 kOhm pull-ups to LV and HV (NXP AN10441 circuit). HVn follows HV, LVn follows LV.",
+    "Good up to a few hundred kHz (I2C, UART, servo PWM, HC-SR04). Too slow for fast SPI or WS2812 data; use a 74AHCT125 for those.",
+    "Pins are open-drain with pull-ups, so two pull-ups add in parallel with any on the I2C board.",
+    "SparkFun layout shown: HV side pins HV1, HV2, HV, GND, HV3, HV4 and LV side LV1, LV2, LV, GND, LV3, LV4. Generic boards use the same names but sometimes another order."
+  ],
+  "size": [16.05, 3, 13.33],
+  "color": "#c0282d",
+  "pins": [
+    {
+      "name": "HV1",
+      "label": "HV1",
+      "kind": "digital",
+      "dir": "io",
+      "voltage_ref": "HV",
+      "vmax_ref": "HV",
+      "vmax_offset": 0.3,
+      "open_drain": true,
+      "pullup_ref": "HV",
+      "pullup_ohms": 10000,
+      "pullup_weak": false,
+      "pos": [1.68, 1.59]
+    },
+    {
+      "name": "HV2",
+      "label": "HV2",
+      "kind": "digital",
+      "dir": "io",
+      "voltage_ref": "HV",
+      "vmax_ref": "HV",
+      "vmax_offset": 0.3,
+      "open_drain": true,
+      "pullup_ref": "HV",
+      "pullup_ohms": 10000,
+      "pullup_weak": false,
+      "pos": [4.22, 1.59]
+    },
+    {
+      "name": "HV",
+      "label": "HV",
+      "kind": "power_in",
+      "vmin": 3,
+      "vmax": 5.5,
+      "current": 0.0005,
+      "note": "High-side reference (e.g. 5 V).",
+      "pos": [6.76, 1.59]
+    },
+    {
+      "name": "GND",
+      "label": "GND",
+      "kind": "ground",
+      "pos": [9.3, 1.59]
+    },
+    {
+      "name": "HV3",
+      "label": "HV3",
+      "kind": "digital",
+      "dir": "io",
+      "voltage_ref": "HV",
+      "vmax_ref": "HV",
+      "vmax_offset": 0.3,
+      "open_drain": true,
+      "pullup_ref": "HV",
+      "pullup_ohms": 10000,
+      "pullup_weak": false,
+      "pos": [11.84, 1.59]
+    },
+    {
+      "name": "HV4",
+      "label": "HV4",
+      "kind": "digital",
+      "dir": "io",
+      "voltage_ref": "HV",
+      "vmax_ref": "HV",
+      "vmax_offset": 0.3,
+      "open_drain": true,
+      "pullup_ref": "HV",
+      "pullup_ohms": 10000,
+      "pullup_weak": false,
+      "pos": [14.38, 1.59]
+    },
+    {
+      "name": "LV1",
+      "label": "LV1",
+      "kind": "digital",
+      "dir": "io",
+      "voltage_ref": "LV",
+      "vmax_ref": "LV",
+      "vmax_offset": 0.3,
+      "open_drain": true,
+      "pullup_ref": "LV",
+      "pullup_ohms": 10000,
+      "pullup_weak": false,
+      "pos": [1.68, 11.75]
+    },
+    {
+      "name": "LV2",
+      "label": "LV2",
+      "kind": "digital",
+      "dir": "io",
+      "voltage_ref": "LV",
+      "vmax_ref": "LV",
+      "vmax_offset": 0.3,
+      "open_drain": true,
+      "pullup_ref": "LV",
+      "pullup_ohms": 10000,
+      "pullup_weak": false,
+      "pos": [4.22, 11.75]
+    },
+    {
+      "name": "LV",
+      "label": "LV",
+      "kind": "power_in",
+      "vmin": 1.8,
+      "vmax": 3.6,
+      "current": 0.0005,
+      "note": "Low-side reference (e.g. 3.3 V from the ESP32). Must be lower than HV.",
+      "pos": [6.76, 11.75]
+    },
+    {
+      "name": "GND_2",
+      "label": "GND",
+      "kind": "ground",
+      "pos": [9.3, 11.75]
+    },
+    {
+      "name": "LV3",
+      "label": "LV3",
+      "kind": "digital",
+      "dir": "io",
+      "voltage_ref": "LV",
+      "vmax_ref": "LV",
+      "vmax_offset": 0.3,
+      "open_drain": true,
+      "pullup_ref": "LV",
+      "pullup_ohms": 10000,
+      "pullup_weak": false,
+      "pos": [11.84, 11.75]
+    },
+    {
+      "name": "LV4",
+      "label": "LV4",
+      "kind": "digital",
+      "dir": "io",
+      "voltage_ref": "LV",
+      "vmax_ref": "LV",
+      "vmax_offset": 0.3,
+      "open_drain": true,
+      "pullup_ref": "LV",
+      "pullup_ohms": 10000,
+      "pullup_weak": false,
+      "pos": [14.38, 11.75]
+    }
+  ],
+  "internal": [
+    ["GND", "GND_2"]
+  ],
+  "breadboard": {
+    "fit": "straddle",
+    "rows": [
+      ["HV1", "HV2", "HV", "GND", "HV3", "HV4"],
+      ["LV1", "LV2", "LV", "GND_2", "LV3", "LV4"]
+    ],
+    "row_spacing": 4,
+    "body_width_mm": 16.05
+  },
+  "geometry": {
+    "board": [16.05, 13.33, 1.6],
+    "holes": [],
+    "keepout": [],
+    "connectors": [],
+    "confidence": "confirm",
+    "note": "SparkFun BOB-12009: 0.63 x 0.52 inch. Row spacing assumed 0.4 inch; check yours."
+  }
+}

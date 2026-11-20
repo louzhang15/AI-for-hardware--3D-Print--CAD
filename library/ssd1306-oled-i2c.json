@@ -1,0 +1,97 @@
+{
+  "id": "ssd1306-oled-i2c",
+  "name": "SSD1306 0.96 inch OLED display, 128x64, I2C (4-pin)",
+  "category": "module",
+  "description": "Small monochrome OLED on I2C (address 0x3C), common 4-pin module.",
+  "datasheet": "https://cdn-shop.adafruit.com/datasheets/SSD1306.pdf",
+  "sources": ["https://cdn-shop.adafruit.com/datasheets/SSD1306.pdf"],
+  "confidence": "confirm",
+  "notes": [
+    "PIN ORDER VARIES: most are GND-VCC-SCL-SDA, but many are VCC-GND-SCL-SDA. Swapping VCC and GND kills it. Read your silkscreen and override the pin positions if needed.",
+    "Address 0x3C (some 0x3D, selected by a resistor on the back).",
+    "Pull-ups on the module go to VCC (4.7-10 kOhm, varies). On a 3.3 V bus power it from 3.3 V so it does not pull SDA/SCL to 5 V.",
+    "Draws about 10-30 mA depending on how many pixels are lit."
+  ],
+  "size": [27.3, 4, 27.8],
+  "color": "#1b1b1b",
+  "pins": [
+    {
+      "name": "GND",
+      "label": "GND",
+      "kind": "ground",
+      "pos": [9.79, 1.6]
+    },
+    {
+      "name": "VCC",
+      "label": "VCC",
+      "kind": "power_in",
+      "vmin": 3.3,
+      "vmax": 5.5,
+      "current": 0.02,
+      "current_peak": 0.03,
+      "note": "Board has a 3.3 V regulator (662K) and charge pump: 3.3-5 V in.",
+      "pos": [12.33, 1.6]
+    },
+    {
+      "name": "SCL",
+      "label": "SCL",
+      "kind": "i2c_scl",
+      "dir": "io",
+      "vmax": 5.5,
+      "open_drain": true,
+      "pullup_ref": "VCC",
+      "pullup_ohms": 4700,
+      "pullup_weak": false,
+      "pos": [14.87, 1.6]
+    },
+    {
+      "name": "SDA",
+      "label": "SDA",
+      "kind": "i2c_sda",
+      "dir": "io",
+      "vmax": 5.5,
+      "open_drain": true,
+      "pullup_ref": "VCC",
+      "pullup_ohms": 4700,
+      "pullup_weak": false,
+      "pos": [17.41, 1.6]
+    }
+  ],
+  "breadboard": {
+    "fit": "single",
+    "rows": [
+      ["GND", "VCC", "SCL", "SDA"]
+    ]
+  },
+  "geometry": {
+    "board": [27.3, 27.8, 1.2],
+    "holes": [
+      {
+        "pos": [2, 2],
+        "d": 2
+      },
+      {
+        "pos": [25.3, 2],
+        "d": 2
+      },
+      {
+        "pos": [2, 25.8],
+        "d": 2
+      },
+      {
+        "pos": [25.3, 25.8],
+        "d": 2
+      }
+    ],
+    "keepout": [
+      {
+        "rect": [0, 5, 27.3, 19],
+        "height": 2.5,
+        "note": "glass display, fragile: no screws or pressure on it"
+      }
+    ],
+    "connectors": [],
+    "confidence": "confirm",
+    "note": "Active area about 21.7 x 10.9 mm. Some modules are 26 x 26 mm."
+  }
+}

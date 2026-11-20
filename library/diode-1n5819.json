@@ -1,0 +1,52 @@
+{
+  "id": "diode-1n5819",
+  "name": "1N5819 Schottky diode (40 V, 1 A)",
+  "category": "passive",
+  "description": "Low-drop Schottky diode: reverse-polarity protection, flyback across a motor/relay coil, OR-ing two supplies.",
+  "datasheet": "https://www.vishay.com/docs/88525/1n5817.pdf",
+  "sources": ["https://www.vishay.com/docs/88525/1n5817.pdf", "https://www.onsemi.com/pdf/datasheet/1n5817-d.pdf"],
+  "confidence": "verified",
+  "notes": [
+    "40 V reverse, 1 A average forward current (25 A surge). Forward drop about 0.45 V at 1 A typ, 0.6 V max.",
+    "Band = cathode (K). As flyback: cathode to the + side of the coil.",
+    "For servo or motor supply lines above 1 A use a 3 A part (1N5822 / SS34)."
+  ],
+  "size": [11.16, 2.7, 2.7],
+  "color": "#202020",
+  "pins": [
+    {
+      "name": "A",
+      "label": "anode",
+      "kind": "passive",
+      "pos": [0.5, 1.35]
+    },
+    {
+      "name": "K",
+      "label": "cathode (band)",
+      "kind": "passive",
+      "pos": [10.66, 1.35]
+    }
+  ],
+  "diode": {
+    "vf": 0.45,
+    "vf_max": 0.6,
+    "if_max": 1,
+    "vr_max": 40,
+    "schottky": true
+  },
+  "breadboard": {
+    "fit": "single",
+    "rows": [
+      ["A", "K"]
+    ],
+    "pitch": 4
+  },
+  "geometry": {
+    "board": [5.2, 2.7, 2.7],
+    "holes": [],
+    "keepout": [],
+    "connectors": [],
+    "confidence": "verified",
+    "note": "DO-41 body 5.2 x 2.7 mm."
+  }
+}

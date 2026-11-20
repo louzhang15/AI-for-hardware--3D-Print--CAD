@@ -1,0 +1,89 @@
+{
+  "id": "hc-05",
+  "name": "HC-05 Bluetooth Classic serial module",
+  "category": "module",
+  "description": "Bluetooth SPP serial link (default 9600 baud, PIN 1234) for boards without wireless.",
+  "sources": ["https://components101.com/wireless/hc-05-bluetooth-module"],
+  "confidence": "confirm",
+  "notes": [
+    "VCC accepts 3.6-6 V thanks to the carrier board regulator, but the signal pins are 3.3 V: divide or shift the RXD input from 5 V boards.",
+    "Wire TXD to the microcontroller RX and RXD to TX.",
+    "Pin order differs between carrier boards (6-pin with EN/STATE, 4-pin without). Check the silkscreen.",
+    "Classic Bluetooth only: iPhones cannot connect (use a BLE module or an ESP32 instead)."
+  ],
+  "size": [16, 6, 46],
+  "color": "#1d5fa8",
+  "pins": [
+    {
+      "name": "EN",
+      "label": "EN/KEY",
+      "kind": "digital",
+      "dir": "in",
+      "vmax": 3.6,
+      "note": "HIGH at power-up enters AT command mode.",
+      "pos": [14.35, 44]
+    },
+    {
+      "name": "VCC",
+      "label": "VCC",
+      "kind": "power_in",
+      "vmin": 3.6,
+      "vmax": 6,
+      "current": 0.03,
+      "current_peak": 0.04,
+      "note": "Board has a 3.3 V regulator: 3.6-6 V in.",
+      "pos": [11.81, 44]
+    },
+    {
+      "name": "GND",
+      "label": "GND",
+      "kind": "ground",
+      "pos": [9.27, 44]
+    },
+    {
+      "name": "TXD",
+      "label": "TXD",
+      "kind": "uart_tx",
+      "dir": "out",
+      "voltage": 3.3,
+      "pos": [6.73, 44]
+    },
+    {
+      "name": "RXD",
+      "label": "RXD",
+      "kind": "uart_rx",
+      "dir": "in",
+      "vmax": 3.6,
+      "note": "3.3 V input: from a 5 V Arduino TX use a divider (1 k / 2 k) or level shifter.",
+      "pos": [4.19, 44]
+    },
+    {
+      "name": "STATE",
+      "label": "STATE",
+      "kind": "digital",
+      "dir": "out",
+      "voltage": 3.3,
+      "note": "HIGH when connected.",
+      "pos": [1.65, 44]
+    }
+  ],
+  "breadboard": {
+    "fit": "single",
+    "rows": [
+      ["STATE", "RXD", "TXD", "GND", "VCC", "EN"]
+    ]
+  },
+  "geometry": {
+    "board": [16, 37, 1.6],
+    "holes": [],
+    "keepout": [
+      {
+        "rect": [0, 0, 16, 8],
+        "height": 0,
+        "note": "antenna end: keep metal away"
+      }
+    ],
+    "connectors": [],
+    "confidence": "confirm"
+  }
+}

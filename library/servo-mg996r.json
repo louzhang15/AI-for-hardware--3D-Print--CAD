@@ -1,0 +1,65 @@
+{
+  "id": "servo-mg996r",
+  "name": "MG996R metal-gear servo",
+  "category": "actuator",
+  "description": "Standard-size metal-gear servo, about 9-11 kg.cm, high stall current (2.5 A).",
+  "sources": [
+    "https://www.electronicoscaldas.com/datasheet/MG996R_Tower-Pro.pdf",
+    "https://components101.com/motors/mg996r-servo-motor-datasheet"
+  ],
+  "confidence": "confirm",
+  "notes": [
+    "Wire colours: brown (or black) = GND, red = V+, orange (or yellow / white) = signal. 3-pin 2.54 mm female plug.",
+    "Supply 4.8-7.2 V. Budget the stall (peak) current for every servo that can stall at the same time.",
+    "Power servos from a separate supply (not the microcontroller 5V/3V3 pin) and join the grounds.",
+    "Running current about 0.5-0.9 A at 6 V, stall 2.5 A at 6 V (TowerPro). Four servos stalled together need 10 A.",
+    "Size: body 40.7 x 19.7 x 42.9 mm, 54.5 mm across the mounting tabs."
+  ],
+  "size": [54.5, 43, 20],
+  "color": "#111111",
+  "pins": [
+    {
+      "name": "SIG",
+      "label": "signal (orange)",
+      "kind": "pwm",
+      "dir": "in",
+      "vih": 2,
+      "vmax_ref": "V+",
+      "vmax_offset": 0,
+      "note": "50 Hz pulses, about 0.5-2.5 ms. 3.3 V and 5 V logic both work on most servos.",
+      "pos": [0, 8.73]
+    },
+    {
+      "name": "V+",
+      "label": "V+ (red)",
+      "kind": "power_in",
+      "vmin": 4.8,
+      "vmax": 7.2,
+      "current": 0.5,
+      "current_peak": 2.5,
+      "pos": [0, 10]
+    },
+    {
+      "name": "GND",
+      "label": "GND (brown)",
+      "kind": "ground",
+      "pos": [0, 11.27]
+    }
+  ],
+  "breadboard": {
+    "fit": "offboard"
+  },
+  "geometry": {
+    "board": [54.5, 20, 43],
+    "holes": [],
+    "keepout": [],
+    "connectors": [
+      {
+        "name": "servo lead",
+        "pos": [0, 10],
+        "side": "left"
+      }
+    ],
+    "confidence": "confirm"
+  }
+}

@@ -1,0 +1,73 @@
+{
+  "id": "neopixel-ws2812b",
+  "name": "WS2812B addressable LED strip (NeoPixel)",
+  "category": "module",
+  "description": "Chain of RGB LEDs controlled by one data pin. Set params.leds to the number of LEDs.",
+  "datasheet": "https://cdn-shop.adafruit.com/datasheets/WS2812B.pdf",
+  "sources": [
+    "https://cdn-shop.adafruit.com/datasheets/WS2812B.pdf",
+    "https://learn.adafruit.com/adafruit-neopixel-uberguide/best-practices"
+  ],
+  "confidence": "verified",
+  "notes": [
+    "Each LED draws up to 60 mA at full white: 30 LEDs = 1.8 A. Power the strip from a 5 V supply, not the microcontroller.",
+    "Add a 300-500 Ohm resistor in series with DIN and a 1000 uF capacitor across 5V/GND at the strip start (Adafruit best practices).",
+    "Datasheet VDD is 3.5-5.3 V; a 3.3 V data signal is below the 0.7 x VDD threshold at 5 V. It often works, but a 74AHCT125 makes it reliable.",
+    "Data flows one way: connect to DIN (arrows on the strip)."
+  ],
+  "size": [100, 3, 10],
+  "color": "#f5f5f5",
+  "params": {
+    "leds": 8
+  },
+  "pins": [
+    {
+      "name": "5V",
+      "label": "+5V",
+      "kind": "power_in",
+      "vmin": 3.5,
+      "vmax": 5.3,
+      "current": "$leds*0.02",
+      "current_peak": "$leds*0.06",
+      "note": "Up to 60 mA per LED at full white (20 mA per colour).",
+      "pos": [1, 3]
+    },
+    {
+      "name": "DIN",
+      "label": "DIN",
+      "kind": "digital",
+      "dir": "in",
+      "vih": 3.5,
+      "vmax_ref": "5V",
+      "vmax_offset": 0.5,
+      "note": "Data in. HIGH needs 0.7 x VDD (3.5 V at 5 V): a 3.3 V GPIO is out of spec; use a 74AHCT125 level shifter or power the first LED at about 4.3 V.",
+      "pos": [1, 5]
+    },
+    {
+      "name": "GND",
+      "label": "GND",
+      "kind": "ground",
+      "pos": [1, 7]
+    },
+    {
+      "name": "DOUT",
+      "label": "DOUT",
+      "kind": "digital",
+      "dir": "out",
+      "voltage_ref": "5V",
+      "note": "Data out to the next strip.",
+      "pos": [99, 5]
+    }
+  ],
+  "breadboard": {
+    "fit": "offboard"
+  },
+  "geometry": {
+    "board": [100, 10, 3],
+    "holes": [],
+    "keepout": [],
+    "connectors": [],
+    "confidence": "confirm",
+    "note": "Length depends on LED count and density (30/60/144 per metre)."
+  }
+}

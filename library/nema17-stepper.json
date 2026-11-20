@@ -1,0 +1,99 @@
+{
+  "id": "nema17-stepper",
+  "name": "NEMA 17 bipolar stepper motor (17HS4401-style, 1.7 A)",
+  "category": "actuator",
+  "description": "42 x 42 mm bipolar stepper, 1.8 degree steps, about 0.4 N.m holding torque. Needs a stepper driver (A4988 / DRV8825).",
+  "sources": ["https://www.omc-stepperonline.com/download/17HS4401S.pdf"],
+  "confidence": "confirm",
+  "notes": [
+    "Rated 1.7 A per phase, about 1.5 Ohm and 2.8 mH per coil (17HS4401). Set the driver current limit at or below the rating; you rarely need the full rating.",
+    "Wire colours and connector order vary a lot between makers. Find the coil pairs with a multimeter: the two wires of one coil read a few ohms between them.",
+    "Swapping the two wires of ONE coil reverses the direction; mixing wires of different coils makes it buzz without turning.",
+    "Body length (and current) varies: 34, 40, 48 mm bodies are all called NEMA 17."
+  ],
+  "size": [42.3, 40, 42.3],
+  "color": "#7a7f87",
+  "pins": [
+    {
+      "name": "A+",
+      "label": "A+ (black)",
+      "kind": "motor",
+      "dir": "in",
+      "current": 1.7,
+      "current_peak": 1.7,
+      "pos": [17.4, 42.3]
+    },
+    {
+      "name": "A-",
+      "label": "A- (green)",
+      "kind": "motor",
+      "dir": "in",
+      "current": 1.7,
+      "current_peak": 1.7,
+      "pos": [19.4, 42.3]
+    },
+    {
+      "name": "B+",
+      "label": "B+ (red)",
+      "kind": "motor",
+      "dir": "in",
+      "current": 1.7,
+      "current_peak": 1.7,
+      "pos": [21.4, 42.3]
+    },
+    {
+      "name": "B-",
+      "label": "B- (blue)",
+      "kind": "motor",
+      "dir": "in",
+      "current": 1.7,
+      "current_peak": 1.7,
+      "pos": [23.4, 42.3]
+    }
+  ],
+  "breadboard": {
+    "fit": "offboard"
+  },
+  "geometry": {
+    "board": [42.3, 42.3, 40],
+    "holes": [
+      {
+        "pos": [5.65, 5.65],
+        "d": 3
+      },
+      {
+        "pos": [36.65, 5.65],
+        "d": 3
+      },
+      {
+        "pos": [5.65, 36.65],
+        "d": 3
+      },
+      {
+        "pos": [36.65, 36.65],
+        "d": 3
+      }
+    ],
+    "keepout": [
+      {
+        "rect": [10.15, 10.15, 22, 22],
+        "height": 2,
+        "note": "22 mm centring boss on the shaft face"
+      }
+    ],
+    "connectors": [
+      {
+        "name": "6-pin JST-PH (2 unused)",
+        "pos": [21.15, 42.3],
+        "side": "bottom"
+      }
+    ],
+    "shaft": {
+      "d": 5,
+      "length": 24,
+      "flat": true
+    },
+    "confidence": "verified",
+    "note": "NEMA 17 standard face: 42.3 mm square, M3 holes on a 31 mm square, 22 mm boss, 5 mm shaft. Holes and shaft are on the front face (top view here)."
+  }
+}

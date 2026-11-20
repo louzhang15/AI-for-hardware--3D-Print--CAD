@@ -1,0 +1,54 @@
+{
+  "id": "li-ion-18650-2s-bms",
+  "name": "2S 18650 Li-ion pack with built-in BMS (7.4 V)",
+  "category": "battery",
+  "description": "Two 18650 cells in series with a protection board: 7.4 V nominal, 8.4 V full, typically 2.5-3.5 Ah and 3-5 A.",
+  "sources": ["https://batteryuniversity.com/article/bu-205-types-of-lithium-ion"],
+  "confidence": "confirm",
+  "notes": [
+    "Continuous current is limited by the BMS (commonly 3 A, sometimes 5-10 A): check the BMS rating and cell rating. Servo stall currents can trip the BMS and reset the whole build.",
+    "Capacity depends on the cells (genuine 18650: 2.5-3.5 Ah; \"9900 mAh\" cells are fake).",
+    "Every part on the pack must accept 8.4 V. Charge with a 2S charger (8.4 V CC/CV), not a 5 V USB charger.",
+    "The BMS protects against over-discharge and short circuit, but a fuse is still good practice."
+  ],
+  "size": [70, 20, 40],
+  "color": "#2d6cb3",
+  "pins": [
+    {
+      "name": "BAT+",
+      "label": "P+",
+      "kind": "power_out",
+      "voltage": 7.4,
+      "voltage_max": 8.4,
+      "voltage_min": 5,
+      "current_max": 3,
+      "note": "Pack output after the BMS. Full 8.4 V; the BMS cuts off at about 2.5-3.0 V per cell (5.0-6.0 V).",
+      "pos": [10, 3]
+    },
+    {
+      "name": "BAT-",
+      "label": "P-",
+      "kind": "ground",
+      "pos": [30, 3]
+    }
+  ],
+  "battery": {
+    "chemistry": "li-ion",
+    "cells": 2,
+    "capacity_ah": 2.5,
+    "bms": true,
+    "c_rating": 1.2,
+    "bms_current_a": 3
+  },
+  "breadboard": {
+    "fit": "offboard"
+  },
+  "geometry": {
+    "board": [70, 40, 20],
+    "holes": [],
+    "keepout": [],
+    "connectors": [],
+    "confidence": "confirm",
+    "note": "Two 18650 cells (18 x 65 mm each) side by side plus wrap."
+  }
+}

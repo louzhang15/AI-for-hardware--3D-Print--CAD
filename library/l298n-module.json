@@ -1,0 +1,212 @@
+{
+  "id": "l298n-module",
+  "name": "L298N dual H-bridge motor driver module (red board)",
+  "category": "driver",
+  "description": "Drives 2 DC motors or 1 bipolar stepper up to 2 A per channel. Old and inefficient (about 2 V lost) but robust and cheap.",
+  "datasheet": "https://www.st.com/resource/en/datasheet/l298.pdf",
+  "sources": [
+    "https://www.st.com/resource/en/datasheet/l298.pdf",
+    "https://lastminuteengineers.com/l298n-dc-stepper-driver-arduino-tutorial/"
+  ],
+  "confidence": "confirm",
+  "notes": [
+    "Voltage drop: the bipolar L298 loses about 1.8-3 V across the bridge at 1 A, so a 6 V motor on a 6 V supply only sees about 4 V. Prefer TB6612FNG for 5-12 V motors under 1.2 A.",
+    "5V-EN jumper: ON = the onboard 78M05 makes 5 V from +12V (needs at least about 7 V in, keep the input at or below 12 V). OFF = +5V is an input you must supply.",
+    "Logic inputs are TTL: HIGH above 2.3 V, so 3.3 V microcontrollers drive it fine. Input absolute max 7 V.",
+    "The module has 8 flyback diodes and a heatsink. Above about 1 A per channel the heatsink gets very hot.",
+    "Terminal side order and labels vary between clones (some print 12V as VMS or VCC). Check the silkscreen.",
+    "Connect the module GND to the microcontroller GND."
+  ],
+  "size": [43, 27, 43],
+  "color": "#c0392b",
+  "pins": [
+    {
+      "name": "OUT1",
+      "label": "OUT1",
+      "kind": "motor",
+      "dir": "out",
+      "voltage_ref": "+12V",
+      "current_max": 2,
+      "pos": [2.5, 14]
+    },
+    {
+      "name": "OUT2",
+      "label": "OUT2",
+      "kind": "motor",
+      "dir": "out",
+      "voltage_ref": "+12V",
+      "current_max": 2,
+      "pos": [2.5, 19]
+    },
+    {
+      "name": "+12V",
+      "label": "12V",
+      "kind": "power_in",
+      "vmin": 7,
+      "vmax": 35,
+      "current": 0.04,
+      "current_peak": 0.07,
+      "note": "Motor supply (also feeds the 5 V regulator while the 5V-EN jumper is on). Keep at or below 12 V with the jumper on; remove the jumper for 12-35 V and feed +5V from your controller.",
+      "pos": [14.5, 40.5]
+    },
+    {
+      "name": "GND",
+      "label": "GND",
+      "kind": "ground",
+      "pos": [19.5, 40.5]
+    },
+    {
+      "name": "+5V",
+      "label": "5V",
+      "kind": "power_out",
+      "voltage": 5,
+      "current_max": 0.4,
+      "note": "With the 5V-EN jumper ON: 5 V output from the onboard 78M05 (about 0.4 A spare). With the jumper OFF: you must feed 5 V logic power IN here.",
+      "pos": [24.5, 40.5]
+    },
+    {
+      "name": "ENA",
+      "label": "ENA",
+      "kind": "pwm",
+      "dir": "in",
+      "voltage": 5,
+      "vmax": 7,
+      "vih": 2.3,
+      "note": "Enable / speed (PWM) for OUT1-OUT2. Jumpered to 5 V by default (full speed); remove the jumper to control speed.",
+      "pos": [26.5, 37.5]
+    },
+    {
+      "name": "IN1",
+      "label": "IN1",
+      "kind": "digital",
+      "dir": "in",
+      "voltage": 5,
+      "vmax": 7,
+      "vih": 2.3,
+      "pos": [29.04, 37.5]
+    },
+    {
+      "name": "IN2",
+      "label": "IN2",
+      "kind": "digital",
+      "dir": "in",
+      "voltage": 5,
+      "vmax": 7,
+      "vih": 2.3,
+      "pos": [31.58, 37.5]
+    },
+    {
+      "name": "IN3",
+      "label": "IN3",
+      "kind": "digital",
+      "dir": "in",
+      "voltage": 5,
+      "vmax": 7,
+      "vih": 2.3,
+      "pos": [34.12, 37.5]
+    },
+    {
+      "name": "IN4",
+      "label": "IN4",
+      "kind": "digital",
+      "dir": "in",
+      "voltage": 5,
+      "vmax": 7,
+      "vih": 2.3,
+      "pos": [36.66, 37.5]
+    },
+    {
+      "name": "ENB",
+      "label": "ENB",
+      "kind": "pwm",
+      "dir": "in",
+      "voltage": 5,
+      "vmax": 7,
+      "vih": 2.3,
+      "note": "Enable / speed for OUT3-OUT4. Jumpered to 5 V by default.",
+      "pos": [39.2, 37.5]
+    },
+    {
+      "name": "OUT3",
+      "label": "OUT3",
+      "kind": "motor",
+      "dir": "out",
+      "voltage_ref": "+12V",
+      "current_max": 2,
+      "pos": [40.5, 19]
+    },
+    {
+      "name": "OUT4",
+      "label": "OUT4",
+      "kind": "motor",
+      "dir": "out",
+      "voltage_ref": "+12V",
+      "current_max": 2,
+      "pos": [40.5, 14]
+    }
+  ],
+  "regulators": [
+    {
+      "in": "+12V",
+      "out": "+5V",
+      "gnd": "GND",
+      "type": "linear",
+      "vout": 5,
+      "dropout": 2,
+      "current_max": 0.4,
+      "iq": 0.006,
+      "vin_max": 35
+    }
+  ],
+  "flyback": true,
+  "breadboard": {
+    "fit": "offboard"
+  },
+  "geometry": {
+    "board": [43, 43, 1.6],
+    "holes": [
+      {
+        "pos": [3, 3],
+        "d": 3
+      },
+      {
+        "pos": [40, 3],
+        "d": 3
+      },
+      {
+        "pos": [3, 40],
+        "d": 3
+      },
+      {
+        "pos": [40, 40],
+        "d": 3
+      }
+    ],
+    "keepout": [
+      {
+        "rect": [9, 2, 25, 23],
+        "height": 27,
+        "note": "heatsink (tallest part, needs airflow)"
+      }
+    ],
+    "connectors": [
+      {
+        "name": "motor A terminal",
+        "pos": [0, 16.5],
+        "side": "left"
+      },
+      {
+        "name": "motor B terminal",
+        "pos": [43, 16.5],
+        "side": "right"
+      },
+      {
+        "name": "power terminal",
+        "pos": [19.5, 43],
+        "side": "bottom"
+      }
+    ],
+    "confidence": "confirm",
+    "note": "Typical module 43 x 43 x 27 mm with 3 mm holes; positions vary."
+  }
+}

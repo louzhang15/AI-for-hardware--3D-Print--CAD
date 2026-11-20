@@ -1,0 +1,50 @@
+{
+  "id": "dc-motor-tt",
+  "name": "TT gear motor (yellow, 3-6 V)",
+  "category": "actuator",
+  "description": "Cheap yellow plastic gear motor used on robot car kits, 1:48 gearbox, 3-6 V.",
+  "sources": ["https://www.adafruit.com/product/3777"],
+  "confidence": "confirm",
+  "notes": [
+    "Rated 3-6 V. No-load current about 0.15-0.2 A; stall about 1-1.5 A at 6 V (varies a lot between makers). Size the driver for the stall current.",
+    "Solder a 0.1 uF ceramic capacitor across the terminals to reduce electrical noise.",
+    "Swap M+ and M- to reverse direction."
+  ],
+  "size": [70, 22.5, 37],
+  "color": "#f2c200",
+  "pins": [
+    {
+      "name": "M+",
+      "label": "M+",
+      "kind": "motor",
+      "dir": "in",
+      "vmin": 3,
+      "vmax": 6,
+      "current": 0.2,
+      "current_peak": 1.2,
+      "pos": [2, 8]
+    },
+    {
+      "name": "M-",
+      "label": "M-",
+      "kind": "motor",
+      "dir": "in",
+      "pos": [2, 14.5]
+    }
+  ],
+  "breadboard": {
+    "fit": "offboard"
+  },
+  "geometry": {
+    "board": [70, 37, 22.5],
+    "holes": [],
+    "keepout": [],
+    "connectors": [],
+    "shaft": {
+      "d": 5.4,
+      "flats": 3.7,
+      "note": "double-D output shaft both sides"
+    },
+    "confidence": "confirm"
+  }
+}

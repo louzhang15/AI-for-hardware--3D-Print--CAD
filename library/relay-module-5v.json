@@ -1,0 +1,100 @@
+{
+  "id": "relay-module-5v",
+  "name": "1-channel 5 V relay module (low voltage use only)",
+  "category": "module",
+  "description": "Switches a separate low-voltage DC load (lamp, pump, up to 30 V DC) from a GPIO. Wiremap only supports low-voltage loads.",
+  "sources": ["https://www.datasheet4u.com/datasheet-pdf/SongleRelay/SRD-05VDC-SL-C/pdf.php?id=720556"],
+  "confidence": "confirm",
+  "notes": [
+    "LOW VOLTAGE ONLY in Wiremap: keep the switched side at or below 30 V DC. Do not wire mains (the relay may be rated for it, the cheap board spacing is not safe).",
+    "Contact rating of the usual Songle SRD-05VDC: 10 A at 28-30 V DC (resistive). Derate for motors.",
+    "The module has a driver transistor and flyback diode for the coil. Many boards are active LOW; jumper/opto versions differ.",
+    "Coil draws about 70-80 mA from VCC: power it from 5 V, not the 3.3 V pin."
+  ],
+  "size": [50, 19, 26],
+  "color": "#1d5fa8",
+  "pins": [
+    {
+      "name": "VCC",
+      "label": "VCC",
+      "kind": "power_in",
+      "vmin": 4.75,
+      "vmax": 5.25,
+      "current": 0.075,
+      "current_peak": 0.08,
+      "note": "5 V coil supply, about 70-80 mA when the relay is on.",
+      "pos": [2, 7.4]
+    },
+    {
+      "name": "GND",
+      "label": "GND",
+      "kind": "ground",
+      "pos": [2, 9.94]
+    },
+    {
+      "name": "IN",
+      "label": "IN",
+      "kind": "digital",
+      "dir": "in",
+      "vmax": 5.5,
+      "note": "Most boards are active LOW (relay on when IN is LOW). Some need 5 V logic to switch off reliably from a 3.3 V GPIO.",
+      "pos": [2, 12.48]
+    },
+    {
+      "name": "COM",
+      "label": "COM",
+      "kind": "passive",
+      "note": "Common contact.",
+      "pos": [48, 10]
+    },
+    {
+      "name": "NO",
+      "label": "NO",
+      "kind": "passive",
+      "note": "Normally open: joined to COM when the relay is on.",
+      "pos": [48, 5]
+    },
+    {
+      "name": "NC",
+      "label": "NC",
+      "kind": "passive",
+      "note": "Normally closed: joined to COM when the relay is off.",
+      "pos": [48, 15]
+    }
+  ],
+  "rating_a": 10,
+  "mains": false,
+  "breadboard": {
+    "fit": "offboard"
+  },
+  "geometry": {
+    "board": [50, 26, 1.6],
+    "holes": [
+      {
+        "pos": [3, 3],
+        "d": 3
+      },
+      {
+        "pos": [47, 3],
+        "d": 3
+      },
+      {
+        "pos": [3, 23],
+        "d": 3
+      },
+      {
+        "pos": [47, 23],
+        "d": 3
+      }
+    ],
+    "keepout": [],
+    "connectors": [
+      {
+        "name": "screw terminal COM/NO/NC",
+        "pos": [50, 10],
+        "side": "right"
+      }
+    ],
+    "confidence": "confirm"
+  }
+}

@@ -1,0 +1,47 @@
+{
+  "id": "resistor",
+  "name": "Resistor (through-hole, 1/4 W)",
+  "category": "passive",
+  "description": "Fixed resistor. Set the value with params.ohms (and params.watts).",
+  "sources": ["https://www.yageo.com/upload/media/product/productsearch/datasheet/lr/Yageo_LR_CFR_1.pdf"],
+  "confidence": "verified",
+  "notes": [
+    "Standard 1/4 W carbon-film or metal-film resistor, 6.3 mm body. Keep dissipation P = I^2 x R under half the rating (0.125 W).",
+    "Non-polarised: pins 1 and 2 are interchangeable.",
+    "Breadboard: bend the leads to 0.4 inch (4 holes) spacing."
+  ],
+  "size": [11.16, 2.5, 2.5],
+  "color": "#d9c49a",
+  "params": {
+    "ohms": 220,
+    "watts": 0.25
+  },
+  "pins": [
+    {
+      "name": "1",
+      "label": "1",
+      "kind": "passive",
+      "pos": [0.5, 1.25]
+    },
+    {
+      "name": "2",
+      "label": "2",
+      "kind": "passive",
+      "pos": [10.66, 1.25]
+    }
+  ],
+  "breadboard": {
+    "fit": "single",
+    "rows": [
+      ["1", "2"]
+    ],
+    "pitch": 4
+  },
+  "geometry": {
+    "board": [6.3, 2.5, 2.5],
+    "holes": [],
+    "keepout": [],
+    "connectors": [],
+    "confidence": "verified"
+  }
+}

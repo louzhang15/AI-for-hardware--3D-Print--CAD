@@ -1,0 +1,56 @@
+{
+  "id": "potentiometer",
+  "name": "Rotary potentiometer (10 kOhm linear, breadboard)",
+  "category": "passive",
+  "description": "Knob that gives a variable voltage on the wiper: outer legs to 3.3 V/5 V and GND, wiper to an analog input.",
+  "sources": ["https://www.bourns.com/docs/Product-Datasheets/PTV09.pdf"],
+  "confidence": "verified",
+  "notes": [
+    "Outer legs to the supply and GND of the microcontroller (3.3 V for ESP32/Pico, never 5 V on a 3.3 V ADC), wiper to the ADC pin.",
+    "About 0.05-0.1 W rating: never put it in a power path.",
+    "Leg spacing is about 5 mm (2 holes). Set params.ohms."
+  ],
+  "size": [12.4, 7, 13],
+  "color": "#2f6fbf",
+  "params": {
+    "ohms": 10000
+  },
+  "pins": [
+    {
+      "name": "1",
+      "label": "1",
+      "kind": "passive",
+      "pos": [2.4, 8]
+    },
+    {
+      "name": "W",
+      "label": "wiper",
+      "kind": "passive",
+      "pos": [7.48, 8]
+    },
+    {
+      "name": "3",
+      "label": "3",
+      "kind": "passive",
+      "pos": [12.56, 8]
+    }
+  ],
+  "breadboard": {
+    "fit": "single",
+    "rows": [
+      ["1", "W", "3"]
+    ],
+    "pitch": 2
+  },
+  "geometry": {
+    "board": [9.8, 11, 7],
+    "holes": [],
+    "keepout": [],
+    "connectors": [],
+    "shaft": {
+      "d": 6,
+      "length": 15
+    },
+    "confidence": "confirm"
+  }
+}

@@ -1,0 +1,101 @@
+{
+  "id": "hc-sr04",
+  "name": "HC-SR04 ultrasonic distance sensor",
+  "category": "sensor",
+  "description": "Measures distance 2-400 cm with ultrasound. 5 V part with a 5 V echo output.",
+  "datasheet": "https://cdn.sparkfun.com/datasheets/Sensors/Proximity/HCSR04.pdf",
+  "sources": ["https://cdn.sparkfun.com/datasheets/Sensors/Proximity/HCSR04.pdf"],
+  "confidence": "confirm",
+  "notes": [
+    "Classic HC-SR04 needs 5 V. ECHO is a 5 V signal: shift it down for ESP32 / Pico (level shifter or 1 k + 2.2 k divider).",
+    "Newer versions (RCWL-9610 chip, sometimes sold as HC-SR04P) work from 3-5.5 V and then echo at the supply voltage. Check the chip and the listing.",
+    "Do not trigger more often than every 60 ms."
+  ],
+  "size": [45, 15, 20],
+  "color": "#1d5fa8",
+  "pins": [
+    {
+      "name": "VCC",
+      "label": "Vcc",
+      "kind": "power_in",
+      "vmin": 4.5,
+      "vmax": 5.5,
+      "current": 0.015,
+      "current_peak": 0.02,
+      "pos": [18.69, 19]
+    },
+    {
+      "name": "TRIG",
+      "label": "Trig",
+      "kind": "digital",
+      "dir": "in",
+      "vih": 2,
+      "vmax": 5.5,
+      "note": "10 us HIGH pulse starts a measurement. 3.3 V logic usually triggers it (confirm on your board).",
+      "pos": [21.23, 19]
+    },
+    {
+      "name": "ECHO",
+      "label": "Echo",
+      "kind": "digital",
+      "dir": "out",
+      "voltage": 5,
+      "note": "Outputs 5 V pulses: needs a level shifter or divider (e.g. 1 k / 2.2 k) before a 3.3 V GPIO.",
+      "pos": [23.77, 19]
+    },
+    {
+      "name": "GND",
+      "label": "Gnd",
+      "kind": "ground",
+      "pos": [26.31, 19]
+    }
+  ],
+  "breadboard": {
+    "fit": "single",
+    "rows": [
+      ["VCC", "TRIG", "ECHO", "GND"]
+    ]
+  },
+  "geometry": {
+    "board": [45, 20, 1.6],
+    "holes": [
+      {
+        "pos": [1.5, 1.5],
+        "d": 1.8
+      },
+      {
+        "pos": [43.5, 1.5],
+        "d": 1.8
+      },
+      {
+        "pos": [1.5, 18.5],
+        "d": 1.8
+      },
+      {
+        "pos": [43.5, 18.5],
+        "d": 1.8
+      }
+    ],
+    "keepout": [
+      {
+        "rect": [1.5, 1.5, 16, 16],
+        "height": 13.5,
+        "note": "transmitter can (16 mm)"
+      },
+      {
+        "rect": [27.5, 1.5, 16, 16],
+        "height": 13.5,
+        "note": "receiver can"
+      }
+    ],
+    "connectors": [
+      {
+        "name": "4-pin header (pins point down/back)",
+        "pos": [22.5, 20],
+        "side": "bottom"
+      }
+    ],
+    "confidence": "confirm",
+    "note": "Board 45 x 20 mm, two 16 mm transducers 26 mm apart (centres). Holes approximate."
+  }
+}

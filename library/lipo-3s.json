@@ -1,0 +1,64 @@
+{
+  "id": "lipo-3s",
+  "name": "3S LiPo pack 2200 mAh 25C",
+  "category": "battery",
+  "description": "3-cell lithium polymer pack, 11.1 V nominal (12.6 V full), 2.2 Ah, very high current capability.",
+  "sources": ["https://batteryuniversity.com/article/bu-205-types-of-lithium-ion"],
+  "confidence": "confirm",
+  "notes": [
+    "Voltage swings from 12.6 V (full) to 9 V (empty): every part on the battery must accept the FULL voltage.",
+    "The pack can deliver 55 A into a short. Always put a fuse right at the battery and a switch in series.",
+    "A bare LiPo has no protection: use a low-voltage alarm/cut-off or a BMS, and charge only with a balance charger.",
+    "Connector (XT60, Deans, JST) and the capacity and C rating vary: read your pack label.",
+    "Puffed, dented or hot packs must not be used."
+  ],
+  "size": [105, 25, 34],
+  "color": "#2b2b2b",
+  "pins": [
+    {
+      "name": "BAT+",
+      "label": "BAT+",
+      "kind": "power_out",
+      "voltage": 11.1,
+      "voltage_max": 12.6,
+      "voltage_min": 9,
+      "current_max": 55,
+      "note": "Full 12.6 V, nominal 11.1 V, never below 9 V (3.0 V per cell; 3.3 V per cell is kinder).",
+      "pos": [4, 2]
+    },
+    {
+      "name": "BAT-",
+      "label": "BAT-",
+      "kind": "ground",
+      "pos": [10, 2]
+    }
+  ],
+  "battery": {
+    "chemistry": "lipo",
+    "cells": 3,
+    "capacity_ah": 2.2,
+    "bms": false,
+    "c_rating": 25
+  },
+  "breadboard": {
+    "fit": "offboard"
+  },
+  "geometry": {
+    "board": [105, 34, 25],
+    "holes": [],
+    "keepout": [],
+    "connectors": [
+      {
+        "name": "main lead (XT60 typical)",
+        "pos": [7, 0],
+        "side": "top"
+      },
+      {
+        "name": "balance lead",
+        "pos": [20, 0],
+        "side": "top"
+      }
+    ],
+    "confidence": "confirm"
+  }
+}

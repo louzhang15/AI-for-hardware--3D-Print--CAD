@@ -1,0 +1,49 @@
+{
+  "id": "fuse-inline",
+  "name": "Inline blade fuse holder with fuse",
+  "category": "protection",
+  "description": "Blows before a short circuit can melt wires or start a fire. Goes right after the battery + terminal.",
+  "sources": ["https://www.littelfuse.com/products/fuses/automotive-passenger-car/blade-fuses/257.aspx"],
+  "confidence": "confirm",
+  "notes": [
+    "Pick about 125 % of the maximum continuous current, but never more than the wire or the smallest part can carry.",
+    "Use a DC-rated fuse at or above your supply voltage (automotive blade fuses: 32 V DC).",
+    "The holder wire gauge must match the fuse rating."
+  ],
+  "size": [50, 12, 10],
+  "color": "#c9302c",
+  "params": {
+    "rating_a": 5
+  },
+  "pins": [
+    {
+      "name": "IN",
+      "label": "IN",
+      "kind": "power_rail",
+      "note": "Battery / supply side.",
+      "pos": [2, 5]
+    },
+    {
+      "name": "OUT",
+      "label": "OUT",
+      "kind": "power_rail",
+      "note": "Load side.",
+      "pos": [48, 5]
+    }
+  ],
+  "internal": [
+    ["IN", "OUT"]
+  ],
+  "protection": "fuse",
+  "rating_a": "$rating_a",
+  "breadboard": {
+    "fit": "offboard"
+  },
+  "geometry": {
+    "board": [50, 10, 12],
+    "holes": [],
+    "keepout": [],
+    "connectors": [],
+    "confidence": "confirm"
+  }
+}

@@ -1,0 +1,483 @@
+{
+  "id": "esp32-devkit-v1",
+  "name": "ESP32 DevKit V1 (DOIT-style, 30 pin)",
+  "category": "controller",
+  "description": "ESP32-WROOM-32 dev board with WiFi and Bluetooth, 3.3 V logic, USB powered. The most common cheap ESP32 board.",
+  "datasheet": "https://www.espressif.com/sites/default/files/documentation/esp32_datasheet_en.pdf",
+  "sources": [
+    "https://www.espressif.com/sites/default/files/documentation/esp32_datasheet_en.pdf",
+    "https://www.espressif.com/sites/default/files/documentation/esp32-wroom-32e_esp32-wroom-32ue_datasheet_en.pdf",
+    "http://www.advanced-monolithic.com/pdf/ds1117.pdf",
+    "https://circuitstate.com/esp32dkpinref",
+    "https://mischianti.org/doit-esp32-dev-kit-v1-high-resolution-pinout-and-specs/",
+    "https://www.espboards.dev/esp32/esp32doit-devkit-v1/"
+  ],
+  "confidence": "verified",
+  "notes": [
+    "All GPIO are 3.3 V only (absolute max 3.6 V). A 5 V signal (HC-SR04 ECHO, 5 V Arduino) needs a level shifter or divider.",
+    "Strapping pins GPIO0, GPIO2, GPIO5, GPIO12 and GPIO15 set the boot mode. Do not pull GPIO12 high or GPIO0 low at reset, and avoid parts that drive these pins during power-up.",
+    "GPIO34, GPIO35, GPIO36 (VP) and GPIO39 (VN) are input only and have no internal pull-ups.",
+    "ADC2 pins (GPIO0, 2, 4, 12-15, 25-27) cannot be read while WiFi is on: use ADC1 (GPIO32-39) for analog.",
+    "Recommended per-pin current about 20 mA, absolute 40 mA. Do not power servos or motors from the 3V3 pin.",
+    "Current draw: about 80-120 mA average with WiFi on, short bursts of about 250-350 mA during transmit and boot. Espressif recommends a supply that can give at least 500 mA.",
+    "Pin order is for the DOIT DevKit V1 layout with the antenna at the top. Clones with the same name sometimes swap the side order; match the silkscreen before wiring.",
+    "Power: USB 5 V, or 5 V on VIN (4.5-12 V accepted by the AMS1117, but it overheats well before 12 V with WiFi on), or 3.3 V straight into 3V3. Never feed VIN and 3V3 at the same time.",
+    "Regulator: AMS1117-3.3 (1 A rated, about 1.1 V dropout). With 5 V in, heat limits it to about 0.8 A total; the ESP32 uses up to about 0.35-0.5 A in WiFi bursts, so budget about 0.4 A for external 3.3 V loads.",
+    "Breadboard: the two header rows are 0.9 inch (22.86 mm) apart on most DOIT boards, which leaves one free hole row on one side of a standard breadboard. Some clones use 1.0 inch rows and leave none. Measure your board."
+  ],
+  "size": [28.2, 13, 51.8],
+  "color": "#1d2a3a",
+  "pins": [
+    {
+      "name": "EN",
+      "label": "EN",
+      "kind": "digital",
+      "dir": "in",
+      "voltage": 3.3,
+      "vmax": 3.6,
+      "note": "Chip enable / reset, pulled up on the board. Pulling LOW resets the ESP32.",
+      "pos": [2.67, 13]
+    },
+    {
+      "name": "GPIO36",
+      "label": "VP",
+      "kind": "digital",
+      "dir": "in",
+      "voltage": 3.3,
+      "vmax": 3.6,
+      "vih": 2.475,
+      "functions": ["ADC1_CH0", "input only"],
+      "note": "Input only: no output driver and no internal pull-up/pull-down.",
+      "pos": [2.67, 15.54]
+    },
+    {
+      "name": "GPIO39",
+      "label": "VN",
+      "kind": "digital",
+      "dir": "in",
+      "voltage": 3.3,
+      "vmax": 3.6,
+      "vih": 2.475,
+      "functions": ["ADC1_CH3", "input only"],
+      "note": "Input only: no output driver and no internal pull-up/pull-down.",
+      "pos": [2.67, 18.08]
+    },
+    {
+      "name": "GPIO34",
+      "label": "D34",
+      "kind": "digital",
+      "dir": "in",
+      "voltage": 3.3,
+      "vmax": 3.6,
+      "vih": 2.475,
+      "functions": ["ADC1_CH6", "input only"],
+      "note": "Input only: no output driver and no internal pull-up/pull-down.",
+      "pos": [2.67, 20.62]
+    },
+    {
+      "name": "GPIO35",
+      "label": "D35",
+      "kind": "digital",
+      "dir": "in",
+      "voltage": 3.3,
+      "vmax": 3.6,
+      "vih": 2.475,
+      "functions": ["ADC1_CH7", "input only"],
+      "note": "Input only: no output driver and no internal pull-up/pull-down.",
+      "pos": [2.67, 23.16]
+    },
+    {
+      "name": "GPIO32",
+      "label": "D32",
+      "kind": "digital",
+      "dir": "io",
+      "voltage": 3.3,
+      "vmax": 3.6,
+      "vih": 2.475,
+      "current_max": 0.02,
+      "functions": ["ADC1_CH4", "TOUCH9", "32k crystal"],
+      "pos": [2.67, 25.7]
+    },
+    {
+      "name": "GPIO33",
+      "label": "D33",
+      "kind": "digital",
+      "dir": "io",
+      "voltage": 3.3,
+      "vmax": 3.6,
+      "vih": 2.475,
+      "current_max": 0.02,
+      "functions": ["ADC1_CH5", "TOUCH8", "32k crystal"],
+      "pos": [2.67, 28.24]
+    },
+    {
+      "name": "GPIO25",
+      "label": "D25",
+      "kind": "digital",
+      "dir": "io",
+      "voltage": 3.3,
+      "vmax": 3.6,
+      "vih": 2.475,
+      "current_max": 0.02,
+      "functions": ["ADC2_CH8", "DAC1"],
+      "pos": [2.67, 30.78]
+    },
+    {
+      "name": "GPIO26",
+      "label": "D26",
+      "kind": "digital",
+      "dir": "io",
+      "voltage": 3.3,
+      "vmax": 3.6,
+      "vih": 2.475,
+      "current_max": 0.02,
+      "functions": ["ADC2_CH9", "DAC2"],
+      "pos": [2.67, 33.32]
+    },
+    {
+      "name": "GPIO27",
+      "label": "D27",
+      "kind": "digital",
+      "dir": "io",
+      "voltage": 3.3,
+      "vmax": 3.6,
+      "vih": 2.475,
+      "current_max": 0.02,
+      "functions": ["ADC2_CH7", "TOUCH7"],
+      "pos": [2.67, 35.86]
+    },
+    {
+      "name": "GPIO14",
+      "label": "D14",
+      "kind": "digital",
+      "dir": "io",
+      "voltage": 3.3,
+      "vmax": 3.6,
+      "vih": 2.475,
+      "current_max": 0.02,
+      "functions": ["ADC2_CH6", "TOUCH6", "HSPI SCK"],
+      "pos": [2.67, 38.4]
+    },
+    {
+      "name": "GPIO12",
+      "label": "D12",
+      "kind": "digital",
+      "dir": "io",
+      "voltage": 3.3,
+      "vmax": 3.6,
+      "vih": 2.475,
+      "current_max": 0.02,
+      "functions": ["ADC2_CH5", "TOUCH5", "HSPI MISO", "strapping: must be LOW at boot"],
+      "note": "Strapping pin (MTDI): an external pull-up here at boot selects 1.8 V flash and the board will not boot.",
+      "pos": [2.67, 40.94]
+    },
+    {
+      "name": "GPIO13",
+      "label": "D13",
+      "kind": "digital",
+      "dir": "io",
+      "voltage": 3.3,
+      "vmax": 3.6,
+      "vih": 2.475,
+      "current_max": 0.02,
+      "functions": ["ADC2_CH4", "TOUCH4", "HSPI MOSI"],
+      "pos": [2.67, 43.48]
+    },
+    {
+      "name": "GND",
+      "label": "GND",
+      "kind": "ground",
+      "pos": [2.67, 46.02]
+    },
+    {
+      "name": "VIN",
+      "label": "VIN",
+      "kind": "power_in",
+      "vmin": 4.5,
+      "vmax": 12,
+      "current": 0.12,
+      "current_peak": 0.5,
+      "note": "Feeds the AMS1117-3.3 regulator. Also connected (through a diode) to USB 5 V, so it reads about 4.5-4.7 V when the board is on USB. 5 V is the safe choice; above about 7 V the regulator gets hot.",
+      "pos": [2.67, 48.56]
+    },
+    {
+      "name": "GPIO23",
+      "label": "D23",
+      "kind": "digital",
+      "dir": "io",
+      "voltage": 3.3,
+      "vmax": 3.6,
+      "vih": 2.475,
+      "current_max": 0.02,
+      "functions": ["VSPI MOSI"],
+      "pos": [25.53, 13]
+    },
+    {
+      "name": "GPIO22",
+      "label": "D22",
+      "kind": "i2c_scl",
+      "dir": "io",
+      "voltage": 3.3,
+      "vmax": 3.6,
+      "vih": 2.475,
+      "current_max": 0.02,
+      "pullup": 3.3,
+      "pullup_weak": true,
+      "functions": ["I2C SCL (Wire default)"],
+      "pos": [25.53, 15.54]
+    },
+    {
+      "name": "GPIO1",
+      "label": "TX0",
+      "kind": "uart_tx",
+      "dir": "out",
+      "voltage": 3.3,
+      "vmax": 3.6,
+      "vih": 2.475,
+      "current_max": 0.02,
+      "functions": ["U0TXD", "USB-serial"],
+      "note": "UART0 TX, wired to the USB-serial chip. Avoid for other uses.",
+      "pos": [25.53, 18.08]
+    },
+    {
+      "name": "GPIO3",
+      "label": "RX0",
+      "kind": "uart_rx",
+      "dir": "in",
+      "voltage": 3.3,
+      "vmax": 3.6,
+      "vih": 2.475,
+      "current_max": 0.02,
+      "functions": ["U0RXD", "USB-serial"],
+      "note": "UART0 RX, wired to the USB-serial chip. Avoid for other uses.",
+      "pos": [25.53, 20.62]
+    },
+    {
+      "name": "GPIO21",
+      "label": "D21",
+      "kind": "i2c_sda",
+      "dir": "io",
+      "voltage": 3.3,
+      "vmax": 3.6,
+      "vih": 2.475,
+      "current_max": 0.02,
+      "pullup": 3.3,
+      "pullup_weak": true,
+      "functions": ["I2C SDA (Wire default)"],
+      "pos": [25.53, 23.16]
+    },
+    {
+      "name": "GPIO19",
+      "label": "D19",
+      "kind": "digital",
+      "dir": "io",
+      "voltage": 3.3,
+      "vmax": 3.6,
+      "vih": 2.475,
+      "current_max": 0.02,
+      "functions": ["VSPI MISO"],
+      "pos": [25.53, 25.7]
+    },
+    {
+      "name": "GPIO18",
+      "label": "D18",
+      "kind": "digital",
+      "dir": "io",
+      "voltage": 3.3,
+      "vmax": 3.6,
+      "vih": 2.475,
+      "current_max": 0.02,
+      "functions": ["VSPI SCK"],
+      "pos": [25.53, 28.24]
+    },
+    {
+      "name": "GPIO5",
+      "label": "D5",
+      "kind": "digital",
+      "dir": "io",
+      "voltage": 3.3,
+      "vmax": 3.6,
+      "vih": 2.475,
+      "current_max": 0.02,
+      "functions": ["VSPI CS", "strapping"],
+      "note": "Strapping pin: keep HIGH or floating at boot.",
+      "pos": [25.53, 30.78]
+    },
+    {
+      "name": "GPIO17",
+      "label": "TX2",
+      "kind": "digital",
+      "dir": "io",
+      "voltage": 3.3,
+      "vmax": 3.6,
+      "vih": 2.475,
+      "current_max": 0.02,
+      "functions": ["U2TXD"],
+      "pos": [25.53, 33.32]
+    },
+    {
+      "name": "GPIO16",
+      "label": "RX2",
+      "kind": "digital",
+      "dir": "io",
+      "voltage": 3.3,
+      "vmax": 3.6,
+      "vih": 2.475,
+      "current_max": 0.02,
+      "functions": ["U2RXD"],
+      "pos": [25.53, 35.86]
+    },
+    {
+      "name": "GPIO4",
+      "label": "D4",
+      "kind": "digital",
+      "dir": "io",
+      "voltage": 3.3,
+      "vmax": 3.6,
+      "vih": 2.475,
+      "current_max": 0.02,
+      "functions": ["ADC2_CH0", "TOUCH0"],
+      "pos": [25.53, 38.4]
+    },
+    {
+      "name": "GPIO2",
+      "label": "D2",
+      "kind": "digital",
+      "dir": "io",
+      "voltage": 3.3,
+      "vmax": 3.6,
+      "vih": 2.475,
+      "current_max": 0.02,
+      "functions": ["ADC2_CH2", "TOUCH2", "onboard LED on most boards", "strapping"],
+      "note": "Strapping pin: must be LOW or floating to enter download mode.",
+      "pos": [25.53, 40.94]
+    },
+    {
+      "name": "GPIO15",
+      "label": "D15",
+      "kind": "digital",
+      "dir": "io",
+      "voltage": 3.3,
+      "vmax": 3.6,
+      "vih": 2.475,
+      "current_max": 0.02,
+      "functions": ["ADC2_CH3", "TOUCH3", "HSPI CS", "strapping"],
+      "note": "Strapping pin (MTDO): LOW at boot silences boot log; leave floating or pulled up.",
+      "pos": [25.53, 43.48]
+    },
+    {
+      "name": "GND_2",
+      "label": "GND",
+      "kind": "ground",
+      "pos": [25.53, 46.02]
+    },
+    {
+      "name": "3V3",
+      "label": "3V3",
+      "kind": "power_out",
+      "voltage": 3.3,
+      "voltage_min": 3.2,
+      "voltage_max": 3.4,
+      "current_max": 0.4,
+      "note": "Output of the onboard AMS1117-3.3. About 0.4 A is left for external parts after the ESP32 itself. Can also be used to feed the board from a clean 3.3 V supply (then leave VIN and USB unpowered).",
+      "pos": [25.53, 48.56]
+    }
+  ],
+  "internal": [
+    ["GND", "GND_2"]
+  ],
+  "regulators": [
+    {
+      "in": "VIN",
+      "out": "3V3",
+      "gnd": "GND",
+      "type": "linear",
+      "vout": 3.3,
+      "dropout": 1.1,
+      "current_max": 0.4,
+      "iq": 0.005,
+      "vin_max": 12
+    }
+  ],
+  "breadboard": {
+    "fit": "straddle",
+    "rows": [
+      [
+        "EN",
+        "GPIO36",
+        "GPIO39",
+        "GPIO34",
+        "GPIO35",
+        "GPIO32",
+        "GPIO33",
+        "GPIO25",
+        "GPIO26",
+        "GPIO27",
+        "GPIO14",
+        "GPIO12",
+        "GPIO13",
+        "GND",
+        "VIN"
+      ],
+      [
+        "GPIO23",
+        "GPIO22",
+        "GPIO1",
+        "GPIO3",
+        "GPIO21",
+        "GPIO19",
+        "GPIO18",
+        "GPIO5",
+        "GPIO17",
+        "GPIO16",
+        "GPIO4",
+        "GPIO2",
+        "GPIO15",
+        "GND_2",
+        "3V3"
+      ]
+    ],
+    "row_spacing": 9,
+    "body_width_mm": 28.2
+  },
+  "geometry": {
+    "board": [28.2, 51.8, 1.6],
+    "holes": [],
+    "keepout": [
+      {
+        "rect": [3.5, 0, 21.2, 7],
+        "height": 0,
+        "note": "PCB antenna: no metal, wires or screws over or under it"
+      },
+      {
+        "rect": [6, 0, 16.2, 25.5],
+        "height": 3.2,
+        "note": "WROOM-32 shielded module"
+      },
+      {
+        "rect": [9.6, 46.3, 9, 5.5],
+        "height": 3.5,
+        "note": "micro-USB connector, needs cable access from the bottom edge"
+      }
+    ],
+    "connectors": [
+      {
+        "name": "USB (micro-B)",
+        "pos": [14.1, 51.8],
+        "side": "bottom"
+      }
+    ],
+    "buttons": [
+      {
+        "name": "EN",
+        "pos": [5, 44]
+      },
+      {
+        "name": "BOOT",
+        "pos": [23, 44]
+      }
+    ],
+    "confidence": "confirm",
+    "note": "Dimensions from measured clones (about 28 x 52 mm). Mounting holes differ between clones and are not listed: measure before designing a holder."
+  }
+}

@@ -1,0 +1,206 @@
+{
+  "id": "drv8825-module",
+  "name": "DRV8825 stepper driver carrier (Pololu-style)",
+  "category": "driver",
+  "description": "Bipolar stepper driver, 8.2-45 V, about 1.5 A per coil without extra cooling (2.2 A with good cooling), up to 1/32 microstepping.",
+  "datasheet": "https://www.ti.com/lit/ds/symlink/drv8825.pdf",
+  "sources": [
+    "https://www.ti.com/lit/ds/symlink/drv8825.pdf",
+    "https://www.pololu.com/product/2133",
+    "https://www.pololu.com/product/2133/faq"
+  ],
+  "confidence": "verified",
+  "notes": [
+    "No logic supply pin: the DRV8825 makes its own logic supply from VMOT. Inputs accept 3.3 V and 5 V logic.",
+    "RST and SLP must be held HIGH (internal pull-downs). A common trick is to tie RST to SLP and both to logic HIGH.",
+    "Set the current limit with the trim pot before connecting the motor: Vref = I_limit / 2 on Pololu boards (check your clone: sense resistor value differs).",
+    "Never connect or disconnect the motor while powered: this destroys the driver.",
+    "Put a 47-100 uF electrolytic capacitor across VMOT/GND close to the board to absorb voltage spikes.",
+    "Pololu rates about 1.5 A per coil without a heatsink or airflow, up to 2.2 A with good cooling."
+  ],
+  "size": [15.24, 12, 20.32],
+  "color": "#5b2c83",
+  "pins": [
+    {
+      "name": "EN",
+      "label": "EN",
+      "kind": "digital",
+      "dir": "in",
+      "vmax": 5.5,
+      "vih": 2.2,
+      "note": "Active LOW enable, pulled low on the board (enabled). Drive HIGH to free the motor.",
+      "pos": [1.27, 1.27]
+    },
+    {
+      "name": "M0",
+      "label": "M0",
+      "kind": "digital",
+      "dir": "in",
+      "vmax": 5.5,
+      "vih": 2.2,
+      "note": "Microstep select, internal pull-down.",
+      "pos": [1.27, 3.81]
+    },
+    {
+      "name": "M1",
+      "label": "M1",
+      "kind": "digital",
+      "dir": "in",
+      "vmax": 5.5,
+      "vih": 2.2,
+      "pos": [1.27, 6.35]
+    },
+    {
+      "name": "M2",
+      "label": "M2",
+      "kind": "digital",
+      "dir": "in",
+      "vmax": 5.5,
+      "vih": 2.2,
+      "pos": [1.27, 8.89]
+    },
+    {
+      "name": "RST",
+      "label": "RST",
+      "kind": "digital",
+      "dir": "in",
+      "vmax": 5.5,
+      "vih": 2.2,
+      "required": true,
+      "note": "Active LOW reset with an internal pull-down: tie HIGH (e.g. to SLP or logic 3.3/5 V) or the driver does nothing.",
+      "pos": [1.27, 11.43]
+    },
+    {
+      "name": "SLP",
+      "label": "SLP",
+      "kind": "digital",
+      "dir": "in",
+      "vmax": 5.5,
+      "vih": 2.2,
+      "required": true,
+      "note": "Active LOW sleep with an internal pull-down: tie HIGH to run.",
+      "pos": [1.27, 13.97]
+    },
+    {
+      "name": "STEP",
+      "label": "STEP",
+      "kind": "digital",
+      "dir": "in",
+      "vmax": 5.5,
+      "vih": 2.2,
+      "required": true,
+      "pos": [1.27, 16.51]
+    },
+    {
+      "name": "DIR",
+      "label": "DIR",
+      "kind": "digital",
+      "dir": "in",
+      "vmax": 5.5,
+      "vih": 2.2,
+      "required": true,
+      "pos": [1.27, 19.05]
+    },
+    {
+      "name": "VMOT",
+      "label": "VMOT",
+      "kind": "power_in",
+      "vmin": 8.2,
+      "vmax": 45,
+      "current": 0.005,
+      "current_peak": 0.01,
+      "note": "Motor supply 8.2-45 V. Put an electrolytic capacitor of at least 47-100 uF across VMOT and GND right at the board.",
+      "pos": [13.97, 1.27]
+    },
+    {
+      "name": "GND",
+      "label": "GND",
+      "kind": "ground",
+      "note": "Motor ground.",
+      "pos": [13.97, 3.81]
+    },
+    {
+      "name": "B2",
+      "label": "B2",
+      "kind": "motor",
+      "dir": "out",
+      "voltage_ref": "VMOT",
+      "current_max": 1.5,
+      "current_peak": 2.2,
+      "pos": [13.97, 6.35]
+    },
+    {
+      "name": "B1",
+      "label": "B1",
+      "kind": "motor",
+      "dir": "out",
+      "voltage_ref": "VMOT",
+      "current_max": 1.5,
+      "current_peak": 2.2,
+      "pos": [13.97, 8.89]
+    },
+    {
+      "name": "A1",
+      "label": "A1",
+      "kind": "motor",
+      "dir": "out",
+      "voltage_ref": "VMOT",
+      "current_max": 1.5,
+      "current_peak": 2.2,
+      "pos": [13.97, 11.43]
+    },
+    {
+      "name": "A2",
+      "label": "A2",
+      "kind": "motor",
+      "dir": "out",
+      "voltage_ref": "VMOT",
+      "current_max": 1.5,
+      "current_peak": 2.2,
+      "pos": [13.97, 13.97]
+    },
+    {
+      "name": "FAULT",
+      "label": "FLT",
+      "kind": "digital",
+      "dir": "out",
+      "open_drain": true,
+      "note": "Open-drain fault output with a 1.5 kOhm series resistor. Sits where the A4988 has VDD, so a socket wired for A4988 is safe.",
+      "pos": [13.97, 16.51]
+    },
+    {
+      "name": "GND_2",
+      "label": "GND",
+      "kind": "ground",
+      "note": "Logic ground.",
+      "pos": [13.97, 19.05]
+    }
+  ],
+  "internal": [
+    ["GND", "GND_2"]
+  ],
+  "flyback": true,
+  "breadboard": {
+    "fit": "straddle",
+    "rows": [
+      ["EN", "M0", "M1", "M2", "RST", "SLP", "STEP", "DIR"],
+      ["VMOT", "GND", "B2", "B1", "A1", "A2", "FAULT", "GND_2"]
+    ],
+    "row_spacing": 5,
+    "body_width_mm": 15.24
+  },
+  "geometry": {
+    "board": [15.24, 20.32, 1.6],
+    "holes": [],
+    "keepout": [
+      {
+        "rect": [2.5, 4, 10, 10],
+        "height": 10,
+        "note": "stick-on heatsink"
+      }
+    ],
+    "connectors": [],
+    "confidence": "verified",
+    "note": "Pololu carrier footprint: 0.6 x 0.8 inch, two 8-pin rows 0.5 inch apart."
+  }
+}

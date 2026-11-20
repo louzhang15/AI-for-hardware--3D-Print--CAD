@@ -1,0 +1,51 @@
+{
+  "id": "led-5mm",
+  "name": "5 mm LED, red",
+  "category": "passive",
+  "description": "Indicator LED. Always needs a series resistor.",
+  "sources": ["https://www.kingbrightusa.com/images/catalog/SPEC/WP7113ID.pdf"],
+  "confidence": "confirm",
+  "notes": [
+    "Red: forward voltage about 1.8-2.2 V (2.0 V typical) at 20 mA, 30 mA absolute max. Other colours (blue, white, green) are about 3.0-3.4 V.",
+    "Resistor: R = (Vsupply - Vf) / I. From 5 V at 10 mA: 300 Ohm -> use 330 Ohm. From 3.3 V at 5 mA: 260 Ohm -> use 270 Ohm.",
+    "Long leg = anode (+). The flat edge on the rim marks the cathode."
+  ],
+  "size": [5.8, 8.6, 5.8],
+  "color": "#e5484d",
+  "pins": [
+    {
+      "name": "A",
+      "label": "anode (+, long leg)",
+      "kind": "passive",
+      "pos": [1.27, 2.9]
+    },
+    {
+      "name": "K",
+      "label": "cathode (-, short leg, flat side)",
+      "kind": "passive",
+      "pos": [3.81, 2.9]
+    }
+  ],
+  "led": {
+    "color": "red",
+    "vf": 2,
+    "vf_min": 1.8,
+    "vf_max": 2.2,
+    "if_typ": 0.02,
+    "if_max": 0.03
+  },
+  "breadboard": {
+    "fit": "single",
+    "rows": [
+      ["A", "K"]
+    ]
+  },
+  "geometry": {
+    "board": [5.8, 5.8, 8.6],
+    "holes": [],
+    "keepout": [],
+    "connectors": [],
+    "confidence": "verified",
+    "note": "T-1 3/4 package, 5 mm dome, 2.54 mm lead spacing; panel hole 5 mm (bezel 6 mm)."
+  }
+}

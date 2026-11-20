@@ -1,0 +1,59 @@
+{
+  "id": "ds18b20",
+  "name": "DS18B20 1-Wire temperature sensor (TO-92)",
+  "category": "sensor",
+  "description": "Digital temperature sensor, -55 to 125 C, several on one data wire.",
+  "datasheet": "https://www.analog.com/media/en/technical-documentation/data-sheets/DS18B20.pdf",
+  "sources": ["https://www.analog.com/media/en/technical-documentation/data-sheets/DS18B20.pdf"],
+  "confidence": "verified",
+  "notes": [
+    "Flat face towards you, legs down: GND, DQ, VDD left to right. Reversed VDD/GND makes it hot and kills it.",
+    "Supply 3.0-5.5 V; power it from the same voltage as the microcontroller logic so DQ stays at a safe level.",
+    "DQ needs a 4.7 kOhm pull-up resistor to VDD (not built in). Waterproof probe versions: red = VDD, black = GND, yellow = DQ (check).",
+    "Many cheap DS18B20 are clones with slightly different behaviour."
+  ],
+  "size": [5.2, 5, 4.2],
+  "color": "#1b1b1b",
+  "pins": [
+    {
+      "name": "GND",
+      "label": "GND",
+      "kind": "ground",
+      "pos": [1.3, 2.4]
+    },
+    {
+      "name": "DQ",
+      "label": "DQ",
+      "kind": "digital",
+      "dir": "io",
+      "vmax_ref": "VDD",
+      "vmax_offset": 0.5,
+      "open_drain": true,
+      "note": "1-Wire data, open drain. Needs an external 4.7 kOhm pull-up to VDD.",
+      "pos": [3.84, 2.4]
+    },
+    {
+      "name": "VDD",
+      "label": "VDD",
+      "kind": "power_in",
+      "vmin": 3,
+      "vmax": 5.5,
+      "current": 0.0015,
+      "current_peak": 0.0015,
+      "pos": [6.38, 2.4]
+    }
+  ],
+  "breadboard": {
+    "fit": "single",
+    "rows": [
+      ["GND", "DQ", "VDD"]
+    ]
+  },
+  "geometry": {
+    "board": [5.2, 4.2, 5],
+    "holes": [],
+    "keepout": [],
+    "connectors": [],
+    "confidence": "verified"
+  }
+}

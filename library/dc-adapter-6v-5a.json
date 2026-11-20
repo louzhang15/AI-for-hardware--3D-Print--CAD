@@ -1,0 +1,52 @@
+{
+  "id": "dc-adapter-6v-5a",
+  "name": "6 V 5 A DC wall adapter",
+  "category": "power",
+  "description": "Regulated 6 V wall supply, up to 5 A, usually with a 5.5 x 2.1 mm barrel plug.",
+  "sources": ["https://www.meanwell.com/Upload/PDF/GST60A/GST60A-SPEC.PDF"],
+  "confidence": "confirm",
+  "notes": [
+    "Use the voltage and current printed on YOUR adapter label. 5 A must cover the peak (stall) current of everything on it.",
+    "Regulated switch-mode adapters hold the voltage within about +/-5 %; cheap unregulated ones can read well above the label with no load. Measure with a multimeter before connecting.",
+    "Use a barrel-jack-to-screw-terminal adapter; red wire to +, black to -. Check centre-positive.",
+    "Mains side is inside the sealed adapter; never open it or wire mains yourself."
+  ],
+  "size": [12, 10, 20],
+  "color": "#333333",
+  "pins": [
+    {
+      "name": "V+",
+      "label": "+",
+      "kind": "power_out",
+      "voltage": 6,
+      "voltage_max": 6.3,
+      "voltage_min": 5.7,
+      "current_max": 5,
+      "note": "Centre-positive barrel plug on most adapters: check the polarity symbol on the label.",
+      "pos": [6, 5]
+    },
+    {
+      "name": "GND",
+      "label": "-",
+      "kind": "ground",
+      "pos": [6, 15]
+    }
+  ],
+  "breadboard": {
+    "fit": "offboard"
+  },
+  "geometry": {
+    "board": [70, 45, 30],
+    "holes": [],
+    "keepout": [],
+    "connectors": [
+      {
+        "name": "barrel 5.5 x 2.1 mm",
+        "pos": [6, 0],
+        "side": "top"
+      }
+    ],
+    "confidence": "confirm",
+    "note": "Size is the barrel-to-terminal adapter end; the brick itself stays off the build."
+  }
+}

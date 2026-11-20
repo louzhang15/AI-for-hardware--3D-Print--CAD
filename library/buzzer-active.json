@@ -1,0 +1,48 @@
+{
+  "id": "buzzer-active",
+  "name": "Active buzzer 5 V (12 mm)",
+  "category": "module",
+  "description": "Beeps at a fixed tone when powered. Switch it with a transistor from a GPIO.",
+  "sources": ["https://www.mouser.com/datasheet/2/400/ef532_ps-13444.pdf"],
+  "confidence": "confirm",
+  "notes": [
+    "Active = built-in oscillator: apply DC and it beeps. Passive buzzers look the same but need a PWM tone.",
+    "Current about 25-35 mA at 5 V: above the recommended current of most GPIO, so use an NPN transistor or MOSFET.",
+    "Polarised: long leg (+)."
+  ],
+  "size": [12, 9.5, 12],
+  "color": "#111111",
+  "pins": [
+    {
+      "name": "+",
+      "label": "+ (long leg)",
+      "kind": "power_in",
+      "vmin": 3.5,
+      "vmax": 5.5,
+      "current": 0.03,
+      "current_peak": 0.03,
+      "note": "About 30 mA at 5 V: drive through a transistor rather than directly from a GPIO.",
+      "pos": [2.7, 6]
+    },
+    {
+      "name": "-",
+      "label": "-",
+      "kind": "ground",
+      "pos": [9.3, 6]
+    }
+  ],
+  "breadboard": {
+    "fit": "single",
+    "rows": [
+      ["+", "-"]
+    ],
+    "pitch": 3
+  },
+  "geometry": {
+    "board": [12, 12, 9.5],
+    "holes": [],
+    "keepout": [],
+    "connectors": [],
+    "confidence": "confirm"
+  }
+}

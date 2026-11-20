@@ -1,0 +1,85 @@
+{
+  "id": "buck-mp1584",
+  "name": "MP1584EN mini adjustable buck module",
+  "category": "power",
+  "description": "Tiny step-down converter (22 x 17 mm), 4.5-28 V in, adjustable out (default 5 V), about 1.5-2 A continuous.",
+  "datasheet": "https://www.monolithicpower.com/en/documentview/productdocument/index/version/2/document_type/Datasheet/lang/en/sku/MP1584EN-LF-Z",
+  "sources": [
+    "https://www.monolithicpower.com/en/mp1584.html",
+    "https://components101.com/modules/mini-mp1584-dc-dc-3a-adjustable-buck-module"
+  ],
+  "confidence": "confirm",
+  "notes": [
+    "The output voltage is set by a trim pot and arrives set to a random value (often the maximum). Power it with nothing connected, measure OUT+ with a multimeter, turn the pot to the target, then connect the load.",
+    "IN- and OUT- are the same ground (non-isolated).",
+    "No reverse-polarity protection: swapping IN+ and IN- destroys it instantly.",
+    "MP1584 chip: 4.5-28 V input, 3 A peak. The tiny module overheats above about 1.5-2 A continuous; this entry uses 1.8 A.",
+    "Absolute maximum input is 30 V: do not use on a 24 V supply that can spike, or on 7S+ batteries.",
+    "Pad positions vary between sellers; labels are printed on the bottom side of many boards."
+  ],
+  "size": [22, 4, 17],
+  "color": "#2a6b2a",
+  "params": {
+    "vout": 5
+  },
+  "pins": [
+    {
+      "name": "IN+",
+      "label": "IN+",
+      "kind": "power_in",
+      "vmin": 4.5,
+      "vmax": 28,
+      "current": 0.005,
+      "note": "Input 4.5-28 V and at least about 1 V above the output.",
+      "pos": [1.5, 15.5]
+    },
+    {
+      "name": "IN-",
+      "label": "IN-",
+      "kind": "ground",
+      "pos": [1.5, 1.5]
+    },
+    {
+      "name": "OUT+",
+      "label": "OUT+",
+      "kind": "power_out",
+      "voltage": "$vout",
+      "current_max": 1.8,
+      "note": "Set by the trim pot. MEASURE before connecting anything.",
+      "pos": [20.5, 15.5]
+    },
+    {
+      "name": "OUT-",
+      "label": "OUT-",
+      "kind": "ground",
+      "pos": [20.5, 1.5]
+    }
+  ],
+  "internal": [
+    ["IN-", "OUT-"]
+  ],
+  "regulators": [
+    {
+      "in": "IN+",
+      "out": "OUT+",
+      "gnd": "IN-",
+      "type": "buck",
+      "vout": "$vout",
+      "dropout": 1,
+      "current_max": 1.8,
+      "iq": 0.005,
+      "efficiency": 0.88,
+      "vin_max": 28
+    }
+  ],
+  "breadboard": {
+    "fit": "offboard"
+  },
+  "geometry": {
+    "board": [22, 17, 1.6],
+    "holes": [],
+    "keepout": [],
+    "connectors": [],
+    "confidence": "confirm"
+  }
+}

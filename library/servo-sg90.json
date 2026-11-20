@@ -1,0 +1,66 @@
+{
+  "id": "servo-sg90",
+  "name": "SG90 micro servo (9 g)",
+  "category": "actuator",
+  "description": "Tiny plastic-gear servo, about 1.8 kg.cm at 4.8 V. For light loads only.",
+  "sources": [
+    "http://www.ee.ic.ac.uk/pcheung/teaching/DE1_EE/stores/sg90_datasheet.pdf",
+    "https://components101.com/motors/servo-motor-basics-pinout-datasheet"
+  ],
+  "confidence": "confirm",
+  "notes": [
+    "Wire colours: brown (or black) = GND, red = V+, orange (or yellow / white) = signal. 3-pin 2.54 mm female plug.",
+    "Supply 4.8-6 V. Budget the stall (peak) current for every servo that can stall at the same time.",
+    "Power servos from a separate supply (not the microcontroller 5V/3V3 pin) and join the grounds.",
+    "Stall current is not in the TowerPro datasheet; measured values are about 0.5-0.75 A at 5 V. 0.7 A is used here.",
+    "Many clones exist; some are rated 4.8-6 V, a few say up to 7.2 V. Use 6 V max unless your datasheet says otherwise.",
+    "Size with mounting tabs: 32.3 x 12.2 mm, body 22.5 mm long, 31 mm tall incl. shaft."
+  ],
+  "size": [32.3, 31, 12.2],
+  "color": "#2a62c9",
+  "pins": [
+    {
+      "name": "SIG",
+      "label": "signal (orange)",
+      "kind": "pwm",
+      "dir": "in",
+      "vih": 2,
+      "vmax_ref": "V+",
+      "vmax_offset": 0,
+      "note": "50 Hz pulses, about 0.5-2.5 ms. 3.3 V and 5 V logic both work on most servos.",
+      "pos": [0, 4.83]
+    },
+    {
+      "name": "V+",
+      "label": "V+ (red)",
+      "kind": "power_in",
+      "vmin": 4.8,
+      "vmax": 6,
+      "current": 0.15,
+      "current_peak": 0.7,
+      "pos": [0, 6.1]
+    },
+    {
+      "name": "GND",
+      "label": "GND (brown)",
+      "kind": "ground",
+      "pos": [0, 7.37]
+    }
+  ],
+  "breadboard": {
+    "fit": "offboard"
+  },
+  "geometry": {
+    "board": [32.3, 12.2, 31],
+    "holes": [],
+    "keepout": [],
+    "connectors": [
+      {
+        "name": "servo lead",
+        "pos": [0, 6.1],
+        "side": "left"
+      }
+    ],
+    "confidence": "confirm"
+  }
+}

@@ -1,0 +1,192 @@
+{
+  "id": "l293d",
+  "name": "L293D quad half-H driver (DIP-16)",
+  "category": "driver",
+  "description": "Classic chip that drives 2 small DC motors (600 mA each) or 1 small stepper, with built-in flyback diodes. Plugs straight into a breadboard.",
+  "datasheet": "https://www.ti.com/lit/ds/symlink/l293.pdf",
+  "sources": ["https://www.ti.com/lit/ds/symlink/l293.pdf", "https://www.st.com/resource/en/datasheet/l293d.pdf"],
+  "confidence": "verified",
+  "notes": [
+    "Pins are named by number; labels follow the TI datasheet. Notch / dot marks pin 1.",
+    "VCC1 (pin 16) = 5 V logic, VCC2 (pin 8) = motor supply up to 36 V. Inputs are TTL (HIGH above 2.3 V) so 3.3 V logic works.",
+    "Only 600 mA continuous per channel (1.2 A peak for under 100 us). The bipolar outputs lose about 1.5-3 V in total; small hobby motors only.",
+    "The \"D\" version has internal output clamp (flyback) diodes; the plain L293 (no D) does not.",
+    "Pins 4, 5, 12, 13 are ground and also the heatsink: on a breadboard keep currents low."
+  ],
+  "size": [20.3, 5, 8],
+  "color": "#222222",
+  "pins": [
+    {
+      "name": "1",
+      "label": "1,2EN",
+      "kind": "pwm",
+      "dir": "in",
+      "voltage": 5,
+      "vmax": 7,
+      "vih": 2.3,
+      "required": true,
+      "note": "Enable for channels 1-2: HIGH (or PWM) to drive. Tie to 5 V if not used for speed.",
+      "pos": [1.26, 7.81]
+    },
+    {
+      "name": "2",
+      "label": "1A",
+      "kind": "digital",
+      "dir": "in",
+      "voltage": 5,
+      "vmax": 7,
+      "vih": 2.3,
+      "pos": [3.8, 7.81]
+    },
+    {
+      "name": "3",
+      "label": "1Y",
+      "kind": "motor",
+      "dir": "out",
+      "voltage_ref": "8",
+      "current_max": 0.6,
+      "current_peak": 1.2,
+      "pos": [6.34, 7.81]
+    },
+    {
+      "name": "4",
+      "label": "GND",
+      "kind": "ground",
+      "note": "GND pins also carry heat to the board: solder to a copper area when soldered.",
+      "pos": [8.88, 7.81]
+    },
+    {
+      "name": "5",
+      "label": "GND",
+      "kind": "ground",
+      "pos": [11.42, 7.81]
+    },
+    {
+      "name": "6",
+      "label": "2Y",
+      "kind": "motor",
+      "dir": "out",
+      "voltage_ref": "8",
+      "current_max": 0.6,
+      "current_peak": 1.2,
+      "pos": [13.96, 7.81]
+    },
+    {
+      "name": "7",
+      "label": "2A",
+      "kind": "digital",
+      "dir": "in",
+      "voltage": 5,
+      "vmax": 7,
+      "vih": 2.3,
+      "pos": [16.5, 7.81]
+    },
+    {
+      "name": "8",
+      "label": "VCC2",
+      "kind": "power_in",
+      "vmin": 4.5,
+      "vmax": 36,
+      "current": 0.008,
+      "current_peak": 0.024,
+      "note": "Motor supply, from VCC1 up to 36 V.",
+      "pos": [19.04, 7.81]
+    },
+    {
+      "name": "9",
+      "label": "3,4EN",
+      "kind": "pwm",
+      "dir": "in",
+      "voltage": 5,
+      "vmax": 7,
+      "vih": 2.3,
+      "required": true,
+      "note": "Enable for channels 3-4.",
+      "pos": [19.04, 0.19]
+    },
+    {
+      "name": "10",
+      "label": "3A",
+      "kind": "digital",
+      "dir": "in",
+      "voltage": 5,
+      "vmax": 7,
+      "vih": 2.3,
+      "pos": [16.5, 0.19]
+    },
+    {
+      "name": "11",
+      "label": "3Y",
+      "kind": "motor",
+      "dir": "out",
+      "voltage_ref": "8",
+      "current_max": 0.6,
+      "current_peak": 1.2,
+      "pos": [13.96, 0.19]
+    },
+    {
+      "name": "12",
+      "label": "GND",
+      "kind": "ground",
+      "pos": [11.42, 0.19]
+    },
+    {
+      "name": "13",
+      "label": "GND",
+      "kind": "ground",
+      "pos": [8.88, 0.19]
+    },
+    {
+      "name": "14",
+      "label": "4Y",
+      "kind": "motor",
+      "dir": "out",
+      "voltage_ref": "8",
+      "current_max": 0.6,
+      "current_peak": 1.2,
+      "pos": [6.34, 0.19]
+    },
+    {
+      "name": "15",
+      "label": "4A",
+      "kind": "digital",
+      "dir": "in",
+      "voltage": 5,
+      "vmax": 7,
+      "vih": 2.3,
+      "pos": [3.8, 0.19]
+    },
+    {
+      "name": "16",
+      "label": "VCC1",
+      "kind": "power_in",
+      "vmin": 4.5,
+      "vmax": 7,
+      "current": 0.024,
+      "current_peak": 0.06,
+      "note": "Logic supply 4.5-7 V (use 5 V).",
+      "pos": [1.26, 0.19]
+    }
+  ],
+  "internal": [
+    ["4", "5", "12", "13"]
+  ],
+  "flyback": true,
+  "breadboard": {
+    "fit": "straddle",
+    "rows": [
+      ["1", "2", "3", "4", "5", "6", "7", "8"],
+      ["16", "15", "14", "13", "12", "11", "10", "9"]
+    ],
+    "row_spacing": 3,
+    "body_width_mm": 6.35
+  },
+  "geometry": {
+    "board": [19.3, 6.35, 3.3],
+    "holes": [],
+    "keepout": [],
+    "connectors": [],
+    "confidence": "verified",
+    "note": "JEDEC DIP-16 (N package): 0.1 inch pitch, rows 0.3 inch apart, notch at the pin 1 end (left)."
+  }
+}

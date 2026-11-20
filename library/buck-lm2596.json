@@ -1,0 +1,95 @@
+{
+  "id": "buck-lm2596",
+  "name": "LM2596 adjustable buck converter module (blue board)",
+  "category": "power",
+  "description": "Steps a higher DC voltage down to an adjustable lower one (default here 5 V), about 2 A continuous, 3 A peak with heatsinking.",
+  "datasheet": "https://www.ti.com/lit/ds/symlink/lm2596.pdf",
+  "sources": [
+    "https://www.ti.com/lit/ds/symlink/lm2596.pdf",
+    "https://microcontrollerslab.com/best-step-down-voltage-regulator-modules-lm2596-mp1584-xl4016-more-buying-guide"
+  ],
+  "confidence": "confirm",
+  "notes": [
+    "The output voltage is set by a trim pot and arrives set to a random value (often the maximum). Power it with nothing connected, measure OUT+ with a multimeter, turn the pot to the target, then connect the load.",
+    "IN- and OUT- are the same ground (non-isolated).",
+    "No reverse-polarity protection: swapping IN+ and IN- destroys it instantly.",
+    "LM2596 chip: 4.5-40 V input, 3 A. Cheap modules use 35 V or lower input capacitors and get hot above about 2 A without a heatsink, so this entry uses 35 V and 2 A.",
+    "Needs about 1.5-2 V of headroom: to get 5 V out, feed at least about 7 V.",
+    "Efficiency is roughly 75-88 % depending on load and input voltage.",
+    "Fakes (counterfeit LM2596) are common and may not reach 3 A."
+  ],
+  "size": [43, 14, 21],
+  "color": "#1b4f9c",
+  "params": {
+    "vout": 5
+  },
+  "pins": [
+    {
+      "name": "IN+",
+      "label": "IN+",
+      "kind": "power_in",
+      "vmin": 4.5,
+      "vmax": 35,
+      "current": 0.005,
+      "note": "Input 4.5-35 V and at least about 1.5 V above the output.",
+      "pos": [2.5, 18.5]
+    },
+    {
+      "name": "IN-",
+      "label": "IN-",
+      "kind": "ground",
+      "pos": [2.5, 2.5]
+    },
+    {
+      "name": "OUT+",
+      "label": "OUT+",
+      "kind": "power_out",
+      "voltage": "$vout",
+      "current_max": 2,
+      "note": "Set by the trim pot. MEASURE before connecting anything.",
+      "pos": [40.5, 18.5]
+    },
+    {
+      "name": "OUT-",
+      "label": "OUT-",
+      "kind": "ground",
+      "pos": [40.5, 2.5]
+    }
+  ],
+  "internal": [
+    ["IN-", "OUT-"]
+  ],
+  "regulators": [
+    {
+      "in": "IN+",
+      "out": "OUT+",
+      "gnd": "IN-",
+      "type": "buck",
+      "vout": "$vout",
+      "dropout": 1.5,
+      "current_max": 2,
+      "iq": 0.005,
+      "efficiency": 0.8,
+      "vin_max": 35
+    }
+  ],
+  "breadboard": {
+    "fit": "offboard"
+  },
+  "geometry": {
+    "board": [43, 21, 1.6],
+    "holes": [
+      {
+        "pos": [6.5, 2.5],
+        "d": 3
+      },
+      {
+        "pos": [36.5, 18.5],
+        "d": 3
+      }
+    ],
+    "keepout": [],
+    "connectors": [],
+    "confidence": "confirm"
+  }
+}

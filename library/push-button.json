@@ -1,0 +1,62 @@
+{
+  "id": "push-button",
+  "name": "6 mm tactile push button (4 legs)",
+  "category": "passive",
+  "description": "Momentary button. Pressing joins side 1 to side 2.",
+  "sources": ["https://www.e-switch.com/wp-content/uploads/2022/06/TL1105.pdf"],
+  "confidence": "verified",
+  "notes": [
+    "Legs 1A/1B are joined inside, and 2A/2B are joined inside. The button connects 1 to 2 when pressed.",
+    "Place it across the breadboard centre gap; wire one side to a GPIO with INPUT_PULLUP and the other to GND (reads LOW when pressed).",
+    "Signal-level only (about 50 mA at 12 V)."
+  ],
+  "size": [6, 5, 7.5],
+  "color": "#222222",
+  "pins": [
+    {
+      "name": "1A",
+      "label": "1",
+      "kind": "passive",
+      "pos": [0.5, 0.5]
+    },
+    {
+      "name": "1B",
+      "label": "1",
+      "kind": "passive",
+      "pos": [0.5, 7]
+    },
+    {
+      "name": "2A",
+      "label": "2",
+      "kind": "passive",
+      "pos": [5.5, 0.5]
+    },
+    {
+      "name": "2B",
+      "label": "2",
+      "kind": "passive",
+      "pos": [5.5, 7]
+    }
+  ],
+  "internal": [
+    ["1A", "1B"],
+    ["2A", "2B"]
+  ],
+  "breadboard": {
+    "fit": "straddle",
+    "rows": [
+      ["1A", "2A"],
+      ["1B", "2B"]
+    ],
+    "row_spacing": 3,
+    "pitch": 2,
+    "body_width_mm": 6
+  },
+  "geometry": {
+    "board": [6, 6, 5],
+    "holes": [],
+    "keepout": [],
+    "connectors": [],
+    "confidence": "confirm"
+  }
+}

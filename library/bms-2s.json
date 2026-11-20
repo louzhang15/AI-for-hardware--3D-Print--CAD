@@ -1,0 +1,74 @@
+{
+  "id": "bms-2s",
+  "name": "2S Li-ion protection board (BMS)",
+  "category": "protection",
+  "description": "Protects a 2-cell Li-ion/LiPo pack against over-charge, over-discharge and short circuit.",
+  "sources": ["https://www.ti.com/lit/ds/symlink/bq29209.pdf"],
+  "confidence": "confirm",
+  "notes": [
+    "Model: B+ and P+ are joined; the BMS switches the negative side (B- to P-) with MOSFETs. Here B- and P- are modelled as one ground for simplicity.",
+    "Current rating (rating_a) depends on the board: 3 A, 5 A, 8 A and 10 A versions look alike. Read the listing and set rating_a.",
+    "Wire the cells first: B- to cell 1 -, BM to the middle, B+ to cell 2 +. Wrong order destroys the board.",
+    "Cut-off voltages are typically 4.25-4.3 V per cell (charge) and 2.5-3.0 V per cell (discharge)."
+  ],
+  "size": [26, 4, 16],
+  "color": "#2a6b2a",
+  "params": {
+    "rating_a": 3
+  },
+  "pins": [
+    {
+      "name": "B+",
+      "label": "B+",
+      "kind": "power_rail",
+      "vmax": 8.5,
+      "note": "To the + of cell 2 (top of the stack).",
+      "pos": [13, 14]
+    },
+    {
+      "name": "BM",
+      "label": "BM",
+      "kind": "power_rail",
+      "vmax": 4.3,
+      "note": "Balance / midpoint: between cell 1 + and cell 2 -.",
+      "pos": [8, 14]
+    },
+    {
+      "name": "B-",
+      "label": "B-",
+      "kind": "ground",
+      "note": "To the - of cell 1 (bottom of the stack).",
+      "pos": [3, 14]
+    },
+    {
+      "name": "P+",
+      "label": "P+",
+      "kind": "power_rail",
+      "note": "Pack output + (load and charger).",
+      "pos": [18, 14]
+    },
+    {
+      "name": "P-",
+      "label": "P-",
+      "kind": "ground",
+      "note": "Pack output - (load and charger). Switched by the BMS MOSFETs.",
+      "pos": [23, 14]
+    }
+  ],
+  "internal": [
+    ["B+", "P+"],
+    ["B-", "P-"]
+  ],
+  "protection": "bms",
+  "rating_a": "$rating_a",
+  "breadboard": {
+    "fit": "offboard"
+  },
+  "geometry": {
+    "board": [26, 16, 1.6],
+    "holes": [],
+    "keepout": [],
+    "connectors": [],
+    "confidence": "confirm"
+  }
+}

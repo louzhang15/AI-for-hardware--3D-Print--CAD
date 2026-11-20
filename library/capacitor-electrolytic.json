@@ -1,0 +1,52 @@
+{
+  "id": "capacitor-electrolytic",
+  "name": "Aluminium electrolytic capacitor (radial)",
+  "category": "passive",
+  "description": "Bulk capacitor for supply rails (servo / motor driver supply). Set params.uf and params.v_rated.",
+  "sources": ["https://industrial.panasonic.com/cdbs/www-data/pdf/RDF0000/ABA0000C1209.pdf"],
+  "confidence": "confirm",
+  "notes": [
+    "Polarised: the stripe marks the - leg. Reversed or over-voltage electrolytics can burst.",
+    "Voltage rating must be above the highest rail voltage with margin (use at least 1.5 x: a 16 V cap on 12 V is too tight, use 25 V).",
+    "Typical uses: 100-470 uF across a driver VMOT, 470-1000 uF on a servo rail.",
+    "Size depends on value and voltage: check the can (100 uF 25 V is about 6.3 x 11 mm)."
+  ],
+  "size": [6.3, 11, 6.3],
+  "color": "#1d3d7a",
+  "params": {
+    "uf": 100,
+    "v_rated": 25
+  },
+  "pins": [
+    {
+      "name": "+",
+      "label": "+ (long leg)",
+      "kind": "passive",
+      "pos": [1.9, 3.15]
+    },
+    {
+      "name": "-",
+      "label": "- (stripe)",
+      "kind": "passive",
+      "pos": [4.4, 3.15]
+    }
+  ],
+  "capacitor": {
+    "uf": "$uf",
+    "v_rated": "$v_rated",
+    "polarized": true
+  },
+  "breadboard": {
+    "fit": "single",
+    "rows": [
+      ["+", "-"]
+    ]
+  },
+  "geometry": {
+    "board": [6.3, 6.3, 11],
+    "holes": [],
+    "keepout": [],
+    "connectors": [],
+    "confidence": "confirm"
+  }
+}

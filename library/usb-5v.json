@@ -1,0 +1,44 @@
+{
+  "id": "usb-5v",
+  "name": "USB port of a laptop / PC (5 V, 0.5 A)",
+  "category": "power",
+  "description": "Power from a computer USB port: fine for a microcontroller and sensors, not for servos or motors.",
+  "sources": ["https://www.usb.org/document-library/usb-20-specification"],
+  "confidence": "verified",
+  "notes": [
+    "USB 2.0 allows 500 mA at 4.75-5.25 V (USB 3.x: 900 mA). The dev board itself takes part of it.",
+    "Never power servos or motors from USB: stall current makes the laptop cut the port or resets the board.",
+    "If the project also has its own supply, join grounds but never connect two 5 V sources together."
+  ],
+  "size": [16, 8, 12],
+  "color": "#555555",
+  "pins": [
+    {
+      "name": "5V",
+      "label": "VBUS",
+      "kind": "power_out",
+      "voltage": 5,
+      "voltage_max": 5.25,
+      "voltage_min": 4.75,
+      "current_max": 0.5,
+      "note": "USB 2.0 port: 500 mA guaranteed (USB 3.x: 900 mA). Many laptops shut the port off above that.",
+      "pos": [4, 6]
+    },
+    {
+      "name": "GND",
+      "label": "GND",
+      "kind": "ground",
+      "pos": [12, 6]
+    }
+  ],
+  "breadboard": {
+    "fit": "offboard"
+  },
+  "geometry": {
+    "board": [16, 12, 8],
+    "holes": [],
+    "keepout": [],
+    "connectors": [],
+    "confidence": "confirm"
+  }
+}

@@ -1,0 +1,55 @@
+{
+  "id": "switch-rocker",
+  "name": "Rocker power switch (SPST, KCD1-style)",
+  "category": "protection",
+  "description": "Main power switch: cuts the supply to the whole build.",
+  "sources": ["https://www.e-switch.com/product-catalog/rocker/product-lines/r4-series-rocker-switches/"],
+  "confidence": "confirm",
+  "notes": [
+    "Ratings printed on small rocker switches are usually AC (e.g. 6 A 250 V AC). DC breaking capacity is lower, especially for motor loads: derate to about half for 12-24 V DC.",
+    "Panel cut-out for KCD1 style: about 21 x 15 mm.",
+    "Switch the + line, after the fuse."
+  ],
+  "size": [14, 20, 14],
+  "color": "#111111",
+  "params": {
+    "rating_a": 6
+  },
+  "pins": [
+    {
+      "name": "IN",
+      "label": "IN",
+      "kind": "power_rail",
+      "note": "Supply side.",
+      "pos": [7, 4]
+    },
+    {
+      "name": "OUT",
+      "label": "OUT",
+      "kind": "power_rail",
+      "note": "Load side.",
+      "pos": [7, 10]
+    }
+  ],
+  "internal": [
+    ["IN", "OUT"]
+  ],
+  "protection": "switch",
+  "rating_a": "$rating_a",
+  "breadboard": {
+    "fit": "offboard"
+  },
+  "geometry": {
+    "board": [21, 15, 20],
+    "holes": [],
+    "keepout": [
+      {
+        "rect": [0, 0, 21, 15],
+        "height": 20,
+        "note": "panel cut-out 21 x 15 mm, body depth about 20 mm"
+      }
+    ],
+    "connectors": [],
+    "confidence": "confirm"
+  }
+}

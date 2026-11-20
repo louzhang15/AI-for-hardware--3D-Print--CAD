@@ -1,0 +1,615 @@
+{
+  "id": "pca9685-breakout",
+  "name": "PCA9685 16-channel PWM / servo driver (Adafruit-style breakout)",
+  "category": "driver",
+  "description": "Drives up to 16 servos or LEDs over I2C (2 pins), so the microcontroller does not have to make the PWM itself.",
+  "datasheet": "https://www.nxp.com/docs/en/data-sheet/PCA9685.pdf",
+  "sources": [
+    "https://www.nxp.com/docs/en/data-sheet/PCA9685.pdf",
+    "https://learn.adafruit.com/16-channel-pwm-servo-driver/pinouts",
+    "https://www.adafruit.com/product/815",
+    "https://learn.adafruit.com/16-channel-pwm-servo-driver.md?view=all"
+  ],
+  "confidence": "verified",
+  "notes": [
+    "Two separate supplies: VCC is the chip logic (2.3-5.5 V, from your microcontroller), V+ is servo power (5-6 V, from a supply able to give the servos stall current). Never connect VCC to V+.",
+    "Inputs (SDA, SCL, OE, address pins) are 5.5 V tolerant, but HIGH needs at least 0.7 x VCC. With VCC = 5 V a 3.3 V microcontroller is below that threshold: power VCC from 3.3 V when using an ESP32 or Pico.",
+    "SDA/SCL have 10 kOhm pull-ups to VCC on the Adafruit board; several boards on one bus add up their pull-ups in parallel.",
+    "Default I2C address 0x40 (A0-A5 solder jumpers change it). PWM frequency for servos: 50 Hz.",
+    "Each output has a 220 Ohm series resistor and swings to VCC: fine for servo signals and LEDs, not for driving motors.",
+    "The terminal block input is reverse-polarity protected; the V+ header pins are not. Adafruit suggests 5-6 V for servos and a bulk capacitor (about 100 uF per servo, footprint C2) for many servos.",
+    "Clone boards (often blue/purple) use the same pinout; some omit the reverse-polarity MOSFET. Check yours."
+  ],
+  "size": [62.5, 12, 25.4],
+  "color": "#1f4fa8",
+  "pins": [
+    {
+      "name": "GND",
+      "label": "GND",
+      "kind": "ground",
+      "pos": [2, 6.35]
+    },
+    {
+      "name": "OE",
+      "label": "OE",
+      "kind": "digital",
+      "dir": "in",
+      "voltage_ref": "VCC",
+      "vmax": 5.5,
+      "note": "Output enable, active LOW, pulled low on the board. Leave unconnected unless you want to switch all outputs off.",
+      "pos": [2, 8.89]
+    },
+    {
+      "name": "SCL",
+      "label": "SCL",
+      "kind": "i2c_scl",
+      "dir": "io",
+      "voltage_ref": "VCC",
+      "vmax": 5.5,
+      "open_drain": true,
+      "pullup_ref": "VCC",
+      "pullup_ohms": 10000,
+      "pullup_weak": false,
+      "pos": [2, 11.43]
+    },
+    {
+      "name": "SDA",
+      "label": "SDA",
+      "kind": "i2c_sda",
+      "dir": "io",
+      "voltage_ref": "VCC",
+      "vmax": 5.5,
+      "open_drain": true,
+      "pullup_ref": "VCC",
+      "pullup_ohms": 10000,
+      "pullup_weak": false,
+      "pos": [2, 13.97]
+    },
+    {
+      "name": "VCC",
+      "label": "VCC",
+      "kind": "power_in",
+      "vmin": 2.3,
+      "vmax": 5.5,
+      "current": 0.01,
+      "current_peak": 0.03,
+      "note": "Logic supply for the PCA9685 chip (2.3-5.5 V). Use the same voltage as your microcontroller logic (3.3 V for ESP32/Pico).",
+      "pos": [2, 16.51]
+    },
+    {
+      "name": "V+",
+      "label": "V+",
+      "kind": "power_rail",
+      "vmax": 12,
+      "note": "Servo power rail, not used by the chip. 5-6 V for normal servos. Header V+ has no reverse-polarity protection (the terminal block does).",
+      "pos": [2, 19.05]
+    },
+    {
+      "name": "GND_R",
+      "label": "GND",
+      "kind": "ground",
+      "pos": [60.5, 6.35]
+    },
+    {
+      "name": "OE_R",
+      "label": "OE",
+      "kind": "digital",
+      "dir": "in",
+      "voltage_ref": "VCC",
+      "vmax": 5.5,
+      "note": "Output enable, active LOW, pulled low on the board. Leave unconnected unless you want to switch all outputs off.",
+      "pos": [60.5, 8.89]
+    },
+    {
+      "name": "SCL_R",
+      "label": "SCL",
+      "kind": "i2c_scl",
+      "dir": "io",
+      "voltage_ref": "VCC",
+      "vmax": 5.5,
+      "open_drain": true,
+      "pullup_ref": "VCC",
+      "pullup_ohms": 10000,
+      "pullup_weak": false,
+      "pos": [60.5, 11.43]
+    },
+    {
+      "name": "SDA_R",
+      "label": "SDA",
+      "kind": "i2c_sda",
+      "dir": "io",
+      "voltage_ref": "VCC",
+      "vmax": 5.5,
+      "open_drain": true,
+      "pullup_ref": "VCC",
+      "pullup_ohms": 10000,
+      "pullup_weak": false,
+      "pos": [60.5, 13.97]
+    },
+    {
+      "name": "VCC_R",
+      "label": "VCC",
+      "kind": "power_in",
+      "vmin": 2.3,
+      "vmax": 5.5,
+      "current": 0.01,
+      "current_peak": 0.03,
+      "note": "Logic supply for the PCA9685 chip (2.3-5.5 V). Use the same voltage as your microcontroller logic (3.3 V for ESP32/Pico).",
+      "pos": [60.5, 16.51]
+    },
+    {
+      "name": "V+_R",
+      "label": "V+",
+      "kind": "power_rail",
+      "vmax": 12,
+      "note": "Servo power rail, not used by the chip. 5-6 V for normal servos. Header V+ has no reverse-polarity protection (the terminal block does).",
+      "pos": [60.5, 19.05]
+    },
+    {
+      "name": "V+_T",
+      "label": "V+",
+      "kind": "power_rail",
+      "vmax": 12,
+      "note": "Screw terminal for servo power. Reverse-polarity protected (series MOSFET).",
+      "pos": [28.75, 2.5]
+    },
+    {
+      "name": "GND_T",
+      "label": "GND",
+      "kind": "ground",
+      "note": "Screw terminal ground.",
+      "pos": [33.75, 2.5]
+    },
+    {
+      "name": "PWM0",
+      "label": "PWM0",
+      "kind": "pwm",
+      "dir": "out",
+      "voltage_ref": "VCC",
+      "current_max": 0.01,
+      "note": "Totem-pole output to VCC through a 220 Ohm resistor. 25 mA sink / 10 mA source per pin.",
+      "pos": [9.5, 18.32]
+    },
+    {
+      "name": "PWM1",
+      "label": "PWM1",
+      "kind": "pwm",
+      "dir": "out",
+      "voltage_ref": "VCC",
+      "current_max": 0.01,
+      "pos": [12.04, 18.32]
+    },
+    {
+      "name": "PWM2",
+      "label": "PWM2",
+      "kind": "pwm",
+      "dir": "out",
+      "voltage_ref": "VCC",
+      "current_max": 0.01,
+      "pos": [14.58, 18.32]
+    },
+    {
+      "name": "PWM3",
+      "label": "PWM3",
+      "kind": "pwm",
+      "dir": "out",
+      "voltage_ref": "VCC",
+      "current_max": 0.01,
+      "pos": [17.12, 18.32]
+    },
+    {
+      "name": "PWM4",
+      "label": "PWM4",
+      "kind": "pwm",
+      "dir": "out",
+      "voltage_ref": "VCC",
+      "current_max": 0.01,
+      "pos": [22.2, 18.32]
+    },
+    {
+      "name": "PWM5",
+      "label": "PWM5",
+      "kind": "pwm",
+      "dir": "out",
+      "voltage_ref": "VCC",
+      "current_max": 0.01,
+      "pos": [24.74, 18.32]
+    },
+    {
+      "name": "PWM6",
+      "label": "PWM6",
+      "kind": "pwm",
+      "dir": "out",
+      "voltage_ref": "VCC",
+      "current_max": 0.01,
+      "pos": [27.28, 18.32]
+    },
+    {
+      "name": "PWM7",
+      "label": "PWM7",
+      "kind": "pwm",
+      "dir": "out",
+      "voltage_ref": "VCC",
+      "current_max": 0.01,
+      "pos": [29.82, 18.32]
+    },
+    {
+      "name": "PWM8",
+      "label": "PWM8",
+      "kind": "pwm",
+      "dir": "out",
+      "voltage_ref": "VCC",
+      "current_max": 0.01,
+      "pos": [34.9, 18.32]
+    },
+    {
+      "name": "PWM9",
+      "label": "PWM9",
+      "kind": "pwm",
+      "dir": "out",
+      "voltage_ref": "VCC",
+      "current_max": 0.01,
+      "pos": [37.44, 18.32]
+    },
+    {
+      "name": "PWM10",
+      "label": "PWM10",
+      "kind": "pwm",
+      "dir": "out",
+      "voltage_ref": "VCC",
+      "current_max": 0.01,
+      "pos": [39.98, 18.32]
+    },
+    {
+      "name": "PWM11",
+      "label": "PWM11",
+      "kind": "pwm",
+      "dir": "out",
+      "voltage_ref": "VCC",
+      "current_max": 0.01,
+      "pos": [42.52, 18.32]
+    },
+    {
+      "name": "PWM12",
+      "label": "PWM12",
+      "kind": "pwm",
+      "dir": "out",
+      "voltage_ref": "VCC",
+      "current_max": 0.01,
+      "pos": [47.6, 18.32]
+    },
+    {
+      "name": "PWM13",
+      "label": "PWM13",
+      "kind": "pwm",
+      "dir": "out",
+      "voltage_ref": "VCC",
+      "current_max": 0.01,
+      "pos": [50.14, 18.32]
+    },
+    {
+      "name": "PWM14",
+      "label": "PWM14",
+      "kind": "pwm",
+      "dir": "out",
+      "voltage_ref": "VCC",
+      "current_max": 0.01,
+      "pos": [52.68, 18.32]
+    },
+    {
+      "name": "PWM15",
+      "label": "PWM15",
+      "kind": "pwm",
+      "dir": "out",
+      "voltage_ref": "VCC",
+      "current_max": 0.01,
+      "pos": [55.22, 18.32]
+    },
+    {
+      "name": "V+0",
+      "label": "V+",
+      "kind": "power_rail",
+      "vmax": 12,
+      "pos": [9.5, 20.86]
+    },
+    {
+      "name": "V+1",
+      "label": "V+",
+      "kind": "power_rail",
+      "vmax": 12,
+      "pos": [12.04, 20.86]
+    },
+    {
+      "name": "V+2",
+      "label": "V+",
+      "kind": "power_rail",
+      "vmax": 12,
+      "pos": [14.58, 20.86]
+    },
+    {
+      "name": "V+3",
+      "label": "V+",
+      "kind": "power_rail",
+      "vmax": 12,
+      "pos": [17.12, 20.86]
+    },
+    {
+      "name": "V+4",
+      "label": "V+",
+      "kind": "power_rail",
+      "vmax": 12,
+      "pos": [22.2, 20.86]
+    },
+    {
+      "name": "V+5",
+      "label": "V+",
+      "kind": "power_rail",
+      "vmax": 12,
+      "pos": [24.74, 20.86]
+    },
+    {
+      "name": "V+6",
+      "label": "V+",
+      "kind": "power_rail",
+      "vmax": 12,
+      "pos": [27.28, 20.86]
+    },
+    {
+      "name": "V+7",
+      "label": "V+",
+      "kind": "power_rail",
+      "vmax": 12,
+      "pos": [29.82, 20.86]
+    },
+    {
+      "name": "V+8",
+      "label": "V+",
+      "kind": "power_rail",
+      "vmax": 12,
+      "pos": [34.9, 20.86]
+    },
+    {
+      "name": "V+9",
+      "label": "V+",
+      "kind": "power_rail",
+      "vmax": 12,
+      "pos": [37.44, 20.86]
+    },
+    {
+      "name": "V+10",
+      "label": "V+",
+      "kind": "power_rail",
+      "vmax": 12,
+      "pos": [39.98, 20.86]
+    },
+    {
+      "name": "V+11",
+      "label": "V+",
+      "kind": "power_rail",
+      "vmax": 12,
+      "pos": [42.52, 20.86]
+    },
+    {
+      "name": "V+12",
+      "label": "V+",
+      "kind": "power_rail",
+      "vmax": 12,
+      "pos": [47.6, 20.86]
+    },
+    {
+      "name": "V+13",
+      "label": "V+",
+      "kind": "power_rail",
+      "vmax": 12,
+      "pos": [50.14, 20.86]
+    },
+    {
+      "name": "V+14",
+      "label": "V+",
+      "kind": "power_rail",
+      "vmax": 12,
+      "pos": [52.68, 20.86]
+    },
+    {
+      "name": "V+15",
+      "label": "V+",
+      "kind": "power_rail",
+      "vmax": 12,
+      "pos": [55.22, 20.86]
+    },
+    {
+      "name": "GND0",
+      "label": "GND",
+      "kind": "ground",
+      "pos": [9.5, 23.4]
+    },
+    {
+      "name": "GND1",
+      "label": "GND",
+      "kind": "ground",
+      "pos": [12.04, 23.4]
+    },
+    {
+      "name": "GND2",
+      "label": "GND",
+      "kind": "ground",
+      "pos": [14.58, 23.4]
+    },
+    {
+      "name": "GND3",
+      "label": "GND",
+      "kind": "ground",
+      "pos": [17.12, 23.4]
+    },
+    {
+      "name": "GND4",
+      "label": "GND",
+      "kind": "ground",
+      "pos": [22.2, 23.4]
+    },
+    {
+      "name": "GND5",
+      "label": "GND",
+      "kind": "ground",
+      "pos": [24.74, 23.4]
+    },
+    {
+      "name": "GND6",
+      "label": "GND",
+      "kind": "ground",
+      "pos": [27.28, 23.4]
+    },
+    {
+      "name": "GND7",
+      "label": "GND",
+      "kind": "ground",
+      "pos": [29.82, 23.4]
+    },
+    {
+      "name": "GND8",
+      "label": "GND",
+      "kind": "ground",
+      "pos": [34.9, 23.4]
+    },
+    {
+      "name": "GND9",
+      "label": "GND",
+      "kind": "ground",
+      "pos": [37.44, 23.4]
+    },
+    {
+      "name": "GND10",
+      "label": "GND",
+      "kind": "ground",
+      "pos": [39.98, 23.4]
+    },
+    {
+      "name": "GND11",
+      "label": "GND",
+      "kind": "ground",
+      "pos": [42.52, 23.4]
+    },
+    {
+      "name": "GND12",
+      "label": "GND",
+      "kind": "ground",
+      "pos": [47.6, 23.4]
+    },
+    {
+      "name": "GND13",
+      "label": "GND",
+      "kind": "ground",
+      "pos": [50.14, 23.4]
+    },
+    {
+      "name": "GND14",
+      "label": "GND",
+      "kind": "ground",
+      "pos": [52.68, 23.4]
+    },
+    {
+      "name": "GND15",
+      "label": "GND",
+      "kind": "ground",
+      "pos": [55.22, 23.4]
+    }
+  ],
+  "internal": [
+    [
+      "V+",
+      "V+_R",
+      "V+_T",
+      "V+0",
+      "V+1",
+      "V+2",
+      "V+3",
+      "V+4",
+      "V+5",
+      "V+6",
+      "V+7",
+      "V+8",
+      "V+9",
+      "V+10",
+      "V+11",
+      "V+12",
+      "V+13",
+      "V+14",
+      "V+15"
+    ],
+    [
+      "GND",
+      "GND_R",
+      "GND_T",
+      "GND0",
+      "GND1",
+      "GND2",
+      "GND3",
+      "GND4",
+      "GND5",
+      "GND6",
+      "GND7",
+      "GND8",
+      "GND9",
+      "GND10",
+      "GND11",
+      "GND12",
+      "GND13",
+      "GND14",
+      "GND15"
+    ],
+    ["OE", "OE_R"],
+    ["SCL", "SCL_R"],
+    ["SDA", "SDA_R"],
+    ["VCC", "VCC_R"]
+  ],
+  "breadboard": {
+    "fit": "offboard"
+  },
+  "geometry": {
+    "board": [62.5, 25.4, 1.6],
+    "holes": [
+      {
+        "pos": [3, 2.5],
+        "d": 2.5
+      },
+      {
+        "pos": [59.5, 2.5],
+        "d": 2.5
+      },
+      {
+        "pos": [3, 22.9],
+        "d": 2.5
+      },
+      {
+        "pos": [59.5, 22.9],
+        "d": 2.5
+      }
+    ],
+    "keepout": [
+      {
+        "rect": [24.5, 0, 13.5, 7.5],
+        "height": 10,
+        "note": "2-pin screw terminal for V+ (wire entry from the top edge)"
+      },
+      {
+        "rect": [8, 15.5, 47, 10],
+        "height": 11.5,
+        "note": "servo headers: plugs need about 15 mm above the board"
+      }
+    ],
+    "connectors": [
+      {
+        "name": "V+ terminal",
+        "pos": [31.25, 0],
+        "side": "top"
+      },
+      {
+        "name": "servo headers",
+        "pos": [31.25, 25.4],
+        "side": "bottom"
+      }
+    ],
+    "confidence": "confirm",
+    "note": "Board 2.5 x 1.0 inch (62.5 x 25.4 mm); header and hole positions approximate."
+  }
+}

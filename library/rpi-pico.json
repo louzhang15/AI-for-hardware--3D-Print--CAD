@@ -1,0 +1,529 @@
+{
+  "id": "rpi-pico",
+  "name": "Raspberry Pi Pico (RP2040)",
+  "category": "controller",
+  "description": "RP2040 board, dual-core, 26 GPIO with 3.3 V logic, 3 ADC inputs. Cheap and breadboard friendly.",
+  "datasheet": "https://datasheets.raspberrypi.com/pico/pico-datasheet.pdf",
+  "sources": [
+    "https://datasheets.raspberrypi.com/pico/pico-datasheet.pdf",
+    "https://datasheets.raspberrypi.com/rp2040/rp2040-datasheet.pdf",
+    "https://hackaday.com/2023/04/05/rp2040-and-5v-logic-best-friends-this-fx9000p-confirms/",
+    "https://penguintutor.com/electronics/pico-power"
+  ],
+  "confidence": "verified",
+  "notes": [
+    "GPIO are NOT 5 V tolerant: input absolute max is IOVDD + 0.5 V; ADC pins (GP26-28) are stricter. Treat 3.6 V as the limit and level-shift any 5 V signal.",
+    "GPIO drive strength is 2-12 mA (default 4 mA). Use a transistor or driver for anything larger than an indicator LED.",
+    "Power: USB (VBUS), or 1.8-5.5 V into VSYS. Do not apply more than 5.5 V to VSYS. Do not back-feed VBUS while USB is connected to a computer.",
+    "GP23, GP24, GP25 and GP29 are used on the board (regulator mode, VBUS sense, LED, VSYS/3 sense) and are not on the header.",
+    "Pico W / Pico 2 have the same header pinout, but the Pico W LED is on the wireless chip."
+  ],
+  "size": [21, 4, 51],
+  "color": "#2b7a3b",
+  "pins": [
+    {
+      "name": "GP0",
+      "label": "GP0",
+      "kind": "digital",
+      "dir": "io",
+      "voltage": 3.3,
+      "vmax": 3.6,
+      "vih": 2,
+      "current_max": 0.012,
+      "pos": [1.61, 1.37]
+    },
+    {
+      "name": "GP1",
+      "label": "GP1",
+      "kind": "digital",
+      "dir": "io",
+      "voltage": 3.3,
+      "vmax": 3.6,
+      "vih": 2,
+      "current_max": 0.012,
+      "pos": [1.61, 3.91]
+    },
+    {
+      "name": "GND",
+      "label": "GND",
+      "kind": "ground",
+      "pos": [1.61, 6.45]
+    },
+    {
+      "name": "GP2",
+      "label": "GP2",
+      "kind": "digital",
+      "dir": "io",
+      "voltage": 3.3,
+      "vmax": 3.6,
+      "vih": 2,
+      "current_max": 0.012,
+      "pos": [1.61, 8.99]
+    },
+    {
+      "name": "GP3",
+      "label": "GP3",
+      "kind": "digital",
+      "dir": "io",
+      "voltage": 3.3,
+      "vmax": 3.6,
+      "vih": 2,
+      "current_max": 0.012,
+      "pos": [1.61, 11.53]
+    },
+    {
+      "name": "GP4",
+      "label": "GP4",
+      "kind": "digital",
+      "dir": "io",
+      "voltage": 3.3,
+      "vmax": 3.6,
+      "vih": 2,
+      "current_max": 0.012,
+      "pos": [1.61, 14.07]
+    },
+    {
+      "name": "GP5",
+      "label": "GP5",
+      "kind": "digital",
+      "dir": "io",
+      "voltage": 3.3,
+      "vmax": 3.6,
+      "vih": 2,
+      "current_max": 0.012,
+      "pos": [1.61, 16.61]
+    },
+    {
+      "name": "GND_2",
+      "label": "GND",
+      "kind": "ground",
+      "pos": [1.61, 19.15]
+    },
+    {
+      "name": "GP6",
+      "label": "GP6",
+      "kind": "digital",
+      "dir": "io",
+      "voltage": 3.3,
+      "vmax": 3.6,
+      "vih": 2,
+      "current_max": 0.012,
+      "pos": [1.61, 21.69]
+    },
+    {
+      "name": "GP7",
+      "label": "GP7",
+      "kind": "digital",
+      "dir": "io",
+      "voltage": 3.3,
+      "vmax": 3.6,
+      "vih": 2,
+      "current_max": 0.012,
+      "pos": [1.61, 24.23]
+    },
+    {
+      "name": "GP8",
+      "label": "GP8",
+      "kind": "digital",
+      "dir": "io",
+      "voltage": 3.3,
+      "vmax": 3.6,
+      "vih": 2,
+      "current_max": 0.012,
+      "pos": [1.61, 26.77]
+    },
+    {
+      "name": "GP9",
+      "label": "GP9",
+      "kind": "digital",
+      "dir": "io",
+      "voltage": 3.3,
+      "vmax": 3.6,
+      "vih": 2,
+      "current_max": 0.012,
+      "pos": [1.61, 29.31]
+    },
+    {
+      "name": "GND_3",
+      "label": "GND",
+      "kind": "ground",
+      "pos": [1.61, 31.85]
+    },
+    {
+      "name": "GP10",
+      "label": "GP10",
+      "kind": "digital",
+      "dir": "io",
+      "voltage": 3.3,
+      "vmax": 3.6,
+      "vih": 2,
+      "current_max": 0.012,
+      "pos": [1.61, 34.39]
+    },
+    {
+      "name": "GP11",
+      "label": "GP11",
+      "kind": "digital",
+      "dir": "io",
+      "voltage": 3.3,
+      "vmax": 3.6,
+      "vih": 2,
+      "current_max": 0.012,
+      "pos": [1.61, 36.93]
+    },
+    {
+      "name": "GP12",
+      "label": "GP12",
+      "kind": "digital",
+      "dir": "io",
+      "voltage": 3.3,
+      "vmax": 3.6,
+      "vih": 2,
+      "current_max": 0.012,
+      "pos": [1.61, 39.47]
+    },
+    {
+      "name": "GP13",
+      "label": "GP13",
+      "kind": "digital",
+      "dir": "io",
+      "voltage": 3.3,
+      "vmax": 3.6,
+      "vih": 2,
+      "current_max": 0.012,
+      "pos": [1.61, 42.01]
+    },
+    {
+      "name": "GND_4",
+      "label": "GND",
+      "kind": "ground",
+      "pos": [1.61, 44.55]
+    },
+    {
+      "name": "GP14",
+      "label": "GP14",
+      "kind": "digital",
+      "dir": "io",
+      "voltage": 3.3,
+      "vmax": 3.6,
+      "vih": 2,
+      "current_max": 0.012,
+      "pos": [1.61, 47.09]
+    },
+    {
+      "name": "GP15",
+      "label": "GP15",
+      "kind": "digital",
+      "dir": "io",
+      "voltage": 3.3,
+      "vmax": 3.6,
+      "vih": 2,
+      "current_max": 0.012,
+      "pos": [1.61, 49.63]
+    },
+    {
+      "name": "GP16",
+      "label": "GP16",
+      "kind": "digital",
+      "dir": "io",
+      "voltage": 3.3,
+      "vmax": 3.6,
+      "vih": 2,
+      "current_max": 0.012,
+      "pos": [19.39, 49.63]
+    },
+    {
+      "name": "GP17",
+      "label": "GP17",
+      "kind": "digital",
+      "dir": "io",
+      "voltage": 3.3,
+      "vmax": 3.6,
+      "vih": 2,
+      "current_max": 0.012,
+      "pos": [19.39, 47.09]
+    },
+    {
+      "name": "GND_5",
+      "label": "GND",
+      "kind": "ground",
+      "pos": [19.39, 44.55]
+    },
+    {
+      "name": "GP18",
+      "label": "GP18",
+      "kind": "digital",
+      "dir": "io",
+      "voltage": 3.3,
+      "vmax": 3.6,
+      "vih": 2,
+      "current_max": 0.012,
+      "pos": [19.39, 42.01]
+    },
+    {
+      "name": "GP19",
+      "label": "GP19",
+      "kind": "digital",
+      "dir": "io",
+      "voltage": 3.3,
+      "vmax": 3.6,
+      "vih": 2,
+      "current_max": 0.012,
+      "pos": [19.39, 39.47]
+    },
+    {
+      "name": "GP20",
+      "label": "GP20",
+      "kind": "digital",
+      "dir": "io",
+      "voltage": 3.3,
+      "vmax": 3.6,
+      "vih": 2,
+      "current_max": 0.012,
+      "pos": [19.39, 36.93]
+    },
+    {
+      "name": "GP21",
+      "label": "GP21",
+      "kind": "digital",
+      "dir": "io",
+      "voltage": 3.3,
+      "vmax": 3.6,
+      "vih": 2,
+      "current_max": 0.012,
+      "pos": [19.39, 34.39]
+    },
+    {
+      "name": "GND_6",
+      "label": "GND",
+      "kind": "ground",
+      "pos": [19.39, 31.85]
+    },
+    {
+      "name": "GP22",
+      "label": "GP22",
+      "kind": "digital",
+      "dir": "io",
+      "voltage": 3.3,
+      "vmax": 3.6,
+      "vih": 2,
+      "current_max": 0.012,
+      "pos": [19.39, 29.31]
+    },
+    {
+      "name": "RUN",
+      "label": "RUN",
+      "kind": "digital",
+      "dir": "in",
+      "voltage": 3.3,
+      "vmax": 3.6,
+      "note": "Pull LOW to reset the RP2040. Pulled up on the board.",
+      "pos": [19.39, 26.77]
+    },
+    {
+      "name": "GP26",
+      "label": "GP26",
+      "kind": "digital",
+      "dir": "io",
+      "voltage": 3.3,
+      "vmax": 3.6,
+      "vih": 2,
+      "current_max": 0.012,
+      "functions": ["ADC0"],
+      "pos": [19.39, 24.23]
+    },
+    {
+      "name": "GP27",
+      "label": "GP27",
+      "kind": "digital",
+      "dir": "io",
+      "voltage": 3.3,
+      "vmax": 3.6,
+      "vih": 2,
+      "current_max": 0.012,
+      "functions": ["ADC1"],
+      "pos": [19.39, 21.69]
+    },
+    {
+      "name": "AGND",
+      "label": "AGND",
+      "kind": "ground",
+      "note": "Analog ground, joined to GND on the board.",
+      "pos": [19.39, 19.15]
+    },
+    {
+      "name": "GP28",
+      "label": "GP28",
+      "kind": "digital",
+      "dir": "io",
+      "voltage": 3.3,
+      "vmax": 3.6,
+      "vih": 2,
+      "current_max": 0.012,
+      "functions": ["ADC2"],
+      "pos": [19.39, 16.61]
+    },
+    {
+      "name": "ADC_VREF",
+      "label": "ADC_VREF",
+      "kind": "analog",
+      "dir": "in",
+      "vmax": 3.6,
+      "note": "ADC reference, filtered 3.3 V by default.",
+      "pos": [19.39, 14.07]
+    },
+    {
+      "name": "3V3",
+      "label": "3V3(OUT)",
+      "kind": "power_out",
+      "voltage": 3.3,
+      "voltage_min": 3.2,
+      "voltage_max": 3.4,
+      "current_max": 0.3,
+      "note": "Buck-boost output. Raspberry Pi recommends keeping external load under 300 mA.",
+      "pos": [19.39, 11.53]
+    },
+    {
+      "name": "3V3_EN",
+      "label": "3V3_EN",
+      "kind": "digital",
+      "dir": "in",
+      "vmax": 5.5,
+      "note": "Enable of the onboard regulator, pulled up to VSYS (100 kOhm). Pull LOW to switch the 3.3 V supply (and the RP2040) off.",
+      "pos": [19.39, 8.99]
+    },
+    {
+      "name": "GND_7",
+      "label": "GND",
+      "kind": "ground",
+      "pos": [19.39, 6.45]
+    },
+    {
+      "name": "VSYS",
+      "label": "VSYS",
+      "kind": "power_in",
+      "vmin": 1.8,
+      "vmax": 5.5,
+      "current": 0.03,
+      "current_peak": 0.1,
+      "note": "Main system input, 1.8-5.5 V, feeds the RT6150 buck-boost. Connected to VBUS through a Schottky diode. Use a diode or the ideal-diode trick if you also plug in USB.",
+      "pos": [19.39, 3.91]
+    },
+    {
+      "name": "VBUS",
+      "label": "VBUS",
+      "kind": "power_out",
+      "voltage": 5,
+      "voltage_min": 4.75,
+      "voltage_max": 5.25,
+      "current_max": 0.5,
+      "note": "USB 5 V when USB is plugged in (0 V otherwise). A source only while on USB.",
+      "pos": [19.39, 1.37]
+    }
+  ],
+  "internal": [
+    ["GND", "GND_2", "GND_3", "GND_4", "GND_5", "GND_6", "AGND", "GND_7"]
+  ],
+  "regulators": [
+    {
+      "in": "VSYS",
+      "out": "3V3",
+      "gnd": "GND",
+      "type": "buck-boost",
+      "vout": 3.3,
+      "dropout": 0,
+      "current_max": 0.3,
+      "iq": 0.001,
+      "efficiency": 0.9,
+      "vin_max": 5.5
+    }
+  ],
+  "breadboard": {
+    "fit": "straddle",
+    "rows": [
+      [
+        "GP0",
+        "GP1",
+        "GND",
+        "GP2",
+        "GP3",
+        "GP4",
+        "GP5",
+        "GND_2",
+        "GP6",
+        "GP7",
+        "GP8",
+        "GP9",
+        "GND_3",
+        "GP10",
+        "GP11",
+        "GP12",
+        "GP13",
+        "GND_4",
+        "GP14",
+        "GP15"
+      ],
+      [
+        "VBUS",
+        "VSYS",
+        "GND_7",
+        "3V3_EN",
+        "3V3",
+        "ADC_VREF",
+        "GP28",
+        "AGND",
+        "GP27",
+        "GP26",
+        "RUN",
+        "GP22",
+        "GND_6",
+        "GP21",
+        "GP20",
+        "GP19",
+        "GP18",
+        "GND_5",
+        "GP17",
+        "GP16"
+      ]
+    ],
+    "row_spacing": 7,
+    "body_width_mm": 21
+  },
+  "geometry": {
+    "board": [21, 51, 1],
+    "holes": [
+      {
+        "pos": [4.8, 2],
+        "d": 2.1
+      },
+      {
+        "pos": [16.2, 2],
+        "d": 2.1
+      },
+      {
+        "pos": [4.8, 49],
+        "d": 2.1
+      },
+      {
+        "pos": [16.2, 49],
+        "d": 2.1
+      }
+    ],
+    "keepout": [
+      {
+        "rect": [6.5, -1.3, 8, 6],
+        "height": 3,
+        "note": "micro-USB at the top edge"
+      }
+    ],
+    "connectors": [
+      {
+        "name": "USB (micro-B)",
+        "pos": [10.5, 0],
+        "side": "top"
+      }
+    ],
+    "confidence": "verified",
+    "note": "From the Pico mechanical drawing: 21 x 51 mm, holes 2.1 mm on an 11.4 x 47 mm pattern, rows 17.78 mm apart."
+  }
+}
