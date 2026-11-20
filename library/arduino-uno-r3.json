@@ -17,7 +17,8 @@
     "Power: USB (5 V, limited to 500 mA by a polyfuse), or 7-12 V on VIN / the barrel jack (6-20 V absolute). Feeding 5 V into the 5V pin bypasses the regulator and its protection; only do it from a clean regulated 5 V supply and never together with VIN.",
     "A4/A5 are the I2C pins, repeated as SDA/SCL next to AREF on R3 boards. The Wire library enables weak (20-50 kOhm) internal pull-ups to 5 V.",
     "D0/D1 are shared with USB serial; D13 has the onboard LED.",
-    "PWM pins: 3, 5, 6, 9, 10, 11 (marked with ~ on the board)."
+    "PWM pins: 3, 5, 6, 9, 10, 11 (marked with ~ on the board).",
+    "When the Uno runs from its own USB cable, its 5V pin is the 5 V source (USB through the polyfuse): do not also add a separate usb-5v part wired to 5V."
   ],
   "size": [68.6, 15, 53.34],
   "color": "#00878f",
@@ -41,7 +42,7 @@
     { "name": "SDA", "label": "SDA", "kind": "i2c_sda", "dir": "io", "voltage": 5, "vmax": 5.5, "vih": 3, "pullup": 5, "pullup_weak": true, "open_drain": true, "note": "Same signal as A4.", "pos": [23.88, 2.54] },
     { "name": "SCL", "label": "SCL", "kind": "i2c_scl", "dir": "io", "voltage": 5, "vmax": 5.5, "vih": 3, "pullup": 5, "pullup_weak": true, "open_drain": true, "note": "Same signal as A5.", "pos": [21.34, 2.54] },
     { "name": "NC", "label": "NC", "kind": "nc", "pos": [27.94, 50.8] },
-    { "name": "IOREF", "label": "IOREF", "kind": "power_out", "voltage": 5, "current_max": 0.01, "note": "Tells shields the I/O voltage (5 V). Not a supply.", "pos": [30.48, 50.8] },
+    { "name": "IOREF", "label": "IOREF", "kind": "power_rail", "note": "Joined to 5V on the board; tells shields the I/O voltage. Do not use as a supply.", "pos": [30.48, 50.8] },
     { "name": "RESET", "label": "RESET", "kind": "digital", "dir": "in", "voltage": 5, "vmax": 5.5, "note": "Pull LOW to reset. Has a pull-up on the board.", "pos": [33.02, 50.8] },
     { "name": "3V3", "label": "3.3V", "kind": "power_out", "voltage": 3.3, "voltage_min": 3.2, "voltage_max": 3.4, "current_max": 0.05, "note": "From an LP2985 regulator fed by 5 V. 50 mA max (Arduino spec).", "pos": [35.56, 50.8] },
     { "name": "5V", "label": "5V", "kind": "power_out", "voltage": 5, "voltage_min": 4.6, "voltage_max": 5.25, "current_max": 0.5, "note": "From the onboard 5 V regulator (VIN/barrel) or from USB through a 500 mA polyfuse. About 0.4-0.5 A is safe for external parts; less if VIN is above 9 V (regulator heat).", "pos": [38.1, 50.8] },
