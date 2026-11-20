@@ -1,0 +1,112 @@
+{
+  "meta": {
+    "name": "p3"
+  },
+  "parts": [
+    {
+      "id": "esp",
+      "library": "esp32-devkit-v1"
+    },
+    {
+      "id": "usb",
+      "library": "usb-5v",
+      "pins": {
+        "5V": {
+          "current_max": 1
+        }
+      }
+    },
+    {
+      "id": "pca",
+      "library": "pca9685-breakout"
+    },
+    {
+      "id": "mot",
+      "library": "dc-motor-tt"
+    },
+    {
+      "id": "s",
+      "library": "servo-sg90"
+    }
+  ],
+  "wires": [
+    {
+      "id": "w2",
+      "from": "usb.5V",
+      "to": "esp.VIN",
+      "color": "red",
+      "gauge": 24
+    },
+    {
+      "id": "w3",
+      "from": "usb.GND",
+      "to": "esp.GND",
+      "color": "black",
+      "gauge": 24
+    },
+    {
+      "id": "w4",
+      "from": "esp.3V3",
+      "to": "pca.VCC",
+      "color": "red",
+      "gauge": 24
+    },
+    {
+      "id": "w5",
+      "from": "esp.GND_2",
+      "to": "pca.GND",
+      "color": "black",
+      "gauge": 24
+    },
+    {
+      "id": "w6",
+      "from": "esp.GPIO21",
+      "to": "pca.SDA",
+      "color": "blue"
+    },
+    {
+      "id": "w7",
+      "from": "esp.GPIO22",
+      "to": "pca.SCL",
+      "color": "yellow"
+    },
+    {
+      "id": "w8",
+      "from": "pca.PWM0",
+      "to": "mot.M+",
+      "color": "purple"
+    },
+    {
+      "id": "w9",
+      "from": "mot.M-",
+      "to": "pca.GND0",
+      "color": "black"
+    },
+    {
+      "id": "w10",
+      "from": "esp.VIN",
+      "to": "s.V+",
+      "color": "red",
+      "gauge": 22
+    },
+    {
+      "id": "w11",
+      "from": "pca.GND1",
+      "to": "s.GND",
+      "color": "black",
+      "gauge": 22
+    },
+    {
+      "id": "w12",
+      "from": "pca.PWM1",
+      "to": "s.SIG",
+      "color": "orange"
+    }
+  ],
+  "expect": [
+    {
+      "rule": "motor-on-gpio",
+      "level": "error"
+    }
+  ]
+}

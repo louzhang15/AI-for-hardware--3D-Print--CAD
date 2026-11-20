@@ -1,0 +1,41 @@
+{
+  "meta": {
+    "name": "p1"
+  },
+  "parts": [
+    {
+      "id": "uno",
+      "library": "arduino-uno-r3"
+    },
+    {
+      "id": "usb",
+      "library": "usb-5v"
+    }
+  ],
+  "wires": [
+    {
+      "id": "w1",
+      "from": "uno.5V",
+      "to": "uno.3V3",
+      "color": "red"
+    },
+    {
+      "id": "w2",
+      "from": "usb.5V",
+      "to": "uno.VIN",
+      "color": "red"
+    },
+    {
+      "id": "w3",
+      "from": "usb.GND",
+      "to": "uno.GND",
+      "color": "black"
+    }
+  ],
+  "expect": [
+    {
+      "rule": "supplies-fighting",
+      "level": "error"
+    }
+  ]
+}

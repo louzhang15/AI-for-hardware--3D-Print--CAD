@@ -1,0 +1,79 @@
+{
+  "meta": {
+    "name": "p2"
+  },
+  "parts": [
+    {
+      "id": "esp",
+      "library": "esp32-devkit-v1"
+    },
+    {
+      "id": "usb",
+      "library": "usb-5v"
+    },
+    {
+      "id": "m",
+      "library": "servo-mg996r"
+    },
+    {
+      "id": "m2",
+      "library": "servo-mg996r"
+    }
+  ],
+  "wires": [
+    {
+      "id": "w2",
+      "from": "usb.5V",
+      "to": "esp.VIN",
+      "color": "red"
+    },
+    {
+      "id": "w3",
+      "from": "usb.GND",
+      "to": "esp.GND",
+      "color": "black"
+    },
+    {
+      "id": "w4",
+      "from": "esp.VIN",
+      "to": "m.V+",
+      "color": "red"
+    },
+    {
+      "id": "w5",
+      "from": "esp.GND",
+      "to": "m.GND",
+      "color": "black"
+    },
+    {
+      "id": "w6",
+      "from": "esp.GPIO25",
+      "to": "m.SIG",
+      "color": "orange"
+    },
+    {
+      "id": "w7",
+      "from": "esp.3V3",
+      "to": "m2.V+",
+      "color": "red"
+    },
+    {
+      "id": "w8",
+      "from": "esp.GND_2",
+      "to": "m2.GND",
+      "color": "black"
+    },
+    {
+      "id": "w9",
+      "from": "esp.GPIO26",
+      "to": "m2.SIG",
+      "color": "orange"
+    }
+  ],
+  "expect": [
+    {
+      "rule": "actuator-on-board-power",
+      "level": "error"
+    }
+  ]
+}

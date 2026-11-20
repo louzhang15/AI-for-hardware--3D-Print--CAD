@@ -394,3 +394,11 @@ test('wire color that hides its role', () => {
   const res = run([P('psu', 'psu6'), P('s', 'servo')], [W('psu.V+', 's.V+', { color: 'black', gauge: 20 }), W('psu.GND', 's.GND', { color: 'red', gauge: 20 })]);
   assert.equal(res.issues.filter((i) => i.rule === 'wire-color').length, 2);
 });
+
+test('weak internal pull-ups alone do not satisfy the I2C pull-up rule', () => {
+  const lib = { ...LIB, nopull: { ...LIB.i2cdev, id: 'nopull', pins: LIB.i2cdev.pins.map((p) => ({ ...p, pullup_ref: undefined, vmax: 5.5 })) } };
+  const res = checkProject({ parts: [P('uno', 'mcu5'), P('dev', 'nopull')], wires: [W('uno.SDA', 'dev.SDA'), W('uno.GND', 'dev.GND')] }, lib);
+  const iss = res.issues.find((i) => i.rule === 'i2c-pullup');
+  assert.ok(iss, 'warns even though the Uno has weak internal pull-ups');
+  assert.match(iss.message, /weak internal pull-ups/);
+});
