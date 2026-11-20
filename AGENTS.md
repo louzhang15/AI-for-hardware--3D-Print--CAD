@@ -210,6 +210,21 @@ Plain language first, detail on request: "This wire carries power to the
 servos" before "6 V, up to 4.8 A, 18 AWG". One step at a time. Point at the
 viewer for anything visual. When something can't be checked, say so.
 
+## Keep the computer and the cloud in sync
+
+This project is edited both on the user's computer and in cloud sessions, by
+Claude Code and Codex. Git on GitHub is the only link between them.
+
+- Before changing any file, run `git fetch` and `git status`; if the branch is
+  behind, pull first and tell the user what changed. The `scripts/sync-check.mjs`
+  hook does this check on every message and prints only when something differs.
+- Never overwrite, reset or force-push over changes you didn't make. If both
+  sides changed the same file, merge and show the user the conflict.
+- Commit and push when a piece of work is done, so the other side can see it.
+- Settings that live only on the user's computer (`.claude/settings.local.json`,
+  `~/.codex/config.toml`, OmniRoute) can't be seen from the cloud: ask the user
+  instead of guessing.
+
 ## graphify
 
 This project has a knowledge graph at graphify-out/ with god nodes, community structure, and cross-file relationships.
