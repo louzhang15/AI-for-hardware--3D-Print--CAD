@@ -23,6 +23,14 @@
   "cad": {
     "tool": "solidworks"
   },
+  "preview": {
+    "type": "rover",
+    "title": "See how the rover steers",
+    "motors": [
+      { "label": "Left motor", "part": "motor-left" },
+      { "label": "Right motor", "part": "motor-right" }
+    ]
+  },
   "parts": [
     {
       "id": "usb",

@@ -23,6 +23,16 @@
   "cad": {
     "tool": "solidworks"
   },
+  "preview": {
+    "type": "arm",
+    "title": "See how the arm moves",
+    "joints": [
+      { "label": "Base rotation", "part": "servo-base", "min": -90, "max": 90, "neutral": 0 },
+      { "label": "Shoulder", "part": "servo-shoulder", "min": -55, "max": 65, "neutral": 30 },
+      { "label": "Elbow", "part": "servo-elbow", "min": -85, "max": 85, "neutral": -35 },
+      { "label": "Gripper opening", "part": "servo-gripper", "min": 5, "max": 60, "neutral": 25 }
+    ]
+  },
   "prints": [
     {
       "id": "electronics-deck",

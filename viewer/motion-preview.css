@@ -1,0 +1,54 @@
+.motion-preview {
+  --demo-paper: color-mix(in srgb, var(--stage) 92%, var(--accent));
+  --demo-floor: color-mix(in srgb, var(--stage) 82%, var(--line));
+  --demo-body: color-mix(in srgb, var(--accent) 42%, var(--panel));
+  container-type: inline-size;
+  height: 100%;
+  padding: clamp(14px, 3vw, 28px);
+  overflow: auto;
+  background: var(--stage);
+}
+
+.motion-heading { margin: 0 0 17px; }
+.motion-heading h2 { margin: 0; font-size: clamp(20px, 3vw, 26px); letter-spacing: -.035em; }
+.motion-heading p { margin: 4px 0 0; font-size: 13px; color: var(--muted); }
+.motion-layout { display: grid; grid-template-columns: minmax(0, 1.65fr) minmax(195px, 1fr); gap: 14px; align-items: start; }
+.motion-figure, .motion-panel { border: 1px solid var(--line); border-radius: 12px; min-width: 0; }
+.motion-figure {
+  align-self: stretch;
+  display: grid;
+  align-items: center;
+  background: radial-gradient(ellipse at 52% 28%, var(--panel), var(--demo-paper));
+  overflow: hidden;
+}
+.motion-diagram { display: block; width: 100%; aspect-ratio: 1.55; max-height: 410px; }
+.motion-panel { padding: 14px; background: var(--panel); }
+.motion-panel h2 { margin: 0 0 6px; font-size: 15px; }
+.motion-control { padding: 9px 0; border-bottom: 1px solid var(--line); }
+.motion-control-head { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
+.motion-control-head label { font-size: 13px; font-weight: 600; }
+.motion-value { font-size: 12px; font-variant-numeric: tabular-nums; color: var(--muted); white-space: nowrap; }
+.motion-slider { display: block; width: 100%; min-height: 24px; margin: 2px 0 0; accent-color: var(--accent); }
+.motion-control .motion-inspect { margin-left: -7px; min-height: 25px; color: var(--accent); }
+.motion-actions { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 13px; }
+.motion-note { font-size: 12px; color: var(--muted); margin: 9px 0 0; }
+
+.motion-floor { fill: var(--demo-floor); }
+.motion-base, .motion-top { stroke: var(--accent); stroke-width: 2; }
+.motion-base { fill: var(--demo-body); }
+.motion-top { fill: var(--accent-soft); }
+.motion-link-outline, .motion-link, .motion-jaw { fill: none; stroke-linecap: round; stroke-linejoin: round; }
+.motion-link-outline { stroke: var(--accent); stroke-width: 30; }
+.motion-link { stroke: var(--demo-body); stroke-width: 24; }
+.motion-joint { fill: var(--panel); stroke: var(--accent); stroke-width: 4; }
+.motion-jaw { stroke: var(--text-2); stroke-width: 7; }
+.motion-track { fill: color-mix(in srgb, var(--panel) 42%, var(--demo-paper)); stroke: var(--line-2); stroke-width: 2; }
+.motion-center-lines { fill: none; stroke: var(--line-2); stroke-width: 1; stroke-dasharray: 5 6; }
+.motion-wheel { fill: var(--text-2); }
+.motion-rover-nose { fill: var(--accent); }
+.motion-direction { fill: none; stroke: var(--accent); stroke-linecap: round; stroke-linejoin: round; stroke-width: 3; }
+
+@container (max-width: 540px) {
+  .motion-layout { grid-template-columns: minmax(0, 1fr); }
+  .motion-diagram { max-height: 260px; }
+}

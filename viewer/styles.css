@@ -557,6 +557,13 @@ svg .lit .sk-wire { filter: drop-shadow(0 0 3px rgba(255,255,255,.25)); }
 .scene-inspect-issue.error { border-left-color: var(--error); background: var(--error-soft); }
 .scene-inspect-issue strong { margin-right: 6px; }
 .scene-inspect-ask { margin-top: 5px; }
+.scene-pin-map { margin-top: 8px; border-top: 1px solid var(--line); padding-top: 6px; }
+.scene-pin-map summary { cursor: pointer; font-weight: 650; color: var(--text); }
+.scene-pin-map input { margin: 6px 0; max-width: 260px; }
+.scene-pin-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 4px; }
+.scene-pin-button { display: flex; justify-content: space-between; align-items: center; gap: 5px; min-height: 33px; text-align: left; border: 1px solid var(--line-2); border-radius: 5px; background: var(--panel-2); cursor: pointer; }
+.scene-pin-button span { color: var(--muted); }
+.scene-pin-button[aria-pressed="true"] { color: var(--accent); background: var(--accent-soft); border-color: var(--accent); }
 
 /* ------------------------------------------------------------------ power tree */
 .pt-node { cursor: pointer; }

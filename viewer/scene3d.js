@@ -244,6 +244,8 @@ export class Scene3DView {
   applyFocus(focus) {
     if (!this.parts) return;
     const selection = this.app.selection;
+    const selectedPart = selection?.type === 'part' ? selection.id : selection?.type === 'pin' ? selection.id.split('.')[0] : null;
+    if (selectedPart !== this.inspectedPart) this.inspectedPart = null;
     if (selection?.type === 'pin') {
       const pins = new Set([selection.id]);
       const wires = new Set();
@@ -264,9 +266,11 @@ export class Scene3DView {
     for (const [id, item] of this.prints) shade(item.group, !dim || focus.prints.has(id));
     for (const [key, pin] of this.pins) {
       const selected = selection?.type === 'pin' && selection.id === key;
-      pin.visible = this.showUnused || this.wiredPins.has(key) || selected;
+      const part = key.split('.')[0];
+      const inspected = this.inspectedPart === part;
+      pin.visible = this.showUnused || this.wiredPins.has(key) || selected || inspected;
       pin.userData.ring.visible = (selection?.type === 'pin' || selection?.type === 'wire') && focus.pins.has(key);
-      shade(pin, !dim || selected || focus.pins.has(key) || (!focus.pins.size && focus.parts.has(key.split('.')[0])));
+      shade(pin, !dim || inspected || selected || focus.pins.has(key) || (!focus.pins.size && focus.parts.has(part)));
     }
     for (const [id, { mesh, role }] of this.wires) {
       mesh.visible = (focus.wires.has(id) && Boolean(selection)) || ((!this.filter || role === this.filter) &&
@@ -308,7 +312,12 @@ export class Scene3DView {
 
   focusPart(id) {
     const item = this.parts?.get(id);
-    if (item) this.fit(new THREE.Box3().setFromObject(item.group), overhead);
+    if (!item) return;
+    this.inspectedPart = id;
+    this.applyFocus(this.app.focus);
+    this.inspector?.showPinList();
+    this.resize();
+    this.fit(new THREE.Box3().setFromObject(item.group), overhead);
   }
 
   focusWire(id) {

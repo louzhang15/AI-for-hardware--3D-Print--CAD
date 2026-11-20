@@ -13,6 +13,8 @@ export function createInspector(view) {
   let model;
   let listedPart;
   let listedPin;
+  let listedMapPart;
+  let mapEntries = [];
   let connections = [];
   let activePin = '';
 
@@ -25,7 +27,7 @@ export function createInspector(view) {
     const selection = app.selection;
     if (selection?.type === 'wire' && typeof view.focusWire === 'function') view.focusWire(selection.id);
     else if (choosePart.value && typeof view.focusPart === 'function') view.focusPart(choosePart.value);
-  } }, 'Focus component');
+  } }, 'Inspect pins');
   const clear = h('button.btn.ghost.small.scene-inspect-clear', { type: 'button', 'aria-label': 'Clear connection selection',
     onclick: () => { app.clearSelection(); choosePart.focus(); } }, 'Clear');
   const picker = h('div.scene-inspect-picker', null,
@@ -49,8 +51,36 @@ export function createInspector(view) {
   const selectedWire = h('p.scene-inspect-wire', { hidden: true });
   const wireList = h('ul.scene-inspect-connections', { 'aria-label': 'Connected wires', hidden: true });
   const issues = h('ul.scene-inspect-issues', { 'aria-label': 'Checker messages for this selection', hidden: true });
+  const mapTitle = h('summary', null, 'Pin list');
+  const search = h('input.input', { type: 'search', placeholder: 'Find a pin', 'aria-label': 'Find a pin', oninput: filterPins });
+  const pinList = h('div.scene-pin-list');
+  const pinMap = h('details.scene-pin-map', { hidden: true }, mapTitle, search, pinList);
   const details = h('section.scene-inspect-details', { 'aria-label': '3D connection inspector' },
-    summary, selectedWire, wireList, issues, ask);
+    summary, selectedWire, wireList, issues, ask, pinMap);
+
+  function filterPins() {
+    const term = search.value.trim().toLowerCase();
+    for (const entry of mapEntries) entry.button.hidden = !entry.text.includes(term);
+  }
+
+  function updatePinMap(part, key, changed) {
+    pinMap.hidden = !part?.pins.length;
+    if (changed || part !== listedMapPart) {
+      listedMapPart = part;
+      search.value = '';
+      const pins = part?.pins || [];
+      const wired = view.wiredPins || new Set();
+      mapTitle.textContent = `Pin list · ${pins.filter((pin) => wired.has(pin.key)).length} of ${pins.length} wired`;
+      mapEntries = pins.map((pin) => {
+        const label = app.pinText(pin.key, false);
+        return { key: pin.key, text: `${label} ${pin.key}`.toLowerCase(), button: h('button.scene-pin-button', {
+          type: 'button', onclick: () => app.select({ type: 'pin', id: pin.key }, { sheet: false }),
+        }, h('b', null, label), h('span.small', null, wired.has(pin.key) ? 'Wired' : 'Unwired')) };
+      });
+      pinList.replaceChildren(...mapEntries.map((entry) => entry.button));
+    }
+    for (const entry of mapEntries) entry.button.setAttribute('aria-pressed', String(entry.key === key));
+  }
 
   function selectPart(id) {
     if (id) app.select({ type: 'part', id }, { sheet: false });
@@ -111,7 +141,7 @@ export function createInspector(view) {
     choosePin.value = pinKey;
     choosePin.disabled = !part?.pins.length;
     const canFocusWire = wire && typeof view.focusWire === 'function';
-    focus.textContent = canFocusWire ? 'Focus connection' : 'Focus component';
+    focus.textContent = canFocusWire ? 'Focus connection' : 'Inspect pins';
     focus.disabled = !canFocusWire && !(part && typeof view.focusPart === 'function');
     clear.disabled = !selection;
 
@@ -158,8 +188,9 @@ export function createInspector(view) {
     issues.replaceChildren(...matches.map((issue) => h(`li.scene-inspect-issue.${issue.level}`, null,
       h('strong', null, issue.level === 'error' ? 'Error' : 'Warning'), h('span', null, issue.message || issue.rule))));
     issues.hidden = !matches.length;
+    updatePinMap(part, pinKey, changed);
   }
 
   update();
-  return { picker, details, update };
+  return { picker, details, update, showPinList: () => { pinMap.open = true; } };
 }

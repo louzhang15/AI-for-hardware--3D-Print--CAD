@@ -57,6 +57,7 @@ export const VIEWS = [
   { id: '3d', label: '3D', icon: 'explode' },
   { id: 'power', label: 'Power tree', icon: 'bolt' },
   { id: 'assembly', label: 'Assembly', icon: 'print' },
+  { id: 'preview', label: 'Motion preview', icon: 'motion' },
 ];
 const PHASE_VIEW = { define: 'sketch', parts: '3d', power: 'power', wire: 'sketch', firmware: 'sketch', print: 'assembly', assemble: 'assembly', test: 'sketch' };
 const PHASE_LEFT = { define: 'requirements', parts: 'parts', power: 'power' };
@@ -433,6 +434,12 @@ function hasAssembly() {
   return prints.some((p) => Array.isArray(p.position));
 }
 app.hasAssembly = hasAssembly;
+
+function viewAvailable(view) {
+  if (view.id === 'assembly') return hasAssembly();
+  if (view.id === 'preview') return ['arm', 'rover'].includes(app.data?.project.preview?.type);
+  return true;
+}
 
 // ------------------------------------------------------------------ inbox (ask the AI)
 
@@ -846,7 +853,7 @@ function renderCenterBar() {
   const focused = app.els.centerBar.contains(document.activeElement) && document.activeElement.matches('[role="tab"]');
   const scrollLeft = app.els.centerBar.querySelector('.view-tabs')?.scrollLeft || 0;
   const bar = clear(app.els.centerBar);
-  const views = VIEWS.filter((v) => v.id !== 'assembly' || hasAssembly());
+  const views = VIEWS.filter(viewAvailable);
   const tabs = h('div.view-tabs', { role: 'tablist', 'aria-label': 'Diagram views', onkeydown: (event) => {
     const index = views.findIndex((v) => v.id === app.ui.view);
     const nav = { ArrowLeft: (index + views.length - 1) % views.length, ArrowRight: (index + 1) % views.length, Home: 0, End: views.length - 1 };
@@ -882,12 +889,21 @@ function switchView(id) {
   if (id === '3d') closeSheet();
   app.ui.view = id;
   saveUi();
-  mountView();
+  const mounted = mountView();
   renderCenterBar();
   renderInfoCard();
+  return mounted;
 }
 
 app.switchView = switchView;
+app.inspectPins = async (partId) => {
+  if (!app.part(partId)) return;
+  app.select({ type: 'part', id: partId }, { sheet: false });
+  await switchView('3d');
+  if (app.ui.view === '3d' && app.selection?.type === 'part' && app.selection.id === partId) {
+    app.views['3d']?.focusPart?.(partId);
+  }
+};
 
 async function ensureView(id) {
   if (app.views[id]) return app.views[id];
@@ -896,6 +912,10 @@ async function ensureView(id) {
   if (id === 'sketch') view = new SketchView(app, host);
   else if (id === 'breadboard') view = new BreadboardView(app, host);
   else if (id === 'power') view = new PowerTreeView(app, host);
+  else if (id === 'preview') {
+    const { MotionPreview } = await import('./motion-preview.js');
+    view = new MotionPreview(app, host);
+  }
   else if (id === '3d' || id === 'assembly') {
     try {
       const { Scene3DView } = await import('./scene3d.js');
@@ -955,6 +975,7 @@ function renderProjectShell() {
     root.append(app.els.top, app.els.ws, app.els.dock);
   }
   if (app.ui.view === 'assembly' && !hasAssembly()) app.ui.view = '3d';
+  if (app.ui.view === 'preview' && !['arm', 'rover'].includes(d.project.preview?.type)) app.ui.view = 'sketch';
   document.title = `${(d.project.meta && d.project.meta.name) || d.name} · Wiremap`;
   renderTop();
   renderLeft();
@@ -1031,8 +1052,8 @@ document.addEventListener('keydown', (e) => {
   if (view && view.key && view.key(e)) { e.preventDefault(); return; }
   if (e.key === 'ArrowRight' || e.key === 'ArrowDown') { e.preventDefault(); app.nextStep(1); }
   else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') { e.preventDefault(); app.nextStep(-1); }
-  else if (/^[1-5]$/.test(e.key)) {
-    const avail = VIEWS.filter((v) => v.id !== 'assembly' || hasAssembly());
+  else if (/^[1-6]$/.test(e.key)) {
+    const avail = VIEWS.filter(viewAvailable);
     const v = avail[Number(e.key) - 1];
     if (v) switchView(v.id);
   }
