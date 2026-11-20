@@ -15,19 +15,22 @@ export function renderStepPanel(app, host) {
   const phaseSteps = steps.filter((step) => (step.phase || 'wire') === phase);
   const current = app.currentStep();
   const done = steps.filter((step) => step.done).length;
+  const index = phaseSteps.indexOf(current);
   const progress = h('div.progress', { role: 'progressbar', 'aria-label': 'Build progress', 'aria-valuemin': 0,
     'aria-valuemax': steps.length || 1, 'aria-valuenow': done },
   h('div', { style: { width: `${steps.length ? 100 * done / steps.length : 0}%` } }));
   const top = h('div.step-top', null,
-    h('div.step-kicker', null, PHASE_TITLES[phase], `${done} of ${steps.length} complete`), progress,
-    h('div.step-dots', null, phaseSteps.map((step, index) => h(`button.step-dot${step.done ? '.done' : ''}${step === current ? '.active' : ''}`, {
-      title: step.title, 'aria-label': step.title, 'aria-current': step === current ? 'step' : null,
-      onclick: () => app.gotoStep(index),
-    }))));
+    h('div.step-guide-title', null, h('h2', null, 'Build guide'), h('span', null, `${done} of ${steps.length} complete`)), progress);
 
   const body = h('div.step-body');
   if (current) {
-    body.append(h('h2', null, current.title), h('p.step-text', null, current.text));
+    body.append(h('div.step-kicker', null, PHASE_TITLES[phase], phaseSteps.length > 1 ? h('span', null, `Step ${index + 1} of ${phaseSteps.length}`) : null),
+      h('h3.step-title', null, current.title), h('p.step-text', null, current.text));
+    if (phaseSteps.length > 1) body.append(h('div.step-dots', { 'aria-label': `Steps in ${PHASE_TITLES[phase]}` }, phaseSteps.map((step, stepIndex) =>
+      h(`button.step-dot${step.done ? '.done' : ''}${step === current ? '.active' : ''}`, {
+        title: step.title, 'aria-label': step.title, 'aria-current': step === current ? 'step' : null,
+        onclick: () => app.gotoStep(stepIndex),
+      }, step.done ? icon('check', 13) : stepIndex + 1))));
     if (current.why) body.append(h('div.callout.why', null, icon('help'), current.why));
     for (const warning of current.warnings || []) body.append(h('div.callout.warning', null, icon('alert'), warning));
     const tools = [...(current.tools || []), ...(current.fasteners || []).map((id) => (project.fasteners || []).find((item) => item.id === id)?.name || id)];
@@ -42,7 +45,6 @@ export function renderStepPanel(app, host) {
     body.append(h('p.phase-empty', null, 'No guided steps are recorded for this phase.'));
   }
 
-  const index = phaseSteps.indexOf(current);
   const phaseIndex = PHASES.indexOf(phase);
   const hasEarlier = index > 0 || steps.some((step) => PHASES.indexOf(step.phase || 'wire') < phaseIndex);
   const hasLater = index + 1 < phaseSteps.length || steps.some((step) => PHASES.indexOf(step.phase || 'wire') > phaseIndex);

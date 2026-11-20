@@ -4,8 +4,8 @@ export function svgCanvas(label, width, height) {
   return s('svg', { class: 'diagram-svg', xmlns: 'http://www.w3.org/2000/svg', viewBox: `0 0 ${width} ${height}`, 'aria-label': label });
 }
 
-export function tool(label, glyph, action) {
-  return h('button.btn.small', { type: 'button', title: label, 'aria-label': label, onclick: action }, icon(glyph, 14), h('span', null, label));
+export function tool(label, glyph, action, caption = label) {
+  return h('button.btn.small', { type: 'button', title: label, 'aria-label': label, onclick: action }, icon(glyph, 14), h('span', null, caption));
 }
 
 export function selectable(app, el, type, id, label, tooltip) {

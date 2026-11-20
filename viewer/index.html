@@ -1,11 +1,11 @@
 <!doctype html>
-<html lang="en" data-theme="dark">
+<html lang="en" data-theme="light">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Wiremap</title>
   <meta name="description" content="Wiremap: see, check and build your hardware project step by step.">
-  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23151a21'/%3E%3Cpath d='M7 22c5 0 5-12 9-12s4 12 9 12' fill='none' stroke='%2350d2c2' stroke-width='3' stroke-linecap='round'/%3E%3Ccircle cx='7' cy='22' r='2.6' fill='%23e5484d'/%3E%3Ccircle cx='25' cy='22' r='2.6' fill='%233e8ef7'/%3E%3C/svg%3E">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%232454ca'/%3E%3Cpath d='M8 22h6l4-12h6M8 13h3m10 6h3' fill='none' stroke='%23fff' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3Ccircle cx='8' cy='22' r='2' fill='%23fff'/%3E%3Ccircle cx='24' cy='10' r='2' fill='%23fff'/%3E%3C/svg%3E">
   <script>
     // Apply the saved theme before first paint (no flash).
     try {
@@ -24,10 +24,12 @@
     }
   </script>
   <link rel="stylesheet" href="./styles.css">
+  <link rel="stylesheet" href="./sketch.css">
+  <link rel="stylesheet" href="./home.css">
 </head>
 <body>
   <div id="banner" role="alert" hidden></div>
-  <div id="app" aria-live="polite">
+  <div id="app">
     <div class="boot">
       <div class="boot-logo"></div>
       <p>Loading Wiremap…</p>
