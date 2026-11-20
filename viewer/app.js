@@ -257,7 +257,7 @@ app.select = (sel, opts = {}) => {
   app.selection = sel && sel.type ? sel : null;
   app.focus = computeFocus();
   applyFocusEverywhere();
-  if (sel && sel.type === 'part' && opts.sheet !== false) app.openPart(sel.id);
+  if (sel && sel.type === 'part' && opts.sheet !== false && app.ui.view !== '3d') app.openPart(sel.id);
   renderInfoCard();
   if (app.els.left) renderLeft(); // keep panel highlights in sync
 };
@@ -585,6 +585,7 @@ app.openPart = (id) => {
 
 function renderInfoCard() {
   if (app.els.info) { app.els.info.remove(); app.els.info = null; }
+  if (app.ui.view === '3d') return;
   const sel = app.selection;
   if (!sel || !app.els.stage || (sel.type !== 'wire' && sel.type !== 'pin')) return;
   let card;
@@ -878,10 +879,12 @@ app.renderCenterBar = renderCenterBar;
 
 function switchView(id) {
   if (id === app.ui.view) return;
+  if (id === '3d') closeSheet();
   app.ui.view = id;
   saveUi();
   mountView();
   renderCenterBar();
+  renderInfoCard();
 }
 
 app.switchView = switchView;

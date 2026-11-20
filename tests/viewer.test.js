@@ -19,7 +19,7 @@ test('viewer serves its entry graph and preserves edits to the same project', as
   const request = (path, opts) => fetch(new URL(path, server.url), opts);
   const post = (path, body) => request(path, { method: 'POST', headers: { 'Content-Type': 'application/json', Origin: new URL(server.url).origin }, body: JSON.stringify(body) });
 
-  const modules = ['app.js', 'steps.js', 'sketch.js', 'bbview.js', 'power.js', 'scene3d.js', 'svg-view.js', 'corrections.js',
+  const modules = ['app.js', 'steps.js', 'sketch.js', 'bbview.js', 'power.js', 'scene3d.js', 'inspect3d.js', 'pin-geometry.js', 'svg-view.js', 'corrections.js',
     'vendor/three/three.module.min.js', 'vendor/three/addons/controls/OrbitControls.js', 'lib/check.js'];
   await Promise.all(modules.map(async (file) => {
     const response = await request(`/${file}`);

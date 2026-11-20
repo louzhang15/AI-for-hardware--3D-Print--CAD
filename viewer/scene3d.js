@@ -5,8 +5,12 @@ import { ThreeMFLoader } from 'three/addons/loaders/3MFLoader.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { clear, h, layoutPositions, partColor } from './util.js';
 import { activeFocus, emptyView, tool } from './svg-view.js';
+import { createInspector } from './inspect3d.js';
+import { pinPlacement } from './pin-geometry.js';
 
 const axis = new THREE.Vector3(0, 1, 0);
+const angle = new THREE.Vector3(.65, 1, .85).normalize();
+const overhead = new THREE.Vector3(0, 1, .0001).normalize();
 const assetPattern = /\.(?:stl|3mf|glb|gltf)$/i;
 const fromFile = (path) => /^((prints|cad)\/)/.test(path) && assetPattern.test(path);
 const coordinates = (value, fallback) => Array.isArray(value) && value.length === 3 && value.every(Number.isFinite) ? value : fallback;
@@ -61,7 +65,8 @@ export class Scene3DView {
     this.assembly = mode === 'assembly';
     this.filter = '';
     this.exploded = false;
-    this.xray = true;
+    this.showOtherWires = false;
+    this.showUnused = false;
     this.generation = 0;
     this.frame = null;
     this.visible = false;
@@ -71,14 +76,15 @@ export class Scene3DView {
     const firstRender = !this.renderer;
     if (!this.renderer && !this.setup()) return;
     for (const child of [...this.contents.children]) { release(child); child.removeFromParent(); }
-    clear(this.labels);
     this.parts = new Map();
     this.prints = new Map();
     this.pins = new Map();
+    this.geometry = new Map();
     this.wires = new Map();
     this.status.hidden = true;
     const generation = ++this.generation;
     const { partList, wires } = this.app.data.check.model;
+    this.wiredPins = new Set(wires.filter((wire) => wire.valid).flatMap((wire) => [wire.fromKey, wire.toKey]));
     const positions = layoutPositions(partList);
     for (const part of partList) this.addPart(part, positions.get(part.id), generation);
     if (this.assembly) {
@@ -100,26 +106,31 @@ export class Scene3DView {
     const { renderer } = this;
     renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
     renderer.domElement.setAttribute('aria-label', this.assembly ? '3D assembly' : '3D circuit');
-    const sceneHost = h('div.three-host', null, renderer.domElement);
-    this.labels = h('div.scene-labels', { 'aria-hidden': 'true' });
+    this.canvasHost = h('div.three-host', null, renderer.domElement);
     this.status = h('p.small.scene-status', { role: 'status', hidden: true });
-    clear(this.host).append(sceneHost, this.labels, this.status);
+    this.inspector = this.assembly ? null : createInspector(this);
+    clear(this.host).append(h('div.scene-workspace', null, this.inspector?.picker, this.canvasHost, this.inspector?.details, this.status));
     this.scene = new THREE.Scene();
     this.contents = new THREE.Group();
     this.camera = new THREE.PerspectiveCamera(45, 1, .1, 30000);
-    this.camera.position.set(220, 240, 300);
-    this.grid = new THREE.GridHelper(1200, 60, '#607187', '#3a495b');
+    this.camera.position.copy(angle).multiplyScalar(300);
+    this.grid = new THREE.GridHelper(480, 24, '#90a4ba', '#91a0b3');
     this.grid.position.y = -.1;
     this.grid.material.transparent = true;
-    this.grid.material.opacity = .45;
+    this.grid.material.opacity = .27;
+    this.grid.material.depthWrite = false;
+    this.grid.visible = false;
     const light = new THREE.DirectionalLight(0xffffff, 2.3);
     light.position.set(250, 400, 180);
     this.scene.add(this.contents, this.grid, light, new THREE.HemisphereLight(0xffffff, 0x485365, 2));
     this.controls = new OrbitControls(this.camera, renderer.domElement);
+    this.controls.minDistance = 8;
+    this.controls.maxDistance = 8000;
     this.controls.addEventListener('change', () => this.requestDraw());
     this.ray = new THREE.Raycaster();
     this.observer = new ResizeObserver(() => this.resize());
-    this.observer.observe(this.host);
+    this.observer.observe(this.canvasHost);
+    this.onTheme();
     this.bindPointer();
     return true;
   }
@@ -127,17 +138,33 @@ export class Scene3DView {
   addPart(part, position, generation) {
     const target = { type: 'part', id: part.id };
     const size = dims(part.size);
-    const item = this.addBox(target, part.label || part.name || part.id, size, position, part.rotation, partColor(part));
+    const item = this.addBox(target, size, position, part.rotation, partColor(part));
     this.parts.set(part.id, item);
+    const body = { ...part, size };
+    let mapped = true;
     for (const [i, pin] of part.pins.entries()) {
-      const [u, v] = Array.isArray(pin.pos) ? pin.pos : [(i + 1) * size[0] / (part.pins.length + 1), size[2] / 2];
-      const pinInfo = this.app.data.check.pinInfo?.[pin.key];
-      const marker = new THREE.Mesh(new THREE.SphereGeometry(1.2, 9, 7), new THREE.MeshStandardMaterial({ color: pinInfo?.connected ? '#f5cc71' : '#97a6b7' }));
-      marker.position.set(u - size[0] / 2, size[1] + .75, v - size[2] / 2);
+      const placement = pinPlacement(body, pin, i);
+      mapped &&= placement.mapped;
+      const marker = new THREE.Group();
+      const metal = new THREE.MeshStandardMaterial({ color: '#d1a651', roughness: .42, metalness: .22 });
+      const contact = new THREE.Mesh(new THREE.CylinderGeometry(.69, .69, 1.6, 9), metal);
+      contact.position.y = .36;
+      const insulator = new THREE.Mesh(new THREE.BoxGeometry(1.8, .65, 1.8), new THREE.MeshStandardMaterial({ color: '#26364a' }));
+      insulator.position.y = -.26;
+      const ring = new THREE.Mesh(new THREE.TorusGeometry(1.08, .23, 8, 18), new THREE.MeshBasicMaterial({ color: '#2f70ed' }));
+      ring.rotation.x = -Math.PI / 2;
+      ring.position.y = 1.18;
+      ring.visible = false;
+      marker.add(contact, insulator, ring);
+      marker.position.fromArray(placement.anchor);
+      if (placement.normal) marker.quaternion.setFromUnitVectors(axis, new THREE.Vector3().fromArray(placement.normal).normalize());
       marker.userData.target = { type: 'pin', id: pin.key };
+      marker.userData.ring = ring;
+      marker.userData.mapped = placement.mapped;
       item.group.add(marker);
       this.pins.set(pin.key, marker);
     }
+    this.geometry.set(part.id, mapped && part.pins.length ? 'mapped' : 'estimated');
     if (part.model && fromFile(part.model)) this.showAsset(item, [part.model], partColor(part), generation);
   }
 
@@ -148,7 +175,7 @@ export class Scene3DView {
     const size = [x, z, y];
     const position = coordinates(print.position, [(index - 1) * 74, 0, 65]);
     const color = print.color || '#729ee4';
-    const item = this.addBox(target, print.name || print.id, size, position, print.rotation, color);
+    const item = this.addBox(target, size, position, print.rotation, color);
     item.explode = coordinates(print.explode, [(index - 1) * 24, 32 + index * 10, 0]);
     if (this.exploded) item.group.position.add(new THREE.Vector3().fromArray(item.explode));
     this.prints.set(print.id, item);
@@ -157,7 +184,7 @@ export class Scene3DView {
     if (pieces.length || file) this.showAsset(item, pieces.length ? pieces : [file], color, generation);
   }
 
-  addBox(target, label, size, position, rotation, color) {
+  addBox(target, size, position, rotation, color) {
     const group = new THREE.Group();
     group.userData.target = target;
     group.position.fromArray(coordinates(position, [0, 0, 0]));
@@ -166,9 +193,7 @@ export class Scene3DView {
     placeholder.position.y = size[1] / 2;
     group.add(placeholder);
     this.contents.add(group);
-    const text = h('span.label3d', null, label);
-    this.labels.append(text);
-    return { group, position: group.position.clone(), placeholder, text, height: size[1] };
+    return { group, position: group.position.clone(), placeholder };
   }
 
   async showAsset(item, paths, color, generation) {
@@ -188,7 +213,6 @@ export class Scene3DView {
     if (box.isEmpty()) { release(model); return; }
     const center = box.getCenter(new THREE.Vector3());
     model.position.set(-center.x, -box.min.y, -center.z);
-    item.height = box.max.y - box.min.y;
     item.group.add(model);
     item.placeholder.removeFromParent();
     release(item.placeholder);
@@ -219,18 +243,37 @@ export class Scene3DView {
 
   applyFocus(focus) {
     if (!this.parts) return;
-    const dim = this.xray && activeFocus(focus);
+    const selection = this.app.selection;
+    if (selection?.type === 'pin') {
+      const pins = new Set([selection.id]);
+      const wires = new Set();
+      for (const [id, { wire }] of this.wires) {
+        if (wire.fromKey !== selection.id && wire.toKey !== selection.id) continue;
+        wires.add(id);
+        pins.add(wire.fromKey);
+        pins.add(wire.toKey);
+      }
+      focus = { ...focus, wires, pins, parts: new Set([...pins].map((key) => key.split('.')[0])) };
+    }
+    const dim = activeFocus(focus);
     const shade = (object, lit, ignorePins = false) => object.traverse((child) => {
       if (ignorePins && child.userData.target?.type === 'pin') return;
       for (const material of [child.material].flat().filter(Boolean)) setShade(material, lit);
     });
     for (const [id, item] of this.parts) shade(item.group, !dim || focus.parts.has(id), true);
     for (const [id, item] of this.prints) shade(item.group, !dim || focus.prints.has(id));
-    for (const [key, pin] of this.pins) shade(pin, !dim || focus.pins.has(key) || (!focus.pins.size && focus.parts.has(key.split('.')[0])));
+    for (const [key, pin] of this.pins) {
+      const selected = selection?.type === 'pin' && selection.id === key;
+      pin.visible = this.showUnused || this.wiredPins.has(key) || selected;
+      pin.userData.ring.visible = (selection?.type === 'pin' || selection?.type === 'wire') && focus.pins.has(key);
+      shade(pin, !dim || selected || focus.pins.has(key) || (!focus.pins.size && focus.parts.has(key.split('.')[0])));
+    }
     for (const [id, { mesh, role }] of this.wires) {
-      mesh.visible = !this.filter || role === this.filter;
+      mesh.visible = (focus.wires.has(id) && Boolean(selection)) || ((!this.filter || role === this.filter) &&
+        (!selection || this.showOtherWires));
       shade(mesh, !dim || focus.wires.has(id));
     }
+    this.inspector?.update();
     this.requestDraw();
   }
 
@@ -244,15 +287,39 @@ export class Scene3DView {
     this.app.renderCenterBar();
   }
 
-  fit() {
-    const box = new THREE.Box3().setFromObject(this.contents);
+  fit(box = new THREE.Box3().setFromObject(this.contents), direction = this.camera.position.clone().sub(this.controls.target).normalize()) {
     const center = box.isEmpty() ? new THREE.Vector3() : box.getCenter(new THREE.Vector3());
-    const size = box.getSize(new THREE.Vector3());
-    const distance = Math.max(100, size.length() * (this.camera.aspect < .85 ? 1.35 / Math.max(.25, this.camera.aspect) : 1.35));
-    const direction = this.camera.position.clone().sub(this.controls.target).normalize();
+    const half = box.getSize(new THREE.Vector3()).multiplyScalar(.5);
+    const right = new THREE.Vector3().crossVectors(axis, direction).normalize();
+    const up = new THREE.Vector3().crossVectors(direction, right).normalize();
+    const vertical = Math.tan(THREE.MathUtils.degToRad(this.camera.fov / 2));
+    const horizontal = vertical * this.camera.aspect;
+    let distance = 23;
+    for (const x of [-half.x, half.x]) for (const y of [-half.y, half.y]) for (const z of [-half.z, half.z]) {
+      const offset = new THREE.Vector3(x, y, z);
+      const clearance = 1.16 * Math.max(Math.abs(offset.dot(right)) / horizontal, Math.abs(offset.dot(up)) / vertical);
+      distance = Math.max(distance, offset.dot(direction) + clearance);
+    }
     this.controls.target.copy(center);
     this.camera.position.copy(center).addScaledVector(direction, distance);
     this.controls.update();
+    this.requestDraw();
+  }
+
+  focusPart(id) {
+    const item = this.parts?.get(id);
+    if (item) this.fit(new THREE.Box3().setFromObject(item.group), overhead);
+  }
+
+  focusWire(id) {
+    const item = this.wires?.get(id);
+    if (item) this.fit(new THREE.Box3().setFromObject(item.mesh), overhead);
+  }
+
+  onTheme() {
+    if (!this.scene) return;
+    const surface = getComputedStyle(document.documentElement).getPropertyValue('--stage').trim();
+    this.scene.background = new THREE.Color(surface || '#f3f6fa');
     this.requestDraw();
   }
 
@@ -270,8 +337,8 @@ export class Scene3DView {
 
   resize() {
     if (!this.renderer) return;
-    const width = this.host.clientWidth;
-    const height = this.host.clientHeight;
+    const width = this.canvasHost.clientWidth;
+    const height = this.canvasHost.clientHeight;
     if (!width || !height) return;
     const previouslyUnsized = !this.width;
     this.width = width;
@@ -288,12 +355,6 @@ export class Scene3DView {
     this.frame = requestAnimationFrame(() => {
       this.frame = null;
       this.renderer.render(this.scene, this.camera);
-      for (const item of [...this.parts.values(), ...this.prints.values()]) {
-        const vector = item.group.getWorldPosition(new THREE.Vector3()).addScaledVector(axis, item.height + 3).project(this.camera);
-        item.text.hidden = vector.z < -1 || vector.z > 1 || Math.abs(vector.x) > .97 || Math.abs(vector.y) > .98;
-        item.text.style.left = `${(1 + vector.x) * this.width / 2}px`;
-        item.text.style.top = `${(1 - vector.y) * this.height / 2}px`;
-      }
     });
   }
 
@@ -307,13 +368,18 @@ export class Scene3DView {
     };
     const hit = (event) => {
       setRay(event);
+      let closest = null;
       for (const intersection of this.ray.intersectObjects(this.contents.children, true)) {
+        if (closest && intersection.distance > closest.distance + 3) break;
         let object = intersection.object;
         if (!object.visible) continue;
-        while (object && !object.userData.target) object = object.parent;
-        if (object?.userData.target) return object.userData.target;
+        while (object?.visible && !object.userData.target) object = object.parent;
+        if (!object?.visible || !object.userData.target) continue;
+        const { target } = object.userData;
+        if (target.type === 'pin') return target;
+        if (!closest) closest = { target, distance: intersection.distance };
       }
-      return null;
+      return closest?.target || null;
     };
     let down = null;
     let drag = null;
@@ -343,10 +409,6 @@ export class Scene3DView {
       } else if (!down) {
         const target = hit(event);
         canvas.style.cursor = target ? 'pointer' : 'grab';
-        const content = target?.type === 'wire' ? this.app.wireTooltipHtml(target.id)
-          : target?.type === 'pin' ? this.app.pinTooltipHtml(target.id) : null;
-        if (content) this.app.tooltip.show(event.clientX, event.clientY, content);
-        else this.app.tooltip.hide();
       }
     });
     canvas.addEventListener('pointerup', (event) => {
@@ -356,13 +418,12 @@ export class Scene3DView {
         drag = null;
       } else if (down && Math.hypot(event.clientX - down[0], event.clientY - down[1]) < 5) {
         const target = hit(event);
-        if (target) this.app.select(target);
+        if (target) this.app.select(target, { sheet: this.assembly });
         else this.app.clearSelection();
       }
       down = null;
     });
     canvas.addEventListener('pointercancel', () => { down = null; drag = null; });
-    canvas.addEventListener('pointerleave', () => this.app.tooltip.hide());
     canvas.addEventListener('contextmenu', (event) => { const target = hit(event); if (target) this.app.contextMenu(event, target); });
   }
 
@@ -374,11 +435,14 @@ export class Scene3DView {
       this.applyFocus(this.app.focus);
     } }, h('option', { value: '' }, 'All wires'), roles.map((role) => h('option', { value: role }, this.app.roleLabel(role))));
     filter.value = this.filter;
-    return [filter, tool('Fit', 'fit', () => this.fit()), tool(this.xray ? 'X-ray on' : 'X-ray off', 'xray', () => {
-      this.xray = !this.xray;
-      this.applyFocus(this.app.focus);
-      this.app.renderCenterBar();
-    }), this.assembly && tool(this.exploded ? 'Assemble' : 'Explode', 'explode', () => this.setExploded())];
+    const toggle = (label, enabled, change, title) => h('label.scene-toggle', { title },
+      h('input.tick', { type: 'checkbox', checked: enabled, onchange: (event) => change(event.target.checked) }), label);
+    return [filter, tool('Fit', 'fit', () => this.fit()), tool('Top view', 'panel', () => this.fit(undefined, overhead), 'Top'),
+      tool('Angled view', 'explode', () => this.fit(undefined, angle), 'Angle'),
+      toggle('Grid', this.grid.visible, (on) => { this.grid.visible = on; this.requestDraw(); }, 'Reference grid with 20 mm spacing'),
+      this.assembly ? tool(this.exploded ? 'Assemble' : 'Explode', 'explode', () => this.setExploded()) :
+        toggle('All pins', this.showUnused, (on) => { this.showUnused = on; this.applyFocus(this.app.focus); }),
+      !this.assembly && toggle('Keep other wires', this.showOtherWires, (on) => { this.showOtherWires = on; this.applyFocus(this.app.focus); })];
   }
 
   onShow() { this.visible = true; this.resize(); }
