@@ -60,3 +60,38 @@
 .leader-svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
 .leader-svg line { stroke-width: 1.5; opacity: .85; }
 .three-host.holo .leader-svg line { filter: drop-shadow(0 0 3px rgba(63,216,255,.8)); }
+
+/* Workshop assistant (voice companion) */
+.center { position: relative; }
+.companion { position: absolute; right: 16px; bottom: 16px; z-index: 30; display: flex; align-items: flex-end; gap: 10px; pointer-events: none; }
+.companion > * { pointer-events: auto; }
+.cmp-orb { position: relative; width: 58px; height: 58px; border-radius: 50%; border: 0; padding: 0; cursor: pointer;
+  background: radial-gradient(circle at 50% 50%, #0b2235 0%, #04101c 72%); box-shadow: 0 0 0 1px rgba(63,216,255,.5), 0 6px 22px rgba(4,16,28,.45); }
+.cmp-core { position: absolute; inset: 19px; border-radius: 50%; background: radial-gradient(circle, #bff4ff 0%, #3fd8ff 45%, rgba(63,216,255,0) 72%);
+  box-shadow: 0 0 14px #3fd8ff; transition: transform .2s; }
+.cmp-ring { position: absolute; inset: 7px; border-radius: 50%; border: 1.5px solid rgba(63,216,255,.55); border-top-color: transparent; }
+.cmp-ring.r2 { inset: 12px; border-color: rgba(63,216,255,.35); border-bottom-color: transparent; }
+.companion[data-state="listening"] .cmp-core { animation: cmp-pulse .9s ease-in-out infinite; background: radial-gradient(circle, #fff 0%, #5cffb0 45%, rgba(92,255,176,0) 72%); box-shadow: 0 0 18px #5cffb0; }
+.companion[data-state="thinking"] .cmp-ring { animation: cmp-spin .8s linear infinite; }
+.companion[data-state="thinking"] .cmp-ring.r2 { animation-duration: 1.3s; animation-direction: reverse; }
+.companion[data-state="speaking"] .cmp-core { animation: cmp-talk .35s ease-in-out infinite alternate; }
+.companion[data-state="speaking"] .cmp-ring { animation: cmp-spin 2.4s linear infinite; }
+@keyframes cmp-spin { to { transform: rotate(360deg); } }
+@keyframes cmp-pulse { 50% { transform: scale(1.35); } }
+@keyframes cmp-talk { from { transform: scale(.85); } to { transform: scale(1.25); } }
+@media (prefers-reduced-motion: reduce) { .companion * { animation: none !important; } }
+.cmp-panel { width: 300px; padding: 12px; border-radius: 12px; color: #d6f6ff; font-size: 13px;
+  background: linear-gradient(160deg, rgba(8,30,48,.96), rgba(4,16,28,.96)); border: 1px solid rgba(63,216,255,.45);
+  box-shadow: 0 0 22px rgba(63,216,255,.18), 0 10px 30px rgba(0,0,0,.35); }
+.cmp-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 6px; }
+.cmp-head strong { color: #3fd8ff; letter-spacing: .08em; text-transform: uppercase; font-size: 11.5px; }
+.cmp-status { font: 600 11px var(--mono); color: #8fdcf0; }
+.companion[data-state="listening"] .cmp-status { color: #5cffb0; }
+.cmp-said { margin: 0 0 10px; line-height: 1.45; max-height: 130px; overflow: auto; }
+.cmp-actions { display: flex; gap: 6px; margin-bottom: 8px; flex-wrap: wrap; }
+.cmp-panel .btn { background: rgba(63,216,255,.1); color: #d6f6ff; border-color: rgba(63,216,255,.4); }
+.cmp-panel .btn:hover:not(:disabled) { background: rgba(63,216,255,.22); }
+.cmp-panel .btn:disabled { opacity: .45; }
+.cmp-input { width: 100%; box-sizing: border-box; padding: 7px 9px; border-radius: 8px; border: 1px solid rgba(63,216,255,.4);
+  background: rgba(0,0,0,.35); color: #e8fbff; font: 13px var(--font); }
+.cmp-input::placeholder { color: #6fa9bb; }

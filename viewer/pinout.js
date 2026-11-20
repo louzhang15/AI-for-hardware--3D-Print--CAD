@@ -69,7 +69,7 @@ export function connectionRows(app, wireIds) {
       const def = app.part(part);
       const pin = app.pin(key);
       return {
-        key, part, partName: tagName(app, def), label: silkscreen(pin), name: pin?.name,
+        key, part, partName: tagName(app, def), fullName: String(def?.name || def?.id || part).split(/\s+[/(]|,/)[0].trim(), label: silkscreen(pin), name: pin?.name,
         where: pinLocation(def, pin)?.text || null,
       };
     };
@@ -85,7 +85,7 @@ export function connectionRows(app, wireIds) {
 
 /** One sentence a person can follow (and the voice panel can read aloud). */
 export function sayConnection(r) {
-  return `Take a ${r.colorName} wire. Plug one end into ${r.from.partName} pin ${r.from.label}. Plug the other end into ${r.to.partName} pin ${r.to.label}.`;
+  return `Take ${/^[aeiou]/i.test(r.colorName) ? 'an' : 'a'} ${r.colorName} wire. Plug one end into ${r.from.fullName || r.from.partName} pin ${r.from.label}. Plug the other end into ${r.to.fullName || r.to.partName} pin ${r.to.label}.`;
 }
 
 /** HTML list of connections for the step card. */

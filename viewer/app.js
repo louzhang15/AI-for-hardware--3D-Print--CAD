@@ -8,6 +8,7 @@ import { SketchView, sketchThumb } from './sketch.js';
 import { BreadboardView } from './bbview.js';
 import { PowerTreeView } from './power.js';
 import { PinoutView } from './pinout.js';
+import { createCompanion } from './companion.js';
 
 // ------------------------------------------------------------------ error banner
 
@@ -970,7 +971,8 @@ function renderProjectShell() {
     app.els.right = h('aside.side.right', { 'aria-label': 'Build step' });
     app.els.centerBar = h('div.center-bar');
     app.els.stage = h('div.stage.grid-bg');
-    app.els.center = h('section.center', { 'aria-label': 'Diagram workspace' }, app.els.centerBar, app.els.stage);
+    app.companion = createCompanion(app);
+    app.els.center = h('section.center', { 'aria-label': 'Diagram workspace' }, app.els.centerBar, app.els.stage, app.companion.root);
     app.els.ws = h('main.workspace', { 'data-panel': 'center' }, app.els.left, app.els.center, app.els.right);
     app.els.dock = h('nav.workspace-dock', { 'aria-label': 'Workspace panels' },
       ...[['left', 'panel', 'Project'], ['center', 'chip', 'Diagram'], ['right', 'steps', 'Build guide']].map(([panel, symbol, label]) =>
