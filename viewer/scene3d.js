@@ -7,6 +7,8 @@ import { clear, h, layoutPositions, partColor } from './util.js';
 import { activeFocus, emptyView, tool } from './svg-view.js';
 import { createInspector } from './inspect3d.js';
 import { pinPlacement } from './pin-geometry.js';
+import { tagName, silkscreen } from './pinout.js';
+import { store } from './util.js';
 
 const axis = new THREE.Vector3(0, 1, 0);
 const angle = new THREE.Vector3(.65, 1, .85).normalize();
@@ -70,6 +72,8 @@ export class Scene3DView {
     this.generation = 0;
     this.frame = null;
     this.visible = false;
+    this.holo = store.get('wiremap.holo', false) === true;
+    this.pinNames = true;
   }
 
   render() {
@@ -91,6 +95,7 @@ export class Scene3DView {
       for (const [i, print] of (this.app.data.project.prints || []).entries()) this.addPrint(print, i, generation);
     }
     for (const wire of wires) if (wire.valid) this.addWire(wire);
+    if (this.holo) this.applyHolo();
     this.applyFocus(this.app.focus);
     if (firstRender) this.fit();
   }
@@ -106,7 +111,8 @@ export class Scene3DView {
     const { renderer } = this;
     renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
     renderer.domElement.setAttribute('aria-label', this.assembly ? '3D assembly' : '3D circuit');
-    this.canvasHost = h('div.three-host', null, renderer.domElement);
+    this.labelLayer = h('div.label-layer', { 'aria-hidden': 'true' });
+    this.canvasHost = h('div.three-host', null, renderer.domElement, this.labelLayer);
     this.status = h('p.small.scene-status', { role: 'status', hidden: true });
     this.inspector = this.assembly ? null : createInspector(this);
     clear(this.host).append(h('div.scene-workspace', null, this.inspector?.picker, this.canvasHost, this.inspector?.details, this.status));
@@ -328,7 +334,8 @@ export class Scene3DView {
   onTheme() {
     if (!this.scene) return;
     const surface = getComputedStyle(document.documentElement).getPropertyValue('--stage').trim();
-    this.scene.background = new THREE.Color(surface || '#f3f6fa');
+    this.scene.background = new THREE.Color(this.holo ? '#04101c' : (surface || '#f3f6fa'));
+    this.canvasHost?.classList.toggle('holo', this.holo);
     this.requestDraw();
   }
 
@@ -338,10 +345,8 @@ export class Scene3DView {
     for (const id of this.app.focus.parts) if (this.parts.has(id)) box.expandByObject(this.parts.get(id).group);
     for (const id of this.app.focus.prints) if (this.prints.has(id)) box.expandByObject(this.prints.get(id).group);
     if (box.isEmpty()) return;
-    const point = box.getCenter(new THREE.Vector3());
-    this.camera.position.add(point.clone().sub(this.controls.target));
-    this.controls.target.copy(point);
-    this.controls.update();
+    // Zoom to the step so its pins spread apart and their name tags stay readable.
+    this.fit(box);
   }
 
   resize() {
@@ -364,6 +369,7 @@ export class Scene3DView {
     this.frame = requestAnimationFrame(() => {
       this.frame = null;
       this.renderer.render(this.scene, this.camera);
+      this.drawLabels();
     });
   }
 
@@ -451,10 +457,112 @@ export class Scene3DView {
       toggle('Grid', this.grid.visible, (on) => { this.grid.visible = on; this.requestDraw(); }, 'Reference grid with 20 mm spacing'),
       this.assembly ? tool(this.exploded ? 'Assemble' : 'Explode', 'explode', () => this.setExploded()) :
         toggle('All pins', this.showUnused, (on) => { this.showUnused = on; this.applyFocus(this.app.focus); }),
-      !this.assembly && toggle('Keep other wires', this.showOtherWires, (on) => { this.showOtherWires = on; this.applyFocus(this.app.focus); })];
+      !this.assembly && toggle('Keep other wires', this.showOtherWires, (on) => { this.showOtherWires = on; this.applyFocus(this.app.focus); }),
+      toggle('Pin names', this.pinNames, (on) => { this.pinNames = on; this.requestDraw(); }, 'Show the exact pin name at both ends of each wire'),
+      toggle('Hologram', this.holo, (on) => { this.holo = on; store.set('wiremap.holo', on); this.onTheme(); this.render(); }, 'Holographic workshop view')];
   }
 
-  onShow() { this.visible = true; this.resize(); }
+  applyHolo() {
+    const cyan = new THREE.Color('#3fd8ff');
+    const edgeMat = new THREE.LineBasicMaterial({ color: '#7fe9ff', transparent: true, opacity: .85 });
+    for (const item of [...this.parts.values(), ...this.prints.values()]) {
+      item.group.traverse((child) => {
+        if (!child.isMesh || child.userData.target?.type === 'pin' || child.parent?.userData.target?.type === 'pin') return;
+        const m = child.material;
+        if (!m || m.userData.holo) return;
+        m.color = cyan.clone().lerp(m.color, .25);
+        m.emissive = new THREE.Color('#0b5a7a');
+        m.transparent = true; m.opacity = .32; m.depthWrite = false; m.userData.holo = true;
+        if (m.userData.wiremap) Object.assign(m.userData.wiremap, { opacity: .32, transparent: true, depthWrite: false });
+        const edges = new THREE.LineSegments(new THREE.EdgesGeometry(child.geometry, 25), edgeMat.clone());
+        edges.position.copy(child.position); edges.rotation.copy(child.rotation); edges.scale.copy(child.scale);
+        child.parent.add(edges);
+      });
+    }
+    for (const { mesh } of this.wires.values()) {
+      mesh.material.emissive = mesh.material.color.clone().multiplyScalar(.75);
+    }
+    this.grid.visible = true;
+    this.grid.material.color = new THREE.Color('#1f6f93');
+    this.grid.material.opacity = .45;
+  }
+
+  /** HTML name tags over the canvas: part names, and the exact pin name at both ends of lit wires. */
+  drawLabels() {
+    const layer = this.labelLayer;
+    if (!layer || !this.parts || !this.width) return;
+    const focus = this.app.focus;
+    const dim = activeFocus(focus);
+    const items = [];
+    const project = (v) => {
+      const p = v.clone().project(this.camera);
+      if (p.z > 1 || p.z < -1) return null;
+      return [(p.x + 1) / 2 * this.width, (1 - p.y) / 2 * this.height];
+    };
+    for (const [id, item] of this.parts) {
+      if (dim && !focus.parts.has(id)) continue;
+      const box = new THREE.Box3().setFromObject(item.group);
+      const at = project(new THREE.Vector3((box.min.x + box.max.x) / 2, box.max.y + 3, (box.min.z + box.max.z) / 2));
+      if (at) items.push({ key: `part:${id}`, cls: 'part', text: tagName(this.app, this.app.part(id)), at });
+    }
+    if (this.pinNames) {
+      const keys = dim ? [...focus.pins] : (this.wiredPins.size <= 16 ? [...this.wiredPins] : []);
+      for (const key of keys) {
+        const marker = this.pins.get(key);
+        if (!marker || !marker.visible) continue;
+        const at = project(marker.getWorldPosition(new THREE.Vector3()));
+        if (!at) continue;
+        const pin = this.app.pin(key);
+        const role = this.app.data.check.pinInfo?.[key]?.role;
+        const part = this.app.part(key.split('.')[0]);
+        items.push({ key: `pin:${key}`, cls: 'pin', text: dim ? `${tagName(this.app, part)} · ${silkscreen(pin)}` : silkscreen(pin),
+          color: this.app.roleColor(role), at, anchor: at.slice() });
+      }
+    }
+    // Greedy de-overlap: pins first (they matter most), then part tags.
+    // Each tag tries spots around its pin; a leader line joins tag and pin.
+    items.sort((a, b) => (a.cls === b.cls ? a.at[1] - b.at[1] : a.cls === 'pin' ? -1 : 1));
+    const placed = [];
+    const seen = new Set();
+    if (!this.leaderSvg) {
+      this.leaderSvg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+      this.leaderSvg.classList.add('leader-svg');
+      layer.prepend(this.leaderSvg);
+    }
+    const lines = [];
+    for (const it of items) {
+      const w = 10 + it.text.length * (it.cls === 'pin' ? 7.4 : 7.8);
+      const hgt = it.cls === 'pin' ? 20 : 22;
+      const [ax, ay] = it.at;
+      const gap = it.cls === 'pin' ? 16 : 6;
+      const spots = it.cls === 'pin'
+        ? [[-w / 2, -hgt - gap], [gap, -hgt / 2], [-w - gap, -hgt / 2], [-w / 2, gap], [gap, -hgt - gap], [-w - gap, -hgt - gap], [gap, gap], [-w - gap, gap]]
+        : [[-w / 2, -hgt - gap]];
+      let best = null;
+      for (let ring = 0; ring < 6 && !best; ring++) {
+        for (const [dx, dy] of spots) {
+          const x = ax + dx * (1 + ring * 0.9); const y = ay + dy * (1 + ring * 0.9);
+          if (!placed.some((r) => x < r.x + r.w + 2 && x + w + 2 > r.x && y < r.y + r.h + 2 && y + hgt + 2 > r.y)) { best = [x, y]; break; }
+        }
+      }
+      const [x, y] = best || [ax - w / 2, ay - hgt - gap];
+      placed.push({ x, y, w, h: hgt });
+      let el = layer.querySelector(`[data-k="${CSS.escape(it.key)}"]`);
+      if (!el) { el = h(`div.scene-label.${it.cls}`, { 'data-k': it.key }); layer.append(el); }
+      el.textContent = it.text;
+      el.style.transform = `translate(${Math.round(x)}px, ${Math.round(y)}px)`;
+      el.style.setProperty('--c', it.color || '');
+      if (it.cls === 'pin') {
+        const cx = Math.min(Math.max(ax, x), x + w); const cy = Math.min(Math.max(ay, y), y + hgt);
+        lines.push(`<line x1="${cx.toFixed(1)}" y1="${cy.toFixed(1)}" x2="${ax.toFixed(1)}" y2="${ay.toFixed(1)}" stroke="${it.color || '#3a4250'}"/><circle cx="${ax.toFixed(1)}" cy="${ay.toFixed(1)}" r="3" fill="${it.color || '#3a4250'}"/>`);
+      }
+      seen.add(it.key);
+    }
+    this.leaderSvg.innerHTML = lines.join('');
+    for (const el of [...layer.children]) if (el !== this.leaderSvg && !seen.has(el.dataset.k)) el.remove();
+  }
+
+  onShow() { this.visible = true; this.resize(); if (!this.assembly) this.onStep(); }
   onHide() { this.visible = false; this.app.tooltip.hide(); }
 
   destroy() {

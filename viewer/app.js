@@ -7,6 +7,7 @@ import { renderStepPanel } from './steps.js';
 import { SketchView, sketchThumb } from './sketch.js';
 import { BreadboardView } from './bbview.js';
 import { PowerTreeView } from './power.js';
+import { PinoutView } from './pinout.js';
 
 // ------------------------------------------------------------------ error banner
 
@@ -52,6 +53,7 @@ const RULE_PHASE = {
 export const phaseOfIssue = (i) => (PHASES.includes(i.phase) ? i.phase : RULE_PHASE[i.rule] || 'wire');
 
 export const VIEWS = [
+  { id: 'pinout', label: 'Pinout', icon: 'panel' },
   { id: 'sketch', label: 'Sketch', icon: 'chip' },
   { id: 'breadboard', label: 'Breadboard', icon: 'fit' },
   { id: '3d', label: '3D', icon: 'explode' },
@@ -59,7 +61,7 @@ export const VIEWS = [
   { id: 'assembly', label: 'Assembly', icon: 'print' },
   { id: 'preview', label: 'Motion preview', icon: 'motion' },
 ];
-const PHASE_VIEW = { define: 'sketch', parts: '3d', power: 'power', wire: 'sketch', firmware: 'sketch', print: 'assembly', assemble: 'assembly', test: 'sketch' };
+const PHASE_VIEW = { define: 'sketch', parts: '3d', power: 'power', wire: 'pinout', firmware: 'pinout', print: 'assembly', assemble: 'assembly', test: 'sketch' };
 const PHASE_LEFT = { define: 'requirements', parts: 'parts', power: 'power' };
 
 // ------------------------------------------------------------------ app object
@@ -909,7 +911,8 @@ async function ensureView(id) {
   if (app.views[id]) return app.views[id];
   const host = h('div.view', { 'data-view': id });
   let view;
-  if (id === 'sketch') view = new SketchView(app, host);
+  if (id === 'pinout') view = new PinoutView(app, host);
+  else if (id === 'sketch') view = new SketchView(app, host);
   else if (id === 'breadboard') view = new BreadboardView(app, host);
   else if (id === 'power') view = new PowerTreeView(app, host);
   else if (id === 'preview') {

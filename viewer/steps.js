@@ -1,5 +1,6 @@
 import { PHASES, PHASE_TITLES } from '/lib/model.js';
 import { clear, h, icon } from './util.js';
+import { connectionList } from './pinout.js';
 
 function link(app, type, id, label) {
   return h('li', null, h('button.btn.ghost.small.step-reference', {
@@ -35,12 +36,13 @@ export function renderStepPanel(app, host) {
     for (const warning of current.warnings || []) body.append(h('div.callout.warning', null, icon('alert'), warning));
     const tools = [...(current.tools || []), ...(current.fasteners || []).map((id) => (project.fasteners || []).find((item) => item.id === id)?.name || id)];
     if (tools.length) body.append(h('h3', null, 'Tools and fasteners'), h('div.tags', null, tools.map((tool) => h('span.tag', null, tool))));
+    const howto = connectionList(app, current.wires || []);
+    if (howto) body.append(h('h3', null, `Plug in ${(current.wires || []).length === 1 ? 'this wire' : `these ${(current.wires || []).length} wires`}, pin to pin`), howto);
     const references = [
-      ...(current.wires || []).map((id) => { const wire = app.describeWire(id); return link(app, 'wire', id, wire ? `${wire.label} · ${wire.from} → ${wire.to}` : id); }),
       ...(current.parts || []).map((id) => link(app, 'part', id, app.part(id)?.name || id)),
       ...(current.prints || []).map((id) => link(app, 'print', id, (project.prints || []).find((part) => part.id === id)?.name || id)),
     ];
-    if (references.length) body.append(h('h3', null, 'Parts and connections'), h('ul.step-list', null, references));
+    if (references.length) body.append(h('h3', null, 'Parts in this step'), h('ul.step-list', null, references));
   } else {
     body.append(h('p.phase-empty', null, 'No guided steps are recorded for this phase.'));
   }
