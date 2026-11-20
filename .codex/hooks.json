@@ -1,0 +1,6 @@
+{
+  "hooks": {
+    "SessionStart": [{ "hooks": [{ "type": "command", "command": "node \"$(git rev-parse --show-toplevel)/scripts/sync-check.mjs\" --hook", "timeout": 15 }] }],
+    "UserPromptSubmit": [{ "hooks": [{ "type": "command", "command": "node \"$(git rev-parse --show-toplevel)/scripts/sync-check.mjs\" --hook", "timeout": 15 }] }]
+  }
+}

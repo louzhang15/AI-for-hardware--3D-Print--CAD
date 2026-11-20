@@ -1,0 +1,11 @@
+.git/
+.wiremap/
+.codex/
+.agents/
+.claude/
+node_modules/
+viewer/vendor/
+exports/
+graphify-out/
+*.env
+.env*

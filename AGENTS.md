@@ -21,6 +21,12 @@ user's current repository (create it), unless they say otherwise.
 
 <!-- installer: WIREMAP_ROOT line goes here -->
 
+For work in the Wiremap repository, run `node scripts/sync-check.mjs --refresh`
+before editing if the session hook has not already checked Git. Preserve local
+edits, and inspect divergent commits before integrating them. Git exposes only
+published commits to other checkouts. Read `docs/AI-HANDOFF.md`
+when continuing work from another assistant, and update it at meaningful checkpoints.
+
 When a project name is known, run `wiremap feedback list --project <name>`
 from its workspace before planning or editing the design. For a new project
 without a name, run `wiremap feedback list` for approved workspace lessons.
