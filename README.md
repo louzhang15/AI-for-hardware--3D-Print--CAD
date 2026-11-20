@@ -35,6 +35,16 @@ is this sketch over defined in SolidWorks?” or “Help me export this SLDPRT a
 the right scale for my A1 mini.” The skill can work from a description, a
 FeatureManager screenshot, or a model.
 
+While SolidWorks is open on the same Windows PC as Codex or Claude Code,
+select the feature, sketch, face, or mate you want to ask about. Then ask
+“Use Wiremap to see what I selected in SolidWorks and help me with it.”
+Wiremap reads the active document and selection on request. To see the
+same read-only snapshot in a terminal, run:
+
+```bash
+node bin/wiremap.mjs solidworks-session --json
+```
+
 The reference arm includes a printable electronics tie-down deck. The [CAD folder](cad/robot-arm/) has an editable SolidWorks part, a STEP file, a watertight STL, and the Windows script that generated them. The arm links and gripper depend on the builder's measured servos and mechanical design.
 
 ```bash

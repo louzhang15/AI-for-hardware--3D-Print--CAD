@@ -17,6 +17,13 @@ diagnose a failure, prepare a drawing, or export a part. Apply the build phases
 below when the user is building a hardware project. For a standalone CAD
 question, work from the user's description, screenshot, or model.
 
+- If the user asks about the open document or current selection, run
+  `wiremap solidworks-session --json` on the Windows PC running SOLIDWORKS.
+  Read a fresh snapshot when the user changes the selection or document.
+  The snapshot identifies the active document, configuration, sketch constraint
+  status while editing, and selection. Use visible error text or a screenshot
+  for details that the snapshot cannot see. If the session is unavailable,
+  continue with the evidence the user has provided.
 - For a how-to, name the document and editing context (part, assembly, drawing,
   or active sketch), the command, the geometry to select, and the result to
   verify. Use the user's version when it matters and check the version-specific
