@@ -30,6 +30,11 @@ Then open Claude Code or Codex in the folder and say:
 
 ### SolidWorks and Bambu Studio example
 
+For standalone SolidWorks help, ask Codex or Claude Code a question like “Why
+is this sketch over defined in SolidWorks?” or “Help me export this SLDPRT at
+the right scale for my A1 mini.” The skill can work from a description, a
+FeatureManager screenshot, or a model.
+
 The reference arm includes a printable electronics tie-down deck. The [CAD folder](cad/robot-arm/) has an editable SolidWorks part, a STEP file, a watertight STL, and the Windows script that generated them. The arm links and gripper depend on the builder's measured servos and mechanical design.
 
 ```bash

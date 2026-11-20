@@ -62,6 +62,24 @@ test('prompt hook returns valid hook JSON for hardware and nothing otherwise', (
   assert.equal(r3.status, 0, 'never blocks a prompt');
 });
 
+test('standalone SolidWorks questions activate Wiremap without requiring a build project', () => {
+  for (const prompt of [
+    'Help me with SOLIDWORKS',
+    'Why is my sketch over defined in Solid Works?',
+    'Can you open bracket.SLDPRT?',
+    'What changed in arm.SLDASM?',
+    'Help me update the dimensions on Sheet1.SLDDRW',
+    'How do I use MateXpert?',
+  ]) {
+    assert.ok(matchHardware(prompt).match, prompt);
+  }
+  const hook = join(root, 'hooks', 'prompt-hook.mjs');
+  const run = spawnSync(process.execPath, [hook], { input: JSON.stringify({ prompt: 'Help me with SolidWorks' }) });
+  assert.equal(run.status, 0);
+  assert.match(JSON.parse(run.stdout).hookSpecificOutput.additionalContext, /standalone CAD questions/i);
+  assert.equal(matchHardware('Parse a solid worker configuration in TypeScript').match, false);
+});
+
 test('skill mirrors (AGENTS.md, .claude/skills) are in sync with skills/wiremap/SKILL.md', () => {
   const r = spawnSync(process.execPath, [join(root, 'scripts', 'sync-skill.mjs'), '--check']);
   assert.equal(r.status, 0, r.stderr.toString() + ' — run `node scripts/sync-skill.mjs`');

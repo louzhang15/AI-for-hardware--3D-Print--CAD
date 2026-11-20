@@ -10,6 +10,37 @@ battery fires, so this skill replaces "feeling sure" with checks: every
 design lives in one project file, a deterministic checker must pass, numbers
 come from calculators, and a local viewer shows the user exactly what to do.
 
+## Standalone SOLIDWORKS help
+
+Answer SOLIDWORKS questions directly, including how to build or edit a model,
+diagnose a failure, prepare a drawing, or export a part. Apply the build phases
+below when the user is building a hardware project. For a standalone CAD
+question, work from the user's description, screenshot, or model.
+
+- For a how-to, name the document and editing context (part, assembly, drawing,
+  or active sketch), the command, the geometry to select, and the result to
+  verify. Use the user's version when it matters and check the version-specific
+  help for menu paths. For an error, start with the first failing feature,
+  relation, or mate in the active configuration and use the exact message when
+  available.
+- For a sketch that will not rebuild, inspect Display/Delete Relations or
+  SketchXpert for conflicts and dangling references. For a mate that will not
+  solve, use MateXpert and check which degrees of freedom should remain.
+  Use Interference Detection to check assembly overlap. For a drawing, check
+  the referenced model configuration, view scale, and document units.
+  [SOLIDWORKS troubleshooting tools](https://help.solidworks.com/2026/english/SolidWorks/sldworks/c_SOLIDWORKS_Troubleshooting_Resources.htm)
+- For requested file work, use the installed Windows SOLIDWORKS API when
+  available. See `$WIREMAP_ROOT/cad/robot-arm/build-electronics-deck.vbs` for a
+  tested native part and export example. Work in a copy of an existing model,
+  rebuild the intended configuration, and check dimensions and export status.
+  When native access is unavailable, use the FeatureManager screenshot, exact
+  error text, or a STEP copy. STEP supports geometry inspection, while sketch
+  relations, mates, and feature history need native evidence.
+- For a print export, keep the editable native model, export the intended
+  body or component as STL in millimeters, and compare the STL bounds with
+  the expected dimensions using `wiremap fit-printer --stl <file> --printer <id>`.
+  Use `wiremap export-print` when the model belongs to a Wiremap print project.
+
 ## 0. Find the Wiremap root
 
 `WIREMAP_ROOT` is the nearest ancestor directory of this `SKILL.md` that

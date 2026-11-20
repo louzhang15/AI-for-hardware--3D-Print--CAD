@@ -1,6 +1,6 @@
 ---
 name: wiremap
-description: Hardware build companion for electronics, wiring, CAD and 3D printing. Use for ANY hardware task - robots, robot arms, drones, rovers, IoT and smart devices, Arduino, ESP32, Raspberry Pi Pico, microcontrollers, servos, stepper or DC motors, motor drivers, sensors, I2C, UART, PWM, GPIO, pinouts, wiring diagrams, breadboards, jumper wires, soldering, voltage, current, power supplies, batteries, LiPo, 18650, buck converters, regulators, fuses, logic levels, "my servo jitters", "board keeps resetting", brownouts, firmware pin mapping, and for CAD and 3D printing - brackets, mounts, enclosures, cases, STL, STEP, 3MF, build123d, CadQuery, OpenSCAD, FreeCAD, Fusion, slicers, Bambu Lab (A1, A1 mini, P1S, P2S, X1C, H2D), "will this fit my printer", tolerances, heat-set inserts. It plans the parts, checks the circuit with deterministic electrical rules, lays out breadboards, fits prints to the printer and shows everything in a live local 3D viewer.
+description: Hardware build and CAD companion. Use for SOLIDWORKS help (sketches, features, mates, drawings, macros, SLDPRT/SLDASM/SLDDRW, STEP/STL exports), CAD modeling in build123d, CadQuery, OpenSCAD, FreeCAD or Fusion, and 3D print fit, splitting, slicers, Bambu Lab, tolerances and inserts. Also use for hardware builds and troubleshooting involving Arduino, ESP32, Raspberry Pi, wiring, GPIO and pinouts, breadboards, sensors, motors, servos, batteries, power supplies, brownouts and firmware. Checks wiring and printer fit and shows build steps in a local 3D viewer.
 ---
 
 # Wiremap
@@ -9,6 +9,37 @@ You are helping someone build real hardware. Mistakes fry boards and start
 battery fires, so this skill replaces "feeling sure" with checks: every
 design lives in one project file, a deterministic checker must pass, numbers
 come from calculators, and a local viewer shows the user exactly what to do.
+
+## Standalone SOLIDWORKS help
+
+Answer SOLIDWORKS questions directly, including how to build or edit a model,
+diagnose a failure, prepare a drawing, or export a part. Apply the build phases
+below when the user is building a hardware project. For a standalone CAD
+question, work from the user's description, screenshot, or model.
+
+- For a how-to, name the document and editing context (part, assembly, drawing,
+  or active sketch), the command, the geometry to select, and the result to
+  verify. Use the user's version when it matters and check the version-specific
+  help for menu paths. For an error, start with the first failing feature,
+  relation, or mate in the active configuration and use the exact message when
+  available.
+- For a sketch that will not rebuild, inspect Display/Delete Relations or
+  SketchXpert for conflicts and dangling references. For a mate that will not
+  solve, use MateXpert and check which degrees of freedom should remain.
+  Use Interference Detection to check assembly overlap. For a drawing, check
+  the referenced model configuration, view scale, and document units.
+  [SOLIDWORKS troubleshooting tools](https://help.solidworks.com/2026/english/SolidWorks/sldworks/c_SOLIDWORKS_Troubleshooting_Resources.htm)
+- For requested file work, use the installed Windows SOLIDWORKS API when
+  available. See `$WIREMAP_ROOT/cad/robot-arm/build-electronics-deck.vbs` for a
+  tested native part and export example. Work in a copy of an existing model,
+  rebuild the intended configuration, and check dimensions and export status.
+  When native access is unavailable, use the FeatureManager screenshot, exact
+  error text, or a STEP copy. STEP supports geometry inspection, while sketch
+  relations, mates, and feature history need native evidence.
+- For a print export, keep the editable native model, export the intended
+  body or component as STL in millimeters, and compare the STL bounds with
+  the expected dimensions using `wiremap fit-printer --stl <file> --printer <id>`.
+  Use `wiremap export-print` when the model belongs to a Wiremap print project.
 
 ## 0. Find the Wiremap root
 
