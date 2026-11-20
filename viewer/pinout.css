@@ -126,3 +126,19 @@
   .scene-inspect-picker, .scene-inspect-details { display: none; }
   .view-tools .scene-toggle:not(:has(input:checked)) { display: none; }
 }
+
+/* Chatbot settings, answers and the floating overlay */
+.cmp-settings { display: flex; gap: 6px; margin-bottom: 8px; }
+.cmp-select { flex: 1; min-width: 0; padding: 4px 6px; border-radius: 7px; border: 1px solid rgba(63,216,255,.4); background: rgba(0,0,0,.35); color: #d6f6ff; font: 12px var(--font); }
+.cmp-msg.bot p { white-space: pre-wrap; }
+.cmp-badge { margin-top: 4px; font: 600 10.5px var(--mono); color: #7fc9dc; }
+.pip-body { margin: 0; background: #04101c; height: 100vh; overflow: hidden; }
+.companion.in-pip { position: static; inset: auto; height: 100vh; padding: 8px; box-sizing: border-box; }
+.companion.in-pip .cmp-panel { width: auto; max-height: none; height: 100%; box-sizing: border-box; }
+.companion.in-pip .cmp-launch { display: none; }
+body.overlay-mode .topbar, body.overlay-mode .side, body.overlay-mode .center-bar, body.overlay-mode .stage,
+body.overlay-mode .workspace-dock, body.overlay-mode .info-card { display: none !important; }
+body.overlay-mode { background: #04101c; }
+body.overlay-mode .companion { position: fixed; inset: 8px; align-items: stretch; }
+body.overlay-mode .cmp-panel { width: auto; max-height: none; flex: 1; }
+body.overlay-mode .cmp-launch { display: none; }

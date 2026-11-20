@@ -153,3 +153,22 @@ auto-activation prompt set (≥ 95 % of 40 hardware prompts trigger the skill,
 ## License
 
 MIT. three.js (vendored in `viewer/vendor/three/`) is MIT, © three.js authors.
+
+## Ask Wiremap: assistant, chatbot and overlay
+
+The orb at the bottom right of the viewer (press V to talk) answers plain
+requests: "how do I connect the motor to the ESP32" zooms the 3D view to the
+exact pins, "where does SDA go", "what is GND", "my servo jitters", "go to
+step 3", "open the rover project". Other questions go to a chatbot that runs
+your own Claude Code (`claude -p`) or Codex (`codex exec`) locally. No API
+key; **AI: Auto** switches to the other one when one runs out of tokens.
+
+| Access (panel menu) | Claude Code | Codex |
+| --- | --- | --- |
+| Read only (default) | Read, Grep, Glob, `wiremap` commands | `--sandbox read-only` |
+| Can edit project | adds Edit and Write | `--sandbox workspace-write` |
+| Full access (asks to confirm) | `--dangerously-skip-permissions` | `--dangerously-bypass-approvals-and-sandbox` |
+
+The pop-out button keeps the panel on top of SOLIDWORKS or Bambu Studio
+(Document Picture-in-Picture, Chrome or Edge). Other browsers open a small
+popup window at `?overlay=1`.

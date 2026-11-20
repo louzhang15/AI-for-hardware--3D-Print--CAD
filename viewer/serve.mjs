@@ -421,6 +421,7 @@ export async function startServer(opts = {}) {
     return { id: entry.id, prompt: inboxPrompt(entry), request: entry };
   }
 
+  let chatBusy = false;
   async function handleApi(req, res, pathname) {
     if (req.method === 'GET' && pathname === '/api/library') {
       let lib = {};
@@ -518,6 +519,36 @@ export async function startServer(opts = {}) {
       if (!real) return fail(res, 404, `No project "${pf.name}"`);
       const changed = await updateState(real, body);
       return json(res, 200, { ok: true, changed });
+    }
+    if (pathname === '/api/chat/providers' && req.method === 'GET') {
+      const { detectProviders } = await import('../lib/node/chat.js');
+      return json(res, 200, await detectProviders(true));
+    }
+    if (pathname === '/api/chat' && req.method === 'POST') {
+      const body = await readJsonBody(req);
+      const question = String(body.question || '').trim().slice(0, 4000);
+      if (!question) return fail(res, 400, 'Empty question');
+      if (chatBusy) return fail(res, 429, 'Still answering the last question');
+      const provider = ['claude', 'codex'].includes(body.provider) ? body.provider : 'auto';
+      let projectFile = null;
+      const name = typeof body.project === 'string' && /^[A-Za-z0-9._-]+$/.test(body.project) ? body.project : null;
+      if (name) projectFile = await safeResolve(projectsDir, `${name}.json`);
+      const { chat } = await import('../lib/node/chat.js');
+      chatBusy = true;
+      try {
+        const out = await chat({
+          question, project: name, projectFile, wiremapRoot: ROOT, cwd: repoDir,
+          access: ['read', 'edit', 'full'].includes(body.access) ? body.access : 'read',
+          step: String(body.step || '').slice(0, 600), selection: String(body.selection || '').slice(0, 300),
+          context: String(body.context || '').slice(0, 2000),
+          history: Array.isArray(body.history) ? body.history.slice(-6).map((t) => ({ who: t?.who === 'you' ? 'you' : 'bot', text: String(t?.text || '') })) : [],
+        }, provider);
+        return json(res, 200, out);
+      } catch (e) {
+        return json(res, e.status || 500, { error: e.message, tried: e.tried || [] });
+      } finally {
+        chatBusy = false;
+      }
     }
     if (pathname === '/api/inbox' && req.method === 'POST') {
       const body = await readJsonBody(req);

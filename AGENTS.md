@@ -206,8 +206,13 @@ plain requests locally from the project file and checker: "how do I connect
 the motor to the ESP32" (zooms 3D to the exact pins), "where does SDA go",
 "what is GND", "my servo jitters" (first-pass troubleshooting), "go to
 power", "go to step 3", "open the rover project", "done". It uses the
-browser's speech APIs, no API key. Questions it can't answer go to the inbox
-for you. Give every step `parts` and `wires` and every part a `description`
+browser's speech APIs, no API key. Open questions go to a chatbot that
+runs the user's own `claude -p` or `codex exec` on their computer (Auto
+switches to the other when one runs out of tokens), with the access level
+the user picks in the panel: Read only (default), Can edit project, or Full
+access. The pop-out button floats the panel above SOLIDWORKS or Bambu Studio
+(Chrome/Edge); other browsers get a small popup window (`?overlay=1`). If no
+CLI is available, the question goes to the inbox for you. Give every step `parts` and `wires` and every part a `description`
 so its answers stay good.
 
 When the user clicks "Explain", "Fix this", "Swap part" or "I'm stuck", the

@@ -235,8 +235,8 @@ export function interpret(app, text) {
   const fix = troubleshoot(app, q, parts.flatMap((g) => g.parts.map((p) => p.id)));
   if (fix) return { kind: 'trouble', ...fix, groups: parts };
 
-  // Two parts named: how they connect.
-  if (parts.length >= 2) {
+  // Two parts named with a connect verb: how they connect.
+  if (parts.length >= 2 && /\b(connect\w*|wire|wiring|hook\w*|attach\w*|plug\w*|link\w*|join\w*|goes? to)\b/.test(q)) {
     const [a, b] = parts;
     const path = pathWires(app, a.parts.map((p) => p.id), b.parts.map((p) => p.id));
     return { kind: 'connect', from: a, to: b, ...path };
@@ -256,8 +256,8 @@ export function interpret(app, text) {
     if (explainTerm(token)) return { kind: 'explain', text: explainTerm(token), term: token };
   }
 
-  // One part named: show it.
-  if (parts.length === 1) return { kind: 'part', group: parts[0] };
+  // One part named in a short command: show it. Longer questions go to the AI.
+  if (parts.length === 1 && (/^(show|find|where is|where's|zoom|focus|highlight|locate)\b/.test(q) || q.split(' ').length <= 3)) return { kind: 'part', group: parts[0] };
   return { kind: 'ask', text };
 }
 

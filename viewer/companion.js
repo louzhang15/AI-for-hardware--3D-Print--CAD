@@ -4,7 +4,7 @@
 // explains in plain words, and reads steps aloud. It runs locally from the
 // project file and checker; questions it can't answer go to Claude Code or
 // Codex through the inbox. No API keys, no network service.
-import { h, icon, store, api } from './util.js';
+import { h, icon, store, api, postJSON } from './util.js';
 import { connectionRows, connectionList, sayConnection, tagName, silkscreen } from './pinout.js';
 import { interpret, suggestions, explainTerm } from './assistant.js';
 
@@ -26,9 +26,27 @@ export function createCompanion(app) {
   const voiceBtn = h('button.btn.small.ghost', { type: 'button', 'aria-pressed': String(voiceOut), title: 'Read answers aloud',
     onclick: () => { voiceOut = !voiceOut; store.set('wiremap.voice', voiceOut); voiceBtn.setAttribute('aria-pressed', String(voiceOut)); voiceBtn.lastChild.textContent = voiceOut ? 'Voice on' : 'Voice off'; if (!voiceOut) stopSpeaking(); } },
   icon('play', 14), h('span', null, voiceOut ? 'Voice on' : 'Voice off'));
+  const history = [];
+  let provider = store.get('wiremap.ai', 'auto');
+  let access = store.get('wiremap.access', 'read');
+  const providerSel = h('select.cmp-select', { 'aria-label': 'Which AI answers', title: 'Which AI answers open questions. Auto switches when one runs out of tokens.',
+    onchange: () => { provider = providerSel.value; store.set('wiremap.ai', provider); } },
+  h('option', { value: 'auto' }, 'AI: Auto'), h('option', { value: 'claude' }, 'AI: Claude Code'), h('option', { value: 'codex' }, 'AI: Codex'));
+  providerSel.value = provider;
+  const accessSel = h('select.cmp-select', { 'aria-label': 'What the AI may do', title: 'What the AI may do on this computer',
+    onchange: () => {
+      const want = accessSel.value;
+      if (want === 'full' && !window.confirm('Full access lets Claude Code or Codex run any command and change any file on this computer, without asking. Turn it on?')) { accessSel.value = access; return; }
+      access = want; store.set('wiremap.access', access);
+      add('bot', access === 'read' ? 'The AI can now only read your project.' : access === 'edit' ? 'The AI can now edit your project files. The viewer updates live.' : 'Full access is on. The AI can run any command without asking.');
+    } },
+  h('option', { value: 'read' }, 'Read only'), h('option', { value: 'edit' }, 'Can edit project'), h('option', { value: 'full' }, 'Full access'));
+  accessSel.value = access;
+  const popBtn = h('button.cmp-close', { type: 'button', 'aria-label': 'Pop out over other apps', title: 'Pop out: keep Ask Wiremap on top of SOLIDWORKS or Bambu Studio', onclick: () => popOut() }, icon('external', 14));
   const panel = h('div.cmp-panel', { hidden: true, role: 'dialog', 'aria-label': 'Ask Wiremap' },
-    h('div.cmp-head', null, h('strong', null, 'Ask Wiremap'), status,
+    h('div.cmp-head', null, h('strong', null, 'Ask Wiremap'), status, popBtn,
       h('button.cmp-close', { type: 'button', 'aria-label': 'Close', onclick: () => toggle(false) }, icon('x', 14))),
+    h('div.cmp-settings', null, providerSel, accessSel),
     log, chips,
     h('div.cmp-row', null, input, mic),
     h('div.cmp-actions', null,
@@ -60,6 +78,8 @@ export function createCompanion(app) {
     chips.replaceChildren(...suggestions(app).map((q) => h('button.cmp-chip', { type: 'button', onclick: () => handle(q) }, q)));
   }
   function add(who, text, extra) {
+    history.push({ who, text: String(text) });
+    if (history.length > 20) history.shift();
     const msg = h(`div.cmp-msg.${who}`, null, h('p', null, text), extra || null);
     log.append(msg);
     while (log.childElementCount > 12) log.firstChild.remove();
@@ -186,9 +206,59 @@ export function createCompanion(app) {
         return answer(`You have ${list.length} project${list.length === 1 ? '' : 's'}. Pick one:`,
           h('div.cmp-chips', null, list.map((p) => h('button.cmp-chip', { type: 'button', onclick: () => open(p) }, label(p)))));
       }
-      case 'ask': return answer('I can\'t answer that from the project file alone. Send it to your AI?', askAI(text));
+      case 'ask': return chatAI(text);
       default: return setState('idle');
     }
+  }
+
+  /** Free-form question: answered by Claude Code or Codex on this computer. */
+  async function chatAI(text) {
+    const step = app.currentStep();
+    const sel = app.selection;
+    const pending = add('bot', 'Asking your AI (this can take up to a minute)…');
+    setState('thinking');
+    try {
+      const res = await postJSON('/api/chat', {
+        question: text, project: app.data?.name, provider, access,
+        step: step ? `${step.title}: ${step.text || ''}` : '',
+        selection: sel ? `${sel.type} ${sel.id || ''}` : '',
+        history: history.slice(-7, -1),
+      });
+      pending.remove();
+      const who = res.provider === 'codex' ? 'Codex' : 'Claude Code';
+      const note = res.fellBack ? ` (${res.tried.map((t) => `${t.provider === 'codex' ? 'Codex' : 'Claude Code'}: ${t.reason}`).join(', ')}; switched)` : '';
+      add('bot', res.answer, h('div.cmp-badge', null, `Answered by ${who}${note}`));
+      speak(res.answer.replace(/[`*#_>|]/g, '').slice(0, 600));
+    } catch (e) {
+      pending.remove();
+      const msg = String(e.message || e).replace(/^\d+: /, '');
+      answer(`${msg} You can still send the question to your AI's inbox.`, askAI(text));
+    }
+  }
+
+  /** Float the panel above other apps (Chrome/Edge), or open a small popup window. */
+  async function popOut() {
+    if (window.documentPictureInPicture) {
+      try {
+        const home = root.parentNode;
+        const pip = await window.documentPictureInPicture.requestWindow({ width: 420, height: 640 });
+        for (const node of document.querySelectorAll('link[rel="stylesheet"], style')) {
+          if (node.tagName === 'LINK') pip.document.head.append(Object.assign(pip.document.createElement('link'), { rel: 'stylesheet', href: node.href }));
+          else pip.document.head.append(node.cloneNode(true));
+        }
+        for (const a of document.documentElement.attributes) pip.document.documentElement.setAttribute(a.name, a.value);
+        pip.document.title = 'Ask Wiremap';
+        pip.document.body.classList.add('pip-body');
+        root.classList.add('in-pip');
+        pip.document.body.append(root);
+        toggle(true);
+        pip.addEventListener('keydown', onKey);
+        pip.addEventListener('pagehide', () => { root.classList.remove('in-pip'); home.append(root); });
+        return;
+      } catch (e) { console.warn(e); }
+    }
+    const url = `${location.pathname}?overlay=1${location.hash}`;
+    window.open(url, 'wiremap-overlay', 'popup,width=440,height=700');
   }
 
   async function handle(text) {
@@ -213,12 +283,19 @@ export function createCompanion(app) {
     rec.start();
   }
 
-  window.addEventListener('keydown', (e) => {
+  function onKey(e) {
     if (e.key.toLowerCase() !== 'v' || e.metaKey || e.ctrlKey || e.altKey || !root.isConnected) return;
-    if (/^(input|textarea|select)$/i.test(document.activeElement?.tagName || '')) return;
+    const active = root.ownerDocument.activeElement || document.activeElement;
+    if (/^(input|textarea|select)$/i.test(active?.tagName || '')) return;
     toggle(true);
     if (Recognition) listen(); else input.focus();
-  });
+  }
+  window.addEventListener('keydown', onKey);
+  // Popup overlay mode (?overlay=1): only the assistant, always open.
+  if (new URLSearchParams(location.search).get('overlay') === '1') {
+    document.body.classList.add('overlay-mode');
+    setTimeout(() => toggle(true), 0);
+  }
   // First visit: open once so beginners find it.
   if (store.get('wiremap.askSeen', false) !== true) { store.set('wiremap.askSeen', true); setTimeout(() => toggle(true), 600); }
   return { root, handle, toggle };
