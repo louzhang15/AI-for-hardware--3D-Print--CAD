@@ -1,0 +1,5 @@
+node_modules/
+.wiremap/
+exports/
+*.wiremap-backup
+.DS_Store

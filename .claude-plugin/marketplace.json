@@ -1,0 +1,11 @@
+{
+  "name": "wiremap",
+  "owner": { "name": "Wiremap contributors" },
+  "plugins": [
+    {
+      "name": "wiremap",
+      "source": "./",
+      "description": "Hardware build companion: electrical checker, breadboard layout, printer-aware CAD helpers and a local 3D build viewer."
+    }
+  ]
+}

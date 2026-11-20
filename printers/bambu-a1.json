@@ -1,0 +1,73 @@
+{
+  "id": "bambu-a1",
+  "name": "Bambu Lab A1",
+  "maker": "Bambu Lab",
+  "volume": [
+    256,
+    256,
+    256
+  ],
+  "enclosed": false,
+  "heated_bed": {
+    "max_temp": 100
+  },
+  "nozzle_temp_max": 300,
+  "materials": {
+    "ok": [
+      "PLA",
+      "PETG",
+      "TPU",
+      "PVA"
+    ],
+    "warn": {
+      "ABS": "Open frame: warps and cracks without an enclosure, and fumes go straight into the room. Not recommended.",
+      "ASA": "Open frame: warps without an enclosure and gives off fumes. Not recommended.",
+      "PLA-CF": "Abrasive: needs a hardened steel nozzle (the stock nozzle is stainless steel).",
+      "PETG-CF": "Abrasive: needs a hardened steel nozzle (the stock nozzle is stainless steel).",
+      "PC": "Open frame: warps badly; small parts only, with a brim.",
+      "PA": "Absorbs moisture fast, warps on an open frame; dry it and use a brim."
+    },
+    "no": [
+      "PA-CF",
+      "PET-CF",
+      "PPS"
+    ]
+  },
+  "margin_mm": 5,
+  "keepout": [
+    {
+      "rect": [
+        0,
+        0,
+        20,
+        30
+      ],
+      "corner": "front-left",
+      "note": "Filament cut / prime area excluded by the slicer (size not officially published; check your Bambu Studio printer profile)."
+    }
+  ],
+  "notes": [
+    "Open frame: ABS/ASA not recommended.",
+    "Bed slinger: keep tall parts stable and low."
+  ],
+  "sources": [
+    "https://3dpros.com/printers/bambu-lab-a1",
+    "https://wiki.bambulab.com/en/a1/manual/faq",
+    "https://forum.bambulab.com/t/whats-preventing-me-from-moving-the-purge-tower-further-left-and-back/214951",
+    "https://wiki.bambulab.com/en/general/filament-guide-material-table"
+  ],
+  "nozzle_diameter": 0.4,
+  "clearance_mm": {
+    "press": 0.05,
+    "snug": 0.1,
+    "sliding": 0.2,
+    "free": 0.3,
+    "note": "Starting values per side, for PLA at 0.2 mm layers. Replace with tolerance-coupon measurements."
+  },
+  "send": [
+    "bambu-lan",
+    "3mf"
+  ],
+  "spec_checked": false,
+  "spec_note": "Numbers cross-checked via web search against Bambu official listings in search snippets (2026-11-20); bambulab.com itself could not be fetched from this session. Re-check against the official tech-specs page."
+}

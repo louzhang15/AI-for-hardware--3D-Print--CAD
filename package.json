@@ -1,0 +1,14 @@
+{
+  "name": "wiremap",
+  "version": "0.1.0",
+  "description": "Local AI hardware build companion: a skill for Claude Code and Codex with an electrical checker, breadboard layout, printer-aware CAD helpers and a 3D build viewer.",
+  "type": "module",
+  "license": "MIT",
+  "bin": { "wiremap": "bin/wiremap.mjs" },
+  "engines": { "node": ">=20" },
+  "scripts": {
+    "check": "node bin/wiremap.mjs check",
+    "serve": "node viewer/serve.mjs",
+    "test": "node tests/run.mjs"
+  }
+}

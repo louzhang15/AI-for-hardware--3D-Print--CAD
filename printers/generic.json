@@ -1,0 +1,49 @@
+{
+  "id": "generic",
+  "name": "Generic FDM printer (template)",
+  "maker": "Any",
+  "volume": [
+    220,
+    220,
+    250
+  ],
+  "nozzle_diameter": 0.4,
+  "enclosed": false,
+  "heated_bed": {
+    "max_temp": 100
+  },
+  "nozzle_temp_max": 260,
+  "materials": {
+    "ok": [
+      "PLA",
+      "PETG"
+    ],
+    "warn": {
+      "TPU": "Flexible filament needs a direct-drive extruder; Bowden setups struggle.",
+      "ABS": "Needs an enclosure; open frames warp and vent fumes into the room.",
+      "ASA": "Needs an enclosure."
+    },
+    "no": [
+      "PC",
+      "PA",
+      "PA-CF"
+    ]
+  },
+  "margin_mm": 5,
+  "send": [
+    "3mf"
+  ],
+  "clearance_mm": {
+    "press": 0.1,
+    "snug": 0.15,
+    "sliding": 0.25,
+    "free": 0.4,
+    "note": "Conservative starting values per side for an uncalibrated printer. Replace with tolerance-coupon measurements."
+  },
+  "notes": [
+    "Template: copy to printers/<your-printer>.json and fill in volume, nozzle, bed temperature and enclosure from your printer spec sheet.",
+    "Send options: \"3mf\" (open in any slicer), \"octoprint\", \"klipper\", \"prusa-connect\"."
+  ],
+  "sources": [],
+  "spec_checked": false
+}

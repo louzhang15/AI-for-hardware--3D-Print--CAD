@@ -1,0 +1,1587 @@
+{
+  "meta": {
+    "name": "Desk servo demo",
+    "description": "Two MG996R servos driven by an ESP32 through a PCA9685, with a 6 V supply for the servos.",
+    "phase": "wire",
+    "requirements": {
+      "size": "30 x 20 cm desk footprint",
+      "payload": "none (test rig)",
+      "runtime": "wall powered",
+      "budget": "$45",
+      "power": "wall",
+      "on_hand": [
+        "breadboard",
+        "ESP32"
+      ]
+    }
+  },
+  "printer": {
+    "profile": "bambu-a1-mini",
+    "material": "PLA"
+  },
+  "parts": [
+    {
+      "id": "psu",
+      "name": "6 V 5 A wall adapter",
+      "category": "power",
+      "description": "Feeds the servo rail through the PCA9685 terminal block.",
+      "confidence": "checked",
+      "color": "#2c3038",
+      "size": [
+        70,
+        32,
+        46
+      ],
+      "pins": [
+        {
+          "name": "V+",
+          "label": "+6V",
+          "kind": "power_out",
+          "voltage": 6,
+          "voltage_max": 6.3,
+          "current_max": 5,
+          "pos": [
+            68,
+            17
+          ]
+        },
+        {
+          "name": "GND",
+          "label": "GND",
+          "kind": "ground",
+          "pos": [
+            68,
+            29
+          ]
+        }
+      ],
+      "position": [
+        -235,
+        0,
+        70
+      ],
+      "bom": {
+        "why": "Servos stall at up to 2.5 A each; 5 A covers both with margin.",
+        "price": 12.99,
+        "currency": "USD"
+      }
+    },
+    {
+      "id": "usb",
+      "name": "USB cable from laptop",
+      "category": "power",
+      "description": "Powers the ESP32 and lets you flash firmware.",
+      "confidence": "verified",
+      "color": "#3b4048",
+      "size": [
+        34,
+        8,
+        14
+      ],
+      "pins": [
+        {
+          "name": "5V",
+          "label": "5V",
+          "kind": "power_out",
+          "voltage": 5,
+          "voltage_min": 4.75,
+          "current_max": 0.5,
+          "pos": [
+            33,
+            4
+          ]
+        },
+        {
+          "name": "GND",
+          "label": "GND",
+          "kind": "ground",
+          "pos": [
+            33,
+            10
+          ]
+        }
+      ],
+      "position": [
+        -215,
+        0,
+        -95
+      ],
+      "bom": {
+        "why": "You already have one.",
+        "price": 0,
+        "currency": "USD"
+      },
+      "have": true
+    },
+    {
+      "id": "esp",
+      "name": "ESP32 DevKit V1 (30-pin)",
+      "category": "controller",
+      "description": "Wi-Fi microcontroller board; runs the arm firmware and talks I2C to the servo driver.",
+      "datasheet": "https://www.espressif.com/sites/default/files/documentation/esp32_datasheet_en.pdf",
+      "confidence": "checked",
+      "color": "#1b2a3a",
+      "size": [
+        51.5,
+        10,
+        28.3
+      ],
+      "pins": [
+        {
+          "name": "VIN",
+          "label": "VIN",
+          "pos": [
+            7,
+            1.6
+          ],
+          "kind": "power_in",
+          "vmin": 4.5,
+          "vmax": 12,
+          "current": 0.12,
+          "current_peak": 0.5,
+          "required": true
+        },
+        {
+          "name": "GND",
+          "label": "GND",
+          "pos": [
+            9.54,
+            1.6
+          ],
+          "kind": "ground"
+        },
+        {
+          "name": "GPIO13",
+          "label": "D13",
+          "pos": [
+            12.08,
+            1.6
+          ],
+          "kind": "digital",
+          "dir": "io",
+          "voltage": 3.3,
+          "vmax": 3.6
+        },
+        {
+          "name": "GPIO12",
+          "label": "D12",
+          "pos": [
+            14.62,
+            1.6
+          ],
+          "kind": "digital",
+          "dir": "io",
+          "voltage": 3.3,
+          "vmax": 3.6
+        },
+        {
+          "name": "GPIO14",
+          "label": "D14",
+          "pos": [
+            17.16,
+            1.6
+          ],
+          "kind": "digital",
+          "dir": "io",
+          "voltage": 3.3,
+          "vmax": 3.6
+        },
+        {
+          "name": "GPIO27",
+          "label": "D27",
+          "pos": [
+            19.7,
+            1.6
+          ],
+          "kind": "digital",
+          "dir": "io",
+          "voltage": 3.3,
+          "vmax": 3.6
+        },
+        {
+          "name": "GPIO26",
+          "label": "D26",
+          "pos": [
+            22.24,
+            1.6
+          ],
+          "kind": "digital",
+          "dir": "io",
+          "voltage": 3.3,
+          "vmax": 3.6
+        },
+        {
+          "name": "GPIO25",
+          "label": "D25",
+          "pos": [
+            24.78,
+            1.6
+          ],
+          "kind": "digital",
+          "dir": "io",
+          "voltage": 3.3,
+          "vmax": 3.6
+        },
+        {
+          "name": "GPIO33",
+          "label": "D33",
+          "pos": [
+            27.32,
+            1.6
+          ],
+          "kind": "digital",
+          "dir": "io",
+          "voltage": 3.3,
+          "vmax": 3.6
+        },
+        {
+          "name": "GPIO32",
+          "label": "D32",
+          "pos": [
+            29.86,
+            1.6
+          ],
+          "kind": "digital",
+          "dir": "io",
+          "voltage": 3.3,
+          "vmax": 3.6
+        },
+        {
+          "name": "GPIO35",
+          "label": "D35",
+          "pos": [
+            32.4,
+            1.6
+          ],
+          "kind": "analog",
+          "dir": "in",
+          "voltage": 3.3,
+          "vmax": 3.6
+        },
+        {
+          "name": "GPIO34",
+          "label": "D34",
+          "pos": [
+            34.94,
+            1.6
+          ],
+          "kind": "analog",
+          "dir": "in",
+          "voltage": 3.3,
+          "vmax": 3.6
+        },
+        {
+          "name": "GPIO39",
+          "label": "VN",
+          "pos": [
+            37.48,
+            1.6
+          ],
+          "kind": "analog",
+          "dir": "in",
+          "voltage": 3.3,
+          "vmax": 3.6
+        },
+        {
+          "name": "GPIO36",
+          "label": "VP",
+          "pos": [
+            40.02,
+            1.6
+          ],
+          "kind": "analog",
+          "dir": "in",
+          "voltage": 3.3,
+          "vmax": 3.6
+        },
+        {
+          "name": "EN",
+          "label": "EN",
+          "pos": [
+            42.56,
+            1.6
+          ],
+          "kind": "digital",
+          "dir": "in",
+          "voltage": 3.3,
+          "vmax": 3.6
+        },
+        {
+          "name": "3V3",
+          "label": "3V3",
+          "pos": [
+            7,
+            26.7
+          ],
+          "kind": "power_out",
+          "voltage": 3.3,
+          "current_max": 0.5
+        },
+        {
+          "name": "GND2",
+          "label": "GND",
+          "pos": [
+            9.54,
+            26.7
+          ],
+          "kind": "ground"
+        },
+        {
+          "name": "GPIO15",
+          "label": "D15",
+          "pos": [
+            12.08,
+            26.7
+          ],
+          "kind": "digital",
+          "dir": "io",
+          "voltage": 3.3,
+          "vmax": 3.6
+        },
+        {
+          "name": "GPIO2",
+          "label": "D2",
+          "pos": [
+            14.62,
+            26.7
+          ],
+          "kind": "digital",
+          "dir": "io",
+          "voltage": 3.3,
+          "vmax": 3.6
+        },
+        {
+          "name": "GPIO4",
+          "label": "D4",
+          "pos": [
+            17.16,
+            26.7
+          ],
+          "kind": "digital",
+          "dir": "io",
+          "voltage": 3.3,
+          "vmax": 3.6
+        },
+        {
+          "name": "GPIO16",
+          "label": "RX2",
+          "pos": [
+            19.7,
+            26.7
+          ],
+          "kind": "digital",
+          "dir": "io",
+          "voltage": 3.3,
+          "vmax": 3.6
+        },
+        {
+          "name": "GPIO17",
+          "label": "TX2",
+          "pos": [
+            22.24,
+            26.7
+          ],
+          "kind": "digital",
+          "dir": "io",
+          "voltage": 3.3,
+          "vmax": 3.6
+        },
+        {
+          "name": "GPIO5",
+          "label": "D5",
+          "pos": [
+            24.78,
+            26.7
+          ],
+          "kind": "digital",
+          "dir": "io",
+          "voltage": 3.3,
+          "vmax": 3.6
+        },
+        {
+          "name": "GPIO18",
+          "label": "D18",
+          "pos": [
+            27.32,
+            26.7
+          ],
+          "kind": "digital",
+          "dir": "io",
+          "voltage": 3.3,
+          "vmax": 3.6
+        },
+        {
+          "name": "GPIO19",
+          "label": "D19",
+          "pos": [
+            29.86,
+            26.7
+          ],
+          "kind": "digital",
+          "dir": "io",
+          "voltage": 3.3,
+          "vmax": 3.6
+        },
+        {
+          "name": "GPIO21",
+          "label": "D21",
+          "pos": [
+            32.4,
+            26.7
+          ],
+          "kind": "digital",
+          "dir": "io",
+          "voltage": 3.3,
+          "vmax": 3.6
+        },
+        {
+          "name": "GPIO3",
+          "label": "RX0",
+          "pos": [
+            34.94,
+            26.7
+          ],
+          "kind": "uart_rx",
+          "dir": "in",
+          "voltage": 3.3,
+          "vmax": 3.6
+        },
+        {
+          "name": "GPIO1",
+          "label": "TX0",
+          "pos": [
+            37.48,
+            26.7
+          ],
+          "kind": "uart_tx",
+          "dir": "out",
+          "voltage": 3.3,
+          "vmax": 3.6
+        },
+        {
+          "name": "GPIO22",
+          "label": "D22",
+          "pos": [
+            40.02,
+            26.7
+          ],
+          "kind": "digital",
+          "dir": "io",
+          "voltage": 3.3,
+          "vmax": 3.6
+        },
+        {
+          "name": "GPIO23",
+          "label": "D23",
+          "pos": [
+            42.56,
+            26.7
+          ],
+          "kind": "digital",
+          "dir": "io",
+          "voltage": 3.3,
+          "vmax": 3.6
+        }
+      ],
+      "internal": [
+        [
+          "GND",
+          "GND2"
+        ]
+      ],
+      "regulators": [
+        {
+          "in": "VIN",
+          "out": "3V3",
+          "gnd": "GND",
+          "type": "linear",
+          "vout": 3.3,
+          "dropout": 1.1,
+          "current_max": 0.5,
+          "vin_max": 12
+        }
+      ],
+      "breadboard": {
+        "fit": "straddle",
+        "row_spacing": 10,
+        "body_width_mm": 28.3
+      },
+      "position": [
+        -105,
+        0,
+        -95
+      ],
+      "bom": {
+        "why": "Cheap, Wi-Fi, plenty of pins; 3.3 V logic works with the PCA9685.",
+        "price": 8.5,
+        "currency": "USD"
+      },
+      "have": true
+    },
+    {
+      "id": "pca",
+      "name": "PCA9685 16-channel PWM driver",
+      "category": "driver",
+      "description": "Generates steady servo pulses so the ESP32 only sends I2C commands.",
+      "datasheet": "https://cdn-shop.adafruit.com/datasheets/PCA9685.pdf",
+      "confidence": "verified",
+      "color": "#1f4fa8",
+      "size": [
+        62.2,
+        4,
+        25.4
+      ],
+      "pins": [
+        {
+          "name": "GND",
+          "label": "GND",
+          "kind": "ground",
+          "pos": [
+            2.5,
+            6.35
+          ]
+        },
+        {
+          "name": "OE",
+          "label": "OE",
+          "kind": "digital",
+          "dir": "in",
+          "voltage_ref": "VCC",
+          "pos": [
+            2.5,
+            8.89
+          ]
+        },
+        {
+          "name": "SCL",
+          "label": "SCL",
+          "kind": "i2c_scl",
+          "dir": "in",
+          "voltage_ref": "VCC",
+          "pullup": 3.3,
+          "open_drain": true,
+          "pos": [
+            2.5,
+            11.43
+          ]
+        },
+        {
+          "name": "SDA",
+          "label": "SDA",
+          "kind": "i2c_sda",
+          "dir": "io",
+          "voltage_ref": "VCC",
+          "pullup": 3.3,
+          "open_drain": true,
+          "pos": [
+            2.5,
+            13.97
+          ]
+        },
+        {
+          "name": "VCC",
+          "label": "VCC",
+          "kind": "power_in",
+          "vmin": 2.3,
+          "vmax": 5.5,
+          "current": 0.01,
+          "current_peak": 0.02,
+          "required": true,
+          "pos": [
+            2.5,
+            16.51
+          ]
+        },
+        {
+          "name": "V+",
+          "label": "V+",
+          "kind": "power_rail",
+          "pos": [
+            2.5,
+            19.05
+          ]
+        },
+        {
+          "name": "GND_R",
+          "label": "GND",
+          "kind": "ground",
+          "required": false,
+          "pos": [
+            59.7,
+            6.35
+          ]
+        },
+        {
+          "name": "OE_R",
+          "label": "OE",
+          "kind": "digital",
+          "dir": "in",
+          "voltage_ref": "VCC",
+          "required": false,
+          "pos": [
+            59.7,
+            8.89
+          ]
+        },
+        {
+          "name": "SCL_R",
+          "label": "SCL",
+          "kind": "i2c_scl",
+          "dir": "in",
+          "voltage_ref": "VCC",
+          "pullup": 3.3,
+          "open_drain": true,
+          "required": false,
+          "pos": [
+            59.7,
+            11.43
+          ]
+        },
+        {
+          "name": "SDA_R",
+          "label": "SDA",
+          "kind": "i2c_sda",
+          "dir": "io",
+          "voltage_ref": "VCC",
+          "pullup": 3.3,
+          "open_drain": true,
+          "required": false,
+          "pos": [
+            59.7,
+            13.97
+          ]
+        },
+        {
+          "name": "VCC_R",
+          "label": "VCC",
+          "kind": "power_in",
+          "vmin": 2.3,
+          "vmax": 5.5,
+          "current": 0.01,
+          "current_peak": 0.02,
+          "required": false,
+          "pos": [
+            59.7,
+            16.51
+          ]
+        },
+        {
+          "name": "V+_R",
+          "label": "V+",
+          "kind": "power_rail",
+          "required": false,
+          "pos": [
+            59.7,
+            19.05
+          ]
+        },
+        {
+          "name": "V+_T",
+          "label": "V+",
+          "kind": "power_rail",
+          "pos": [
+            27.5,
+            3.2
+          ]
+        },
+        {
+          "name": "GND_T",
+          "label": "GND",
+          "kind": "ground",
+          "pos": [
+            34.5,
+            3.2
+          ]
+        },
+        {
+          "name": "PWM0",
+          "label": "PWM0",
+          "kind": "pwm",
+          "dir": "out",
+          "voltage_ref": "VCC",
+          "pos": [
+            17,
+            15.2
+          ]
+        },
+        {
+          "name": "VS0",
+          "label": "V+",
+          "kind": "power_rail",
+          "pos": [
+            17,
+            17.74
+          ]
+        },
+        {
+          "name": "G0",
+          "label": "GND",
+          "kind": "ground",
+          "pos": [
+            17,
+            20.28
+          ]
+        },
+        {
+          "name": "PWM1",
+          "label": "PWM1",
+          "kind": "pwm",
+          "dir": "out",
+          "voltage_ref": "VCC",
+          "pos": [
+            19.54,
+            15.2
+          ]
+        },
+        {
+          "name": "VS1",
+          "label": "V+",
+          "kind": "power_rail",
+          "pos": [
+            19.54,
+            17.74
+          ]
+        },
+        {
+          "name": "G1",
+          "label": "GND",
+          "kind": "ground",
+          "pos": [
+            19.54,
+            20.28
+          ]
+        },
+        {
+          "name": "PWM2",
+          "label": "PWM2",
+          "kind": "pwm",
+          "dir": "out",
+          "voltage_ref": "VCC",
+          "pos": [
+            22.08,
+            15.2
+          ]
+        },
+        {
+          "name": "VS2",
+          "label": "V+",
+          "kind": "power_rail",
+          "pos": [
+            22.08,
+            17.74
+          ]
+        },
+        {
+          "name": "G2",
+          "label": "GND",
+          "kind": "ground",
+          "pos": [
+            22.08,
+            20.28
+          ]
+        },
+        {
+          "name": "PWM3",
+          "label": "PWM3",
+          "kind": "pwm",
+          "dir": "out",
+          "voltage_ref": "VCC",
+          "pos": [
+            24.62,
+            15.2
+          ]
+        },
+        {
+          "name": "VS3",
+          "label": "V+",
+          "kind": "power_rail",
+          "pos": [
+            24.62,
+            17.74
+          ]
+        },
+        {
+          "name": "G3",
+          "label": "GND",
+          "kind": "ground",
+          "pos": [
+            24.62,
+            20.28
+          ]
+        },
+        {
+          "name": "PWM4",
+          "label": "PWM4",
+          "kind": "pwm",
+          "dir": "out",
+          "voltage_ref": "VCC",
+          "pos": [
+            27.16,
+            15.2
+          ]
+        },
+        {
+          "name": "VS4",
+          "label": "V+",
+          "kind": "power_rail",
+          "pos": [
+            27.16,
+            17.74
+          ]
+        },
+        {
+          "name": "G4",
+          "label": "GND",
+          "kind": "ground",
+          "pos": [
+            27.16,
+            20.28
+          ]
+        },
+        {
+          "name": "PWM5",
+          "label": "PWM5",
+          "kind": "pwm",
+          "dir": "out",
+          "voltage_ref": "VCC",
+          "pos": [
+            29.7,
+            15.2
+          ]
+        },
+        {
+          "name": "VS5",
+          "label": "V+",
+          "kind": "power_rail",
+          "pos": [
+            29.7,
+            17.74
+          ]
+        },
+        {
+          "name": "G5",
+          "label": "GND",
+          "kind": "ground",
+          "pos": [
+            29.7,
+            20.28
+          ]
+        },
+        {
+          "name": "PWM6",
+          "label": "PWM6",
+          "kind": "pwm",
+          "dir": "out",
+          "voltage_ref": "VCC",
+          "pos": [
+            32.24,
+            15.2
+          ]
+        },
+        {
+          "name": "VS6",
+          "label": "V+",
+          "kind": "power_rail",
+          "pos": [
+            32.24,
+            17.74
+          ]
+        },
+        {
+          "name": "G6",
+          "label": "GND",
+          "kind": "ground",
+          "pos": [
+            32.24,
+            20.28
+          ]
+        },
+        {
+          "name": "PWM7",
+          "label": "PWM7",
+          "kind": "pwm",
+          "dir": "out",
+          "voltage_ref": "VCC",
+          "pos": [
+            34.78,
+            15.2
+          ]
+        },
+        {
+          "name": "VS7",
+          "label": "V+",
+          "kind": "power_rail",
+          "pos": [
+            34.78,
+            17.74
+          ]
+        },
+        {
+          "name": "G7",
+          "label": "GND",
+          "kind": "ground",
+          "pos": [
+            34.78,
+            20.28
+          ]
+        }
+      ],
+      "internal": [
+        [
+          "GND",
+          "GND_R",
+          "GND_T",
+          "G0",
+          "G1",
+          "G2",
+          "G3",
+          "G4",
+          "G5",
+          "G6",
+          "G7"
+        ],
+        [
+          "V+",
+          "V+_R",
+          "V+_T",
+          "VS0",
+          "VS1",
+          "VS2",
+          "VS3",
+          "VS4",
+          "VS5",
+          "VS6",
+          "VS7"
+        ],
+        [
+          "VCC",
+          "VCC_R"
+        ],
+        [
+          "SDA",
+          "SDA_R"
+        ],
+        [
+          "SCL",
+          "SCL_R"
+        ],
+        [
+          "OE",
+          "OE_R"
+        ]
+      ],
+      "position": [
+        35,
+        0,
+        -10
+      ],
+      "bom": {
+        "why": "Offloads servo timing; one I2C bus drives 16 servos.",
+        "price": 6.95,
+        "currency": "USD",
+        "link": "https://www.adafruit.com/product/815"
+      }
+    },
+    {
+      "id": "servo1",
+      "name": "MG996R servo (base)",
+      "category": "actuator",
+      "description": "High-torque metal-gear hobby servo.",
+      "confidence": "checked",
+      "color": "#22252a",
+      "datasheet": "https://www.electronicoscaldas.com/datasheet/MG996R_Tower-Pro.pdf",
+      "size": [
+        40.7,
+        42.9,
+        19.7
+      ],
+      "verify": false,
+      "pins": [
+        {
+          "name": "SIG",
+          "label": "SIG",
+          "kind": "pwm",
+          "dir": "in",
+          "vih": 2,
+          "vmax": 7.2,
+          "required": true,
+          "pos": [
+            1.2,
+            7.3
+          ]
+        },
+        {
+          "name": "V+",
+          "label": "V+",
+          "kind": "power_in",
+          "vmin": 4.8,
+          "vmax": 7.2,
+          "current": 0.25,
+          "current_peak": 2.5,
+          "required": true,
+          "pos": [
+            1.2,
+            9.85
+          ]
+        },
+        {
+          "name": "GND",
+          "label": "GND",
+          "kind": "ground",
+          "required": true,
+          "pos": [
+            1.2,
+            12.4
+          ]
+        }
+      ],
+      "position": [
+        175,
+        0,
+        -85
+      ],
+      "bom": {
+        "why": "Strong enough for the base joint.",
+        "price": 7.5,
+        "currency": "USD"
+      }
+    },
+    {
+      "id": "servo2",
+      "name": "MG996R servo (shoulder)",
+      "category": "actuator",
+      "description": "High-torque metal-gear hobby servo.",
+      "confidence": "checked",
+      "color": "#22252a",
+      "datasheet": "https://www.electronicoscaldas.com/datasheet/MG996R_Tower-Pro.pdf",
+      "size": [
+        40.7,
+        42.9,
+        19.7
+      ],
+      "verify": true,
+      "pins": [
+        {
+          "name": "SIG",
+          "label": "SIG",
+          "kind": "pwm",
+          "dir": "in",
+          "vih": 2,
+          "vmax": 7.2,
+          "required": true,
+          "pos": [
+            1.2,
+            7.3
+          ]
+        },
+        {
+          "name": "V+",
+          "label": "V+",
+          "kind": "power_in",
+          "vmin": 4.8,
+          "vmax": 7.2,
+          "current": 0.25,
+          "current_peak": 2.5,
+          "required": true,
+          "pos": [
+            1.2,
+            9.85
+          ]
+        },
+        {
+          "name": "GND",
+          "label": "GND",
+          "kind": "ground",
+          "required": true,
+          "pos": [
+            1.2,
+            12.4
+          ]
+        }
+      ],
+      "position": [
+        175,
+        0,
+        55
+      ],
+      "bom": {
+        "why": "Same servo keeps spares simple.",
+        "price": 7.5,
+        "currency": "USD"
+      }
+    }
+  ],
+  "wires": [
+    {
+      "id": "w1",
+      "from": "psu.V+",
+      "to": "pca.V+_T",
+      "color": "red",
+      "gauge": 18,
+      "length_mm": 300,
+      "label": "6V servo power",
+      "purpose": "Carries servo current from the 6 V adapter to the PCA9685 power terminal."
+    },
+    {
+      "id": "w2",
+      "from": "psu.GND",
+      "to": "pca.GND_T",
+      "color": "black",
+      "gauge": 18,
+      "length_mm": 300,
+      "label": "Servo ground",
+      "purpose": "Return path for servo current."
+    },
+    {
+      "id": "w3",
+      "from": "esp.3V3",
+      "to": "pca.VCC",
+      "color": "red",
+      "gauge": 26,
+      "length_mm": 150,
+      "label": "3.3V logic",
+      "purpose": "Powers the PCA9685 logic from the ESP32 regulator."
+    },
+    {
+      "id": "w4",
+      "from": "esp.GND2",
+      "to": "pca.GND",
+      "color": "black",
+      "gauge": 26,
+      "length_mm": 150,
+      "label": "Logic ground",
+      "purpose": "Common ground so I2C levels mean the same thing on both boards."
+    },
+    {
+      "id": "w5",
+      "from": "esp.GPIO21",
+      "to": "pca.SDA",
+      "color": "blue",
+      "gauge": 26,
+      "length_mm": 150,
+      "label": "I2C data",
+      "purpose": "ESP32 tells the PCA9685 where to move each servo."
+    },
+    {
+      "id": "w6",
+      "from": "esp.GPIO22",
+      "to": "pca.SCL",
+      "color": "yellow",
+      "gauge": 26,
+      "length_mm": 150,
+      "label": "I2C clock",
+      "purpose": "Clock for the I2C bus."
+    },
+    {
+      "id": "w7",
+      "from": "pca.PWM0",
+      "to": "servo1.SIG",
+      "color": "orange",
+      "gauge": 26,
+      "label": "Servo 1 signal",
+      "purpose": "Pulse width sets the base servo angle."
+    },
+    {
+      "id": "w8",
+      "from": "pca.VS0",
+      "to": "servo1.V+",
+      "color": "red",
+      "gauge": 22,
+      "purpose": "6 V power for servo 1."
+    },
+    {
+      "id": "w9",
+      "from": "pca.G0",
+      "to": "servo1.GND",
+      "color": "brown",
+      "gauge": 22,
+      "purpose": "Ground for servo 1."
+    },
+    {
+      "id": "w10",
+      "from": "pca.PWM1",
+      "to": "servo2.SIG",
+      "color": "orange",
+      "gauge": 26,
+      "label": "Servo 2 signal",
+      "purpose": "Pulse width sets the shoulder servo angle."
+    },
+    {
+      "id": "w11",
+      "from": "pca.VS1",
+      "to": "servo2.V+",
+      "color": "red",
+      "gauge": 22,
+      "purpose": "6 V power for servo 2."
+    },
+    {
+      "id": "w12",
+      "from": "pca.G1",
+      "to": "servo2.GND",
+      "color": "brown",
+      "gauge": 22,
+      "purpose": "Ground for servo 2."
+    },
+    {
+      "id": "w13",
+      "from": "usb.5V",
+      "to": "esp.VIN",
+      "color": "red",
+      "gauge": 26,
+      "label": "USB 5V",
+      "purpose": "Laptop USB powers the ESP32."
+    },
+    {
+      "id": "w14",
+      "from": "usb.GND",
+      "to": "esp.GND",
+      "color": "black",
+      "gauge": 26,
+      "purpose": "USB ground."
+    }
+  ],
+  "breadboard": {
+    "model": "half-400",
+    "rails": {
+      "top+": "3V3",
+      "top-": "GND"
+    },
+    "jumpers": "male-male"
+  },
+  "prints": [
+    {
+      "id": "tray",
+      "name": "Electronics tray",
+      "source": "cad/tray.py",
+      "files": [],
+      "material": "PLA",
+      "status": "designed",
+      "size": [
+        170,
+        5,
+        150
+      ],
+      "position": [
+        -130,
+        -5,
+        -15
+      ],
+      "explode": [
+        0,
+        -60,
+        0
+      ],
+      "settings": {
+        "infill": 20,
+        "supports": false,
+        "orientation": "flat",
+        "layer": 0.2
+      }
+    },
+    {
+      "id": "bracket1",
+      "name": "Servo bracket (base)",
+      "source": "cad/bracket.py",
+      "files": [],
+      "material": "PETG",
+      "status": "designed",
+      "size": [
+        56,
+        8,
+        34
+      ],
+      "position": [
+        175,
+        -8,
+        -85
+      ],
+      "explode": [
+        0,
+        -45,
+        0
+      ]
+    },
+    {
+      "id": "bracket2",
+      "name": "Servo bracket (shoulder)",
+      "source": "cad/bracket.py",
+      "files": [],
+      "material": "PETG",
+      "status": "designed",
+      "size": [
+        56,
+        8,
+        34
+      ],
+      "position": [
+        175,
+        -8,
+        55
+      ],
+      "explode": [
+        0,
+        -45,
+        0
+      ]
+    }
+  ],
+  "fasteners": [
+    {
+      "id": "m3x8",
+      "name": "M3x8 socket head screw",
+      "qty": 8
+    },
+    {
+      "id": "m3insert",
+      "name": "M3 heat-set insert",
+      "qty": 8
+    }
+  ],
+  "steps": [
+    {
+      "id": "s1",
+      "phase": "define",
+      "title": "Agree on the goal",
+      "text": "Two servos on a desk test rig, powered from the wall.",
+      "why": "Knowing the power source decides every other choice.",
+      "parts": [],
+      "wires": [],
+      "done": true
+    },
+    {
+      "id": "s2",
+      "phase": "parts",
+      "title": "Order the parts",
+      "text": "Tick each part you already have. Everything else is in the BOM total.",
+      "parts": [
+        "psu",
+        "pca",
+        "servo1",
+        "servo2"
+      ],
+      "wires": [],
+      "done": true
+    },
+    {
+      "id": "s3",
+      "phase": "power",
+      "title": "Check the 6 V adapter",
+      "text": "Measure the adapter with a multimeter before connecting anything: it should read 6.0 to 6.3 V.",
+      "why": "A wrong adapter (12 V) would destroy the servos instantly.",
+      "parts": [
+        "psu"
+      ],
+      "wires": [],
+      "tools": [
+        "Multimeter"
+      ],
+      "warnings": [
+        "Check the barrel polarity: centre positive."
+      ],
+      "done": true
+    },
+    {
+      "id": "s4",
+      "phase": "power",
+      "title": "Wire the servo power",
+      "text": "Connect the adapter + to the PCA9685 V+ terminal and - to GND. Tighten the screw terminal.",
+      "why": "Servo current must never pass through the ESP32.",
+      "parts": [
+        "psu",
+        "pca"
+      ],
+      "wires": [
+        "w1",
+        "w2"
+      ],
+      "tools": [
+        "Small flat screwdriver"
+      ],
+      "warnings": [
+        "Leave the adapter unplugged while wiring."
+      ],
+      "done": false
+    },
+    {
+      "id": "s5",
+      "phase": "wire",
+      "title": "Power the PCA9685 logic",
+      "text": "Run 3V3 and GND from the ESP32 to the PCA9685 VCC and GND header pins.",
+      "why": "The PCA9685 chip runs at the ESP32 logic level, so the I2C signals match.",
+      "parts": [
+        "esp",
+        "pca"
+      ],
+      "wires": [
+        "w3",
+        "w4"
+      ],
+      "tools": [
+        "2 jumpers"
+      ],
+      "warnings": [
+        "Unplug USB before moving any wire."
+      ],
+      "done": false
+    },
+    {
+      "id": "s6",
+      "phase": "wire",
+      "title": "Connect the I2C bus",
+      "text": "SDA: GPIO21 to SDA. SCL: GPIO22 to SCL.",
+      "why": "ESP32 tells the PCA9685 where to move each servo.",
+      "parts": [
+        "esp",
+        "pca"
+      ],
+      "wires": [
+        "w5",
+        "w6"
+      ],
+      "tools": [
+        "2 jumpers"
+      ],
+      "warnings": [
+        "Unplug USB before moving any wire."
+      ],
+      "done": false
+    },
+    {
+      "id": "s7",
+      "phase": "wire",
+      "title": "Plug in servo 1",
+      "text": "Servo connector on channel 0: brown wire to GND (edge of the board), orange to PWM.",
+      "why": "Channel 0 is the base joint in the firmware.",
+      "parts": [
+        "pca",
+        "servo1"
+      ],
+      "wires": [
+        "w7",
+        "w8",
+        "w9"
+      ],
+      "done": false
+    },
+    {
+      "id": "s8",
+      "phase": "wire",
+      "title": "Plug in servo 2",
+      "text": "Same as servo 1, on channel 1.",
+      "parts": [
+        "pca",
+        "servo2"
+      ],
+      "wires": [
+        "w10",
+        "w11",
+        "w12"
+      ],
+      "done": false
+    },
+    {
+      "id": "s9",
+      "phase": "firmware",
+      "title": "Flash the I2C scan sketch",
+      "text": "Upload the scanner; it must find the PCA9685 at 0x40.",
+      "parts": [
+        "esp",
+        "usb"
+      ],
+      "wires": [
+        "w13",
+        "w14"
+      ],
+      "done": false
+    },
+    {
+      "id": "s10",
+      "phase": "print",
+      "title": "Print the tray and brackets",
+      "text": "Tray in PLA flat on the plate, brackets in PETG.",
+      "prints": [
+        "tray",
+        "bracket1",
+        "bracket2"
+      ],
+      "parts": [],
+      "wires": [],
+      "done": false
+    },
+    {
+      "id": "s11",
+      "phase": "assemble",
+      "title": "Fit the tray",
+      "text": "Press the heat-set inserts into the tray, then lay it on the desk.",
+      "prints": [
+        "tray"
+      ],
+      "parts": [],
+      "fasteners": [
+        "m3insert"
+      ],
+      "tools": [
+        "Soldering iron at 220 °C"
+      ],
+      "done": false
+    },
+    {
+      "id": "s12",
+      "phase": "assemble",
+      "title": "Mount the servo brackets",
+      "text": "Screw both brackets to the tray, then drop the servos in.",
+      "prints": [
+        "bracket1",
+        "bracket2"
+      ],
+      "parts": [
+        "servo1",
+        "servo2"
+      ],
+      "fasteners": [
+        "m3x8"
+      ],
+      "tools": [
+        "2.5 mm hex key"
+      ],
+      "done": false
+    },
+    {
+      "id": "s13",
+      "phase": "test",
+      "title": "Bring-up: logic only",
+      "text": "Plug in USB only. The PCA9685 power LED should light.",
+      "parts": [
+        "esp",
+        "pca"
+      ],
+      "wires": [
+        "w3",
+        "w4"
+      ],
+      "tools": [
+        "Multimeter"
+      ],
+      "warnings": [
+        "Adapter still unplugged."
+      ],
+      "done": false
+    },
+    {
+      "id": "s14",
+      "phase": "test",
+      "title": "Bring-up: servos",
+      "text": "Plug in the 6 V adapter and run the sweep sketch on one servo at a time.",
+      "parts": [
+        "psu",
+        "servo1",
+        "servo2"
+      ],
+      "wires": [
+        "w1",
+        "w2"
+      ],
+      "done": false
+    }
+  ]
+}

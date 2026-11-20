@@ -1,0 +1,85 @@
+{
+  "id": "bambu-h2d",
+  "name": "Bambu Lab H2D",
+  "maker": "Bambu Lab",
+  "volume": [
+    325,
+    320,
+    325
+  ],
+  "enclosed": true,
+  "nozzles": {
+    "left": [
+      325,
+      320,
+      325
+    ],
+    "right": [
+      325,
+      320,
+      325
+    ],
+    "both": [
+      300,
+      320,
+      325
+    ],
+    "total": [
+      350,
+      320,
+      325
+    ]
+  },
+  "nozzle_regions_note": "Each nozzle alone reaches a 325 mm wide strip (left nozzle from the left edge, right nozzle from the right edge); both nozzles only overlap on the middle 300 mm. \"total\" 350 mm is the union and only usable when a part can be printed by either nozzle with identical filament.",
+  "heated_bed": {
+    "max_temp": 120
+  },
+  "nozzle_temp_max": 350,
+  "chamber_heating_max": 65,
+  "materials": {
+    "ok": [
+      "PLA",
+      "PETG",
+      "TPU",
+      "ABS",
+      "ASA",
+      "PC",
+      "PA",
+      "PVA",
+      "PLA-CF",
+      "PETG-CF",
+      "PA-CF",
+      "PET-CF"
+    ],
+    "warn": {
+      "PPS": "Very high temperature material; check Bambu filament guide for nozzle and plate."
+    },
+    "no": []
+  },
+  "margin_mm": 5,
+  "notes": [
+    "Usable volume depends on which nozzle prints: store and check per nozzle, never as one box.",
+    "Active chamber heating up to 65 °C."
+  ],
+  "sources": [
+    "https://eu.store.bambulab.com/products/h2d",
+    "https://bambulab.com/es/h2d/tech-specs",
+    "https://www.tomshardware.com/3d-printing/bambu-lab-h2d-review",
+    "https://www.hackster.io/news/the-maker-s-toolbox-bambu-lab-h2d-review-1d874a48f2e5",
+    "https://www.pbtech.co.nz/product/PTRBAM0014/Bambu-Lab-H2D-Build-Size-350-x-320-x-325-mm-Dual-n"
+  ],
+  "nozzle_diameter": 0.4,
+  "clearance_mm": {
+    "press": 0.05,
+    "snug": 0.1,
+    "sliding": 0.2,
+    "free": 0.3,
+    "note": "Starting values per side, for PLA at 0.2 mm layers. Replace with tolerance-coupon measurements."
+  },
+  "send": [
+    "bambu-lan",
+    "3mf"
+  ],
+  "spec_checked": false,
+  "spec_note": "Numbers cross-checked via web search against Bambu official listings in search snippets (2026-11-20); bambulab.com itself could not be fetched from this session. Re-check against the official tech-specs page."
+}

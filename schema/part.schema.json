@@ -1,0 +1,435 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://wiremap.local/schema/part.schema.json",
+  "title": "Wiremap library part",
+  "type": "object",
+  "required": [
+    "id",
+    "name",
+    "category",
+    "pins",
+    "size"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^[^.]+$"
+    },
+    "name": {
+      "type": "string"
+    },
+    "category": {
+      "enum": [
+        "controller",
+        "driver",
+        "actuator",
+        "sensor",
+        "power",
+        "battery",
+        "protection",
+        "passive",
+        "module"
+      ]
+    },
+    "description": {
+      "type": "string"
+    },
+    "datasheet": {
+      "type": "string"
+    },
+    "sources": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "confidence": {
+      "enum": [
+        "verified",
+        "checked",
+        "confirm"
+      ]
+    },
+    "notes": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "size": {
+      "type": "array",
+      "items": {
+        "type": "number"
+      },
+      "minItems": 3,
+      "maxItems": 3
+    },
+    "color": {
+      "type": "string"
+    },
+    "params": {
+      "type": "object"
+    },
+    "internal": {
+      "type": "array",
+      "items": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        },
+        "minItems": 2
+      }
+    },
+    "regulators": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "in",
+          "out",
+          "type"
+        ],
+        "properties": {
+          "in": {
+            "type": "string"
+          },
+          "out": {
+            "type": "string"
+          },
+          "gnd": {
+            "type": "string"
+          },
+          "type": {
+            "enum": [
+              "linear",
+              "buck",
+              "boost"
+            ]
+          },
+          "vout": {
+            "oneOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "string",
+                "pattern": "^\\$[A-Za-z_][A-Za-z0-9_]*(\\s*[*+/-]\\s*-?[0-9.]+)?$"
+              }
+            ]
+          },
+          "dropout": {
+            "type": "number"
+          },
+          "current_max": {
+            "oneOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "string",
+                "pattern": "^\\$[A-Za-z_][A-Za-z0-9_]*(\\s*[*+/-]\\s*-?[0-9.]+)?$"
+              }
+            ]
+          },
+          "iq": {
+            "type": "number"
+          },
+          "efficiency": {
+            "type": "number"
+          },
+          "vin_max": {
+            "type": "number"
+          }
+        }
+      }
+    },
+    "battery": {
+      "type": "object",
+      "properties": {
+        "chemistry": {
+          "type": "string"
+        },
+        "cells": {
+          "type": "integer"
+        },
+        "capacity_ah": {
+          "oneOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "string",
+              "pattern": "^\\$[A-Za-z_][A-Za-z0-9_]*(\\s*[*+/-]\\s*-?[0-9.]+)?$"
+            }
+          ]
+        },
+        "bms": {
+          "type": "boolean"
+        },
+        "c_rating": {
+          "type": "number"
+        }
+      }
+    },
+    "protection": {
+      "enum": [
+        "fuse",
+        "switch",
+        "bms",
+        "diode"
+      ]
+    },
+    "rating_a": {
+      "oneOf": [
+        {
+          "type": "number"
+        },
+        {
+          "type": "string",
+          "pattern": "^\\$[A-Za-z_][A-Za-z0-9_]*(\\s*[*+/-]\\s*-?[0-9.]+)?$"
+        }
+      ]
+    },
+    "flyback": {
+      "type": "boolean"
+    },
+    "mains": {
+      "type": "boolean"
+    },
+    "breadboard": {
+      "type": "object",
+      "properties": {
+        "fit": {
+          "enum": [
+            "straddle",
+            "single",
+            "offboard"
+          ]
+        },
+        "rows": {
+          "type": "array",
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "row_spacing": {
+          "type": "integer"
+        },
+        "body_width_mm": {
+          "type": "number"
+        }
+      }
+    },
+    "geometry": {
+      "type": "object"
+    },
+    "model": {
+      "type": "string"
+    },
+    "pins": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "name"
+        ],
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "label": {
+            "type": "string"
+          },
+          "kind": {
+            "enum": [
+              "power_in",
+              "power_out",
+              "power_rail",
+              "ground",
+              "digital",
+              "pwm",
+              "analog",
+              "i2c_sda",
+              "i2c_scl",
+              "uart_tx",
+              "uart_rx",
+              "spi",
+              "motor",
+              "passive",
+              "nc"
+            ]
+          },
+          "dir": {
+            "enum": [
+              "in",
+              "out",
+              "io"
+            ]
+          },
+          "voltage": {
+            "oneOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "string",
+                "pattern": "^\\$[A-Za-z_][A-Za-z0-9_]*(\\s*[*+/-]\\s*-?[0-9.]+)?$"
+              }
+            ]
+          },
+          "voltage_max": {
+            "oneOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "string",
+                "pattern": "^\\$[A-Za-z_][A-Za-z0-9_]*(\\s*[*+/-]\\s*-?[0-9.]+)?$"
+              }
+            ]
+          },
+          "voltage_min": {
+            "oneOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "string",
+                "pattern": "^\\$[A-Za-z_][A-Za-z0-9_]*(\\s*[*+/-]\\s*-?[0-9.]+)?$"
+              }
+            ]
+          },
+          "vmin": {
+            "oneOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "string",
+                "pattern": "^\\$[A-Za-z_][A-Za-z0-9_]*(\\s*[*+/-]\\s*-?[0-9.]+)?$"
+              }
+            ]
+          },
+          "vmax": {
+            "oneOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "string",
+                "pattern": "^\\$[A-Za-z_][A-Za-z0-9_]*(\\s*[*+/-]\\s*-?[0-9.]+)?$"
+              }
+            ]
+          },
+          "vih": {
+            "oneOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "string",
+                "pattern": "^\\$[A-Za-z_][A-Za-z0-9_]*(\\s*[*+/-]\\s*-?[0-9.]+)?$"
+              }
+            ]
+          },
+          "current": {
+            "oneOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "string",
+                "pattern": "^\\$[A-Za-z_][A-Za-z0-9_]*(\\s*[*+/-]\\s*-?[0-9.]+)?$"
+              }
+            ]
+          },
+          "current_peak": {
+            "oneOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "string",
+                "pattern": "^\\$[A-Za-z_][A-Za-z0-9_]*(\\s*[*+/-]\\s*-?[0-9.]+)?$"
+              }
+            ]
+          },
+          "current_max": {
+            "oneOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "string",
+                "pattern": "^\\$[A-Za-z_][A-Za-z0-9_]*(\\s*[*+/-]\\s*-?[0-9.]+)?$"
+              }
+            ]
+          },
+          "pullup": {
+            "oneOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "string",
+                "pattern": "^\\$[A-Za-z_][A-Za-z0-9_]*(\\s*[*+/-]\\s*-?[0-9.]+)?$"
+              }
+            ]
+          },
+          "vmax_offset": {
+            "oneOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "string",
+                "pattern": "^\\$[A-Za-z_][A-Za-z0-9_]*(\\s*[*+/-]\\s*-?[0-9.]+)?$"
+              }
+            ]
+          },
+          "required": {
+            "type": "boolean"
+          },
+          "open_drain": {
+            "type": "boolean"
+          },
+          "pullup_weak": {
+            "type": "boolean"
+          },
+          "diode": {
+            "type": "boolean"
+          },
+          "voltage_ref": {
+            "type": "string"
+          },
+          "vmax_ref": {
+            "type": "string"
+          },
+          "pullup_ref": {
+            "type": "string"
+          },
+          "pos": {
+            "type": "array",
+            "items": {
+              "type": "number"
+            },
+            "minItems": 2,
+            "maxItems": 2
+          },
+          "z": {
+            "type": "number"
+          },
+          "note": {
+            "type": "string"
+          },
+          "fix": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,7 @@
+{
+  "name": "wiremap",
+  "version": "0.1.0",
+  "description": "Hardware build companion: plan parts, check the circuit with deterministic electrical rules, lay out breadboards, fit 3D prints to your printer, and follow a live local 3D build guide.",
+  "license": "MIT",
+  "keywords": ["hardware", "electronics", "wiring", "esp32", "arduino", "breadboard", "3d-printing", "cad", "bambu"]
+}
