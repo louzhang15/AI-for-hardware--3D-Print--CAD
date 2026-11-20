@@ -61,6 +61,15 @@ test('binary STL round trip', () => {
   assert.deepEqual(m.bbox.min, [1, 2, 3]);
 });
 
+test('malformed binary STL coordinates and duplicate surfaces are detected', () => {
+  const mesh = boxMesh([10, 10, 10]);
+  const bytes = writeBinarySTL(mesh);
+  bytes.writeFloatLE(NaN, 96);
+  assert.throws(() => parseSTL(bytes), /non-finite/);
+  const duplicate = makeMesh([...mesh.positions, ...mesh.positions]);
+  assert.equal(checkClosed(duplicate).closed, false);
+});
+
 test('ASCII STL parse (even when the header says solid)', () => {
   const txt = `solid test
 facet normal 0 0 1
@@ -276,6 +285,46 @@ test('print export retires stale generated 3MFs while preserving edited and untr
   assert.match(report.warnings.join('\n'), /Preserved untracked 3MF/);
 });
 
+test('project fit and export check all selected STLs and try an alternate orientation for a reserved bed corner', () => {
+  const dir = mkdtempSync(join(tmpdir(), 'wiremap-print-placement-'));
+  const panel = join(dir, 'panel.stl');
+  const oversized = join(dir, 'oversized.stl');
+  const open = join(dir, 'open.stl');
+  writeFileSync(panel, writeBinarySTL(boxMesh([240, 240, 10])));
+  writeFileSync(oversized, writeBinarySTL(boxMesh([260, 260, 260])));
+  writeFileSync(open, writeBinarySTL(makeMesh(boxMesh([10, 10, 10]).positions.slice(9))));
+  const missing = join(dir, 'missing.stl');
+  const project = join(dir, 'project.json');
+  writeFileSync(project, JSON.stringify({
+    printer: { profile: 'bambu-p1s' },
+    prints: [
+      { id: 'source-only', source: panel },
+      { id: 'all-files', files: [panel, oversized] },
+      { id: 'explicit-pieces', size: [10, 10, 10], files: [oversized], pieces: [{ file: panel }, { file: missing }, { file: open }] },
+    ],
+  }));
+  const cli = fileURLToPath(new URL('../bin/wiremap.mjs', import.meta.url));
+  const run = (command, ...extra) => {
+    const result = spawnSync(process.execPath, [cli, command, '--project', project, '--json', ...extra], { encoding: 'utf8' });
+    assert.equal(result.status, 1, result.stdout + result.stderr);
+    return JSON.parse(result.stdout);
+  };
+  const fit = run('fit-printer');
+  assert.deepEqual(fit.results.map(({ from, fits }) => [from, fits]), [
+    [panel, true], [panel, true], [oversized, false], [panel, true], [missing, false], [open, true],
+  ]);
+  assert.equal(fit.results.at(-1).closed, false);
+  assert.equal(fit.results[0].orientation[2], 240);
+  const report = run('export-print', '--out', join(dir, 'out'));
+  assert.deepEqual(report.tooBig, ['all-files:oversized.stl']);
+  assert.deepEqual(report.prints.map(({ fits }) => fits), [true, false, false]);
+  assert.deepEqual(report.prints[0].pieceFits[0].orientation, fit.results[0].orientation);
+  assert.equal(report.prints[2].pieceFits.at(-1).closed, false);
+  assert.deepEqual(report.plates.flatMap(({ parts }) => parts).sort(), [
+    'all-files:panel.stl', 'explicit-pieces:panel.stl', 'source-only:panel.stl',
+  ]);
+});
+
 // Extrude an outer polygon (CCW) with one hole (CCW given, reversed inside) along z.
 function tubeMesh(n = 32, R = 20, r = 6, h = 15) {
   const p = [];
@@ -331,4 +380,70 @@ test('split-part script: pieces are closed, fit, and the plan says no joints wer
   assert.ok(readFileSync(join(dir, 'out', 'frame.joints.scad'), 'utf8').includes('cylinder(d = pin_d'));
   assert.ok(plan.cuts[0].features.length >= 2);
   for (const ft of plan.cuts[0].features) assert.ok(!(ft.pos[0] > 15 && ft.pos[0] < 25 && ft.pos[1] > 15 && ft.pos[1] < 25), 'pin not in the hole');
+});
+
+test('split-part exports the fitted 3MF orientation and preserves the STL joint coordinates', () => {
+  const dir = mkdtempSync(join(tmpdir(), 'wiremap-split-orientation-'));
+  const src = join(dir, 'bar.stl');
+  writeFileSync(src, writeBinarySTL(boxMesh([200, 20, 3], [-30, 2, 20])));
+  const program = fileURLToPath(new URL('../scripts/split-part.mjs', import.meta.url));
+  const run = spawnSync(process.execPath, [program, '--stl', src, '--printer', 'bambu-a1-mini', '--cut', 'y:10', '--out', dir, '--json'], { encoding: 'utf8' });
+  assert.equal(run.status, 0, run.stdout + run.stderr);
+  const plan = JSON.parse(run.stdout);
+  assert.equal(plan.pieces.length, 2);
+  for (const piece of plan.pieces) {
+    assert.equal(parseSTL(readFileSync(piece.file)).bbox.min[2], 20);
+    assert.ok(piece.rotationDeg > 0, 'uses the fitted diagonal orientation');
+    const xml = readFileSync(piece.threemf).toString('utf8'); // The 3MF ZIP stores its XML uncompressed.
+    const placement = xml.match(/<item objectid="1" transform="([\d .-]+)"\/>/)[1].split(' ').slice(9).map(Number);
+    const vertices = Array.from(xml.matchAll(/<vertex x="([\d.-]+)" y="([\d.-]+)" z="([\d.-]+)"\/>/g), (vertex) => vertex.slice(1).map((value, axis) => Number(value) + placement[axis]));
+    assert.ok(vertices.length > 0);
+    assert.ok(vertices.every(([x, y]) => x >= 5 && x <= 175 && y >= 5 && y <= 175));
+    assert.equal(Math.min(...vertices.map((vertex) => vertex[2])), 0);
+  }
+});
+
+test('split-part keeps CAD pieces but withholds unplaceable plates and rejects ineffective cuts', () => {
+  const dir = mkdtempSync(join(tmpdir(), 'wiremap-split-failure-'));
+  const src = join(dir, 'panel.stl');
+  writeFileSync(src, writeBinarySTL(boxMesh([265, 200, 8])));
+  const program = fileURLToPath(new URL('../scripts/split-part.mjs', import.meta.url));
+  const args = [program, '--stl', src, '--printer', 'bambu-a1-mini', '--out', dir, '--json'];
+  const ineffective = spawnSync(process.execPath, [...args, '--cut', 'y:200'], { encoding: 'utf8' });
+  assert.equal(ineffective.status, 2, ineffective.stdout + ineffective.stderr);
+  assert.match(JSON.parse(ineffective.stdout).error, /does not split any piece/i);
+
+  const blocked = spawnSync(process.execPath, [...args, '--cut', 'y:100'], { encoding: 'utf8' });
+  assert.equal(blocked.status, 1, blocked.stdout + blocked.stderr);
+  const plan = JSON.parse(blocked.stdout);
+  assert.equal(plan.pieces.length, 2);
+  for (const [index, piece] of plan.pieces.entries()) {
+    assert.equal(piece.fits, false);
+    assert.equal(piece.threemf, null);
+    assert.ok(existsSync(piece.file));
+    assert.ok(!existsSync(join(dir, `panel_${index + 1}-of-2.3mf`)));
+  }
+});
+
+test('split-part labels older plates when the current mesh is open', () => {
+  const dir = mkdtempSync(join(tmpdir(), 'wiremap-split-open-'));
+  const src = join(dir, 'case.stl');
+  const box = boxMesh([100, 20, 20]);
+  writeFileSync(src, writeBinarySTL(box));
+  const oldPlate = join(dir, 'case_1-of-1.3mf');
+  const program = fileURLToPath(new URL('../scripts/split-part.mjs', import.meta.url));
+  const args = [program, '--stl', src, '--printer', 'bambu-a1-mini', '--out', dir, '--json'];
+  const first = spawnSync(process.execPath, args, { encoding: 'utf8' });
+  assert.equal(first.status, 0, first.stdout + first.stderr);
+  const previous = readFileSync(oldPlate);
+
+  writeFileSync(src, writeBinarySTL(makeMesh(box.positions.slice(9))));
+  const second = spawnSync(process.execPath, args, { encoding: 'utf8' });
+  assert.equal(second.status, 1, second.stdout + second.stderr);
+  const plan = JSON.parse(second.stdout);
+  assert.equal(plan.pieces[0].closed, false);
+  assert.equal(plan.pieces[0].threemf, null);
+  assert.match(plan.warnings.join('\n'), /open edges/);
+  assert.match(plan.warnings.join('\n'), /Earlier 3MFs.*case_1-of-1\.3mf/);
+  assert.deepEqual(readFileSync(oldPlate), previous);
 });

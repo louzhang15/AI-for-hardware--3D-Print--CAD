@@ -33,10 +33,15 @@ Then open Claude Code or Codex in the folder and say:
 The reference arm includes a printable electronics tie-down deck. The [CAD folder](cad/robot-arm/) has an editable SolidWorks part, a STEP file, a watertight STL, and the Windows script that generated them. The arm links and gripper depend on the builder's measured servos and mechanical design.
 
 ```bash
+node bin/wiremap.mjs fit-printer --project projects/robot-arm.json
 node bin/wiremap.mjs export-print --project projects/robot-arm.json --out exports/robot-arm
 ```
 
 Open `exports/robot-arm/plates/pla_plate_1.3mf` in Bambu Studio. Select your printer, nozzle, and filament, then slice the plate. The default project profile is the A1 mini. The [bring-up sketch](firmware/arm_bringup/) is for I²C detection and keeps the servo outputs disabled. See the [validation results](docs/VALIDATION.md) for the six tested printer profiles.
+
+For your own project, list split STLs under `prints[].pieces[].file` or individual print STLs under `prints[].files`. A lone STL can go under `prints[].source`. Both print commands check every selected STL against the printer's build volume and reserved bed areas. If a piece fails, fix the reported file and rerun before slicing the full set. The export can still contain plates for the pieces that passed.
+
+Use `wiremap split-part --stl part.stl --printer bambu-a1-mini --out exports/split` for an oversized mesh. The command keeps the original CAD coordinates in the split STLs and places the validated 3MFs on the bed. Use the 3MF paths listed in the current joint plan. Apply the joint features in CAD and re-export the final parts if your assembly needs pins, bolts, or a dovetail.
 
 ### Use it in every project
 

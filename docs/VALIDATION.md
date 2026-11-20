@@ -26,6 +26,8 @@ Bambu Studio 02.09.01.70 sliced the deck using the installed Bambu profiles, a 0
 | X1 Carbon | 18m 16s | 12.42 g |
 | H2D | 18m 23s | 12.42 g |
 
+The same Bambu Studio version also sliced a fresh deck export and two diagonally placed split pieces on the A1 mini. On the P1S, it sliced a 240 × 240 × 10 mm test panel in the 240 × 10 × 240 mm orientation selected to clear the reserved corner. All four runs generated G-code and a sliced 3MF with no slicer warnings. These runs verified toolpath generation with Wiremap's placement, including the alternate orientation.
+
 ## Reproduce the handoff
 
 ```bash

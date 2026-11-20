@@ -7,11 +7,11 @@ import { closeSync, copyFileSync, lstatSync, mkdirSync, openSync, readdirSync, r
 import { basename, dirname, extname, join, relative, resolve, sep } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { parseArgs } from 'node:util';
-import { fitPart, materialCheck, nozzleVolume, usableVolume } from '../lib/printer.js';
+import { materialCheck, printPlacement } from '../lib/printer.js';
 import { loadPrinters, readProject } from '../lib/node/library.js';
-import { readSTL, meshStats, orientMesh } from '../lib/node/stl.js';
+import { printSTLs, preparePrintMesh, resolveProjectPath } from '../lib/node/print.js';
+import { readSTL, meshStats, checkClosed } from '../lib/node/stl.js';
 import { packPlates } from '../lib/node/threemf.js';
-import { resolveProjectPath } from './fit-printer.mjs';
 
 const HELP = `Usage: wiremap export-print --project projects/x.json [--out prints/] [--json]
 
@@ -155,22 +155,19 @@ export async function main(argv = []) {
     const project = readProject(a.project);
     const printers = loadPrinters();
     const pid = project.printer?.profile;
-    const profile = printers[pid] || printers.generic;
+    const profile = pid ? printers[pid] : printers.generic;
     if (!profile) throw new Error(`unknown printer ${pid}`);
     const nozzle = project.printer?.nozzle && project.printer.nozzle !== 'single' ? project.printer.nozzle : undefined;
-    const volume = nozzleVolume(profile, nozzle);
-    volume[2] = usableVolume(profile, { nozzle })[2];
-    const margin = profile.margin_mm ?? 5;
-    const keepouts = (profile.keepout || []).map(({ rect }) => rect).filter(Boolean)
-      .map(([x, y, w, h]) => [x - margin, y - margin, w + 2 * margin, h + 2 * margin]);
-    const packing = { margin, keepouts };
+    const placement = printPlacement(profile, { nozzle });
+    const { volume, ...packing } = placement;
     const root = resolve(dirname(resolve(a.project)), '..');
     const outRoot = a.out ? resolve(a.out) : join(root, 'prints');
     report = { project: a.project, printer: profile.id, prints: [], plates: [], tooBig: [], warnings: [] };
-    if (!pid || !printers[pid]) report.warnings.push(`Printer "${pid}" not found; used the generic profile.`);
+    if (!pid) report.warnings.push('No printer selected. Used the generic profile.');
     const byMaterial = new Map();
     const generated = new Map();
-    let bad = false;
+    let bad = !(project.prints || []).length;
+    if (bad) report.warnings.push('Project has no print entries.');
     for (const pr of project.prints || []) {
       if (typeof pr.id !== 'string' || !pr.id.trim() || /[\\/:*?"<>|]/.test(pr.id) || /[. ]$/.test(pr.id)
         || pr.id.toLowerCase() === 'plates') {
@@ -183,7 +180,7 @@ export async function main(argv = []) {
       const st = pr.settings || {};
       const pieceFiles = (pr.pieces || []).map((piece) => piece.file).filter(Boolean);
       const files = [...new Set([pr.source, ...(pr.files || []), ...pieceFiles].filter(Boolean))];
-      const selectedSTLs = new Set(pieceFiles.length ? pieceFiles : (pr.files || []));
+      const selectedSTLs = new Set(printSTLs(pr));
       const packaged = [];
       const meshes = [];
       const warnings = [];
@@ -203,11 +200,16 @@ export async function main(argv = []) {
           packaged.push(`assets/${name}${ext}`);
           if (ext.toLowerCase() === '.stl' && selectedSTLs.has(f)) {
             const mesh = readSTL(pth);
-            const fit = fitPart(mesh.bbox.size, profile, { nozzle });
+            const prepared = preparePrintMesh(mesh, profile, placement, { nozzle });
             const meshName = `${pr.id}:${name}${ext}`;
-            meshes.push({ name: meshName, fileStem: name, mesh, fit });
-            if (!fit.fits) { bad = true; report.tooBig.push(meshName); }
-            warnings.push(...fit.warnings.map((warning) => `${name}${ext}: ${warning}`));
+            const { closed } = checkClosed(mesh);
+            meshes.push({ name: meshName, fileStem: name, mesh, oriented: prepared.mesh, fit: prepared.fit, closed });
+            if (!prepared.fit.fits) { bad = true; report.tooBig.push(meshName); }
+            if (!closed) {
+              bad = true;
+              warnings.push(`${name}${ext}: Mesh has open or mismatched edges. Repair the STL before slicing.`);
+            }
+            warnings.push(...prepared.fit.warnings.map((warning) => `${name}${ext}: ${warning}`));
           }
         } catch (e) {
           bad = true;
@@ -219,14 +221,14 @@ export async function main(argv = []) {
       let meshVolume = 0, area = 0;
       for (const m of meshes) { const s = meshStats(m.mesh); meshVolume += Math.abs(s.volume); area += s.area; }
       if (meshes.length === 1) size = meshes[0].mesh.bbox.size;
-      const fit = meshes.length === 1 ? meshes[0].fit : !meshes.length && Array.isArray(size) ? fitPart(size, profile, { nozzle }) : null;
-      const pieceFits = meshes.map(({ name, fit }) => ({ name, fits: fit.fits, orientation: fit.orientation, rotationDeg: fit.rotationDeg, suggestion: fit.suggestion }));
+      const pieceFits = meshes.map(({ name, fit, closed }) => ({ name, fits: fit.fits, closed, orientation: fit.orientation, rotationDeg: fit.rotationDeg, suggestion: fit.suggestion }));
+      const fit = pieceFits.length === 1 ? pieceFits[0] : null;
       const mc = materialCheck(material, profile);
       if (mc.status === 'no') { bad = true; warnings.push(mc.reason); } else if (mc.status === 'warn') warnings.push(mc.reason);
-      const ready = meshes.filter(({ fit }) => fit.fits && mc.status !== 'no');
+      const ready = meshes.filter(({ oriented, closed }) => oriented && closed && mc.status !== 'no');
       for (const item of ready) {
         const file = join(dir, 'oriented', `${item.fileStem}.3mf`);
-        const oriented = { name: item.name, mesh: orientMesh(item.mesh, item.fit) };
+        const oriented = { name: item.name, mesh: item.oriented };
         const { plates } = packPlates([oriented], volume, packing);
         if (!plates.length) {
           bad = true;
@@ -250,11 +252,11 @@ export async function main(argv = []) {
       };
       const estimate = estimatePrint({ volume: meshVolume, area, size: Array.isArray(size) ? size : null, infill: infill / 100, material, profile });
       mkdirSync(dir, { recursive: true });
-      const fitSummary = meshes.length === 1 ? pieceFits[0] : fit;
-      const info = { printer: profile.name || profile.id, nozzle, material, materialCheck: mc, settings, fit: fitSummary && { fits: fitSummary.fits, suggestion: fitSummary.suggestion }, pieceFits, files: packaged, estimate, warnings };
+      const info = { printer: profile.name || profile.id, nozzle, material, materialCheck: mc, settings, fit: fit && { fits: fit.fits, suggestion: fit.suggestion }, pieceFits, files: packaged, estimate, warnings };
       writeFileSync(join(dir, 'settings.md'), card(pr, info));
       writeFileSync(join(dir, 'settings.json'), JSON.stringify({ id: pr.id, ...info }, null, 2) + '\n');
-      report.prints.push({ id: pr.id, dir, material, estimate, fits: meshes.length ? pieceFits.every((piece) => piece.fits) : fit?.fits ?? null, pieceFits, warnings });
+      const fits = selectedSTLs.size > 0 && selectedSTLs.size === pieceFits.length && pieceFits.every((piece) => piece.fits);
+      report.prints.push({ id: pr.id, dir, material, estimate, fits, pieceFits, warnings });
     }
     for (const [material, meshes] of byMaterial) {
       const { plates, tooBig } = packPlates(meshes, volume, { ...packing, title: `${project.meta?.name || 'Wiremap'} ${material}` });

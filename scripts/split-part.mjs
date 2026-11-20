@@ -1,23 +1,24 @@
 #!/usr/bin/env node
 // wiremap split-part: cut an STL that is too big for the printer into closed pieces,
-// write each as STL + 3MF, and write a joint plan + CAD snippets.
+// write each as an STL and any printable pieces as 3MF, with a joint plan + CAD snippets.
 // Plain mesh cutting cannot add joints; the plan says exactly what to add in CAD.
-// Exit 0 = pieces written and all fit, 1 = written but some piece still does not fit, 2 = bad usage.
-import { mkdirSync, writeFileSync } from 'node:fs';
+// Exit 0 = every piece has a 3MF, 1 = some pieces need rework, 2 = bad usage.
+import { mkdirSync, readdirSync, writeFileSync } from 'node:fs';
 import { basename, join, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { parseArgs } from 'node:util';
-import { fitPart, suggestSplit } from '../lib/printer.js';
+import { printPlacement, suggestSplit } from '../lib/printer.js';
 import { insertHole, printFit } from '../lib/calc.js';
 import { loadPrinters } from '../lib/node/library.js';
-import { readSTL, saveSTL, planeCut, polygonArea, pointInPolygon, meshStats } from '../lib/node/stl.js';
-import { save3MF } from '../lib/node/threemf.js';
+import { readSTL, saveSTL, planeCut, polygonArea, pointInPolygon, meshStats, checkClosed } from '../lib/node/stl.js';
+import { preparePrintMesh } from '../lib/node/print.js';
+import { packPlates } from '../lib/node/threemf.js';
 
 const HELP = `Usage: wiremap split-part --stl in.stl --printer <id> [--axis x --at 120,240] [--cut y:100]...
                           [--joint pins|dovetail|flange] [--keepout x:40-60] [--out prints/base/] [--name base] [--json]
 
-Cuts the mesh with planes (closed pieces, flat caps), writes <name>_1-of-N.stl and
-.3mf per piece, <name>.joints.json, and CAD snippets (<name>.joints.py for
+Cuts the mesh with planes (closed pieces, flat caps), writes <name>_1-of-N.stl per
+piece and .3mf for printable pieces, <name>.joints.json, and CAD snippets (<name>.joints.py for
 build123d, <name>.joints.scad for OpenSCAD) that add the joint features.
   --axis/--at  planes on one axis, mm from the part's minimum on that axis
   --cut        axis:pos[,pos] (repeatable) for several axes
@@ -187,22 +188,27 @@ export async function main(argv = []) {
     const profile = loadPrinters()[a.printer];
     if (!profile) throw new Error(`unknown printer ${a.printer}`);
     const margin = a.margin !== undefined ? Number(a.margin) : undefined;
+    const placement = printPlacement(profile, { margin, nozzle: a.nozzle });
+    const { volume, ...packing } = placement;
     const mesh = readSTL(a.stl);
     const bb = mesh.bbox;
     let cuts = parseCuts(a);
-    let auto = null;
-    if (!cuts.length) {
-      auto = suggestSplit(bb.size, profile, { margin, nozzle: a.nozzle, keepouts: parseKeepouts(a.keepout) });
-      cuts = auto.cuts;
+    const auto = !cuts.length;
+    const keepouts = auto ? parseKeepouts(a.keepout) : undefined;
+    const warnings = [];
+    const sourcePlacement = auto ? preparePrintMesh(mesh, profile, placement, { nozzle: a.nozzle }) : null;
+    if (auto && sourcePlacement.mesh) warnings.push('Part already fits; no split needed.');
+    else if (auto) {
+      const split = suggestSplit(bb.size, profile, { margin, nozzle: a.nozzle, keepouts });
+      cuts = split.cuts;
+      if (cuts.length) warnings.push(...split.warnings);
     }
     const name = a.name || basename(a.stl).replace(/\.stl$/i, '');
     const outDir = a.out || join('prints', name);
-    mkdirSync(outDir, { recursive: true });
 
     // Cut sequentially; record cap loops per plane.
     let pieces = [mesh];
     const planeInfo = [];
-    const warnings = [];
     for (const c of cuts) {
       for (const at of [...c.at].sort((x, y) => x - y)) {
         const offset = bb.min[AX[c.axis]] + at;
@@ -219,6 +225,7 @@ export async function main(argv = []) {
             info.uv = r.caps.uv;
           } else next.push(p);
         }
+        if (next.length === pieces.length) throw new Error(`Cut ${c.axis} at ${at} mm does not split any piece.`);
         pieces = next;
         planeInfo.push(info);
       }
@@ -226,27 +233,43 @@ export async function main(argv = []) {
     const N = pieces.length;
     // Order pieces by position (x, then y, then z of bbox min) so numbering is stable.
     pieces.sort((p, q) => p.bbox.min[0] - q.bbox.min[0] || p.bbox.min[1] - q.bbox.min[1] || p.bbox.min[2] - q.bbox.min[2]);
-    const vol = profile.nozzles && a.nozzle ? profile.nozzles[a.nozzle] : profile.volume;
+    mkdirSync(outDir, { recursive: true });
     const pieceOut = pieces.map((p, k) => {
       const file = `${name}_${k + 1}-of-${N}`;
-      saveSTL(join(outDir, file + '.stl'), p, `Wiremap ${file}`);
-      const fit = fitPart(p.bbox.size, profile, { margin, nozzle: a.nozzle });
-      // 3MF: centre the piece on the bed (as cut; reorient in the slicer if fitPart says so).
-      const tx = Math.max(0, (vol[0] - p.bbox.size[0]) / 2), ty = Math.max(0, (vol[1] - p.bbox.size[1]) / 2);
-      save3MF(join(outDir, file + '.3mf'), [{ name: file, mesh: p, transform: [tx, ty, 0] }], { title: file });
+      const stl = join(outDir, `${file}.stl`);
+      saveSTL(stl, p, `Wiremap ${file}`);
+      const volume_mm3 = meshStats(p).volume;
+      const closed = checkClosed(p).closed;
+      let threemf = null;
+      let fit;
+      if (!closed || volume_mm3 <= 0) {
+        warnings.push(`${file}: mesh has open edges or inconsistent winding/volume. Repair the STL before slicing.`);
+      } else {
+        const prepared = (p === mesh && sourcePlacement) || preparePrintMesh(p, profile, placement, { nozzle: a.nozzle });
+        fit = prepared.fit;
+        const plate = prepared.mesh && packPlates([{ name: file, mesh: prepared.mesh }], volume, { ...packing, title: file }).plates[0];
+        if (plate) {
+          threemf = join(outDir, `${file}.3mf`);
+          writeFileSync(threemf, plate.bytes);
+        } else warnings.push(`${file}: ${fit.suggestion}`);
+      }
       return {
-        file: join(outDir, file + '.stl'), threemf: join(outDir, file + '.3mf'), size: p.bbox.size.map(r2),
-        min: p.bbox.min.map(r2), volume_mm3: r2(meshStats(p).volume), fits: fit.fits, orientation: fit.orientation,
-        rotationDeg: fit.rotationDeg, joint,
+        file: stl, threemf, size: p.bbox.size.map(r2), min: p.bbox.min.map(r2), volume_mm3: r2(volume_mm3),
+        closed, fits: threemf !== null, orientation: threemf ? fit.orientation : null,
+        rotationDeg: threemf ? fit.rotationDeg : 0, joint,
       };
     });
+    const currentPlates = new Set(pieceOut.filter((p) => p.threemf).map((p) => basename(p.threemf)));
+    const olderPlates = readdirSync(outDir).filter((file) =>
+      file.startsWith(`${name}_`) && /^\d+-of-\d+\.3mf$/i.test(file.slice(name.length + 1)) && !currentPlates.has(file));
+    if (olderPlates.length) warnings.push(`Earlier 3MFs in this folder were not regenerated: ${olderPlates.join(', ')}. Use the 3MF paths listed in this plan.`);
 
     // Joint features per plane.
     const pinHole = printFit({ nominal: 3, fit: 'sliding', profile, feature: 'hole' });
     const ins = joint === 'flange' ? insertHole({ size: 'M3' }) : null;
     plan = {
       source: a.stl, printer: profile.id, joint, name, out: outDir, pieces: pieceOut,
-      auto_planes: !!auto,
+      auto_planes: auto,
       cuts: [],
       pin: joint === 'pins' ? { pin: '3 mm x 12 mm steel dowel pin', hole_d: 3.1, hole_d_calc: pinHole.value, depth_each_side: 6.5, note: 'Hole 3.1 mm for a 3 mm pin (sliding). Printer-profile sliding fit gives ' + pinHole.value + ' mm; use the larger if pins bind.' } : undefined,
       insert: ins ? { size: 'M3', maker: 'ruthex', hole_d: ins.hole_d, depth: ins.depth, min_wall: ins.min_wall, boss_d: ins.boss_d } : undefined,
@@ -301,7 +324,7 @@ export async function main(argv = []) {
   else {
     console.log(`split-part: ${plan.source} -> ${plan.pieces.length} pieces for ${plan.printer} (${plan.auto_planes ? 'planes chosen by printer fit' : 'your planes'})`);
     for (const c of plan.cuts) console.log(`  cut ${c.axis} at ${c.at} mm from the part minimum (${c.axis} = ${c.offset}), ${c.regions} region(s)`);
-    for (const p of plan.pieces) console.log(`  ${p.file}  ${p.size.join(' x ')} mm  ${p.fits ? 'fits' : 'DOES NOT FIT'}  (+ ${basename(p.threemf)})`);
+    for (const p of plan.pieces) console.log(`  ${p.file}  ${p.size.join(' x ')} mm  ${p.threemf ? `fits (+ ${basename(p.threemf)})` : 'NO PRINTABLE 3MF'}`);
     console.log(`  Joint features added to the mesh: none (plain mesh cutting cannot add joints).`);
     for (const x of plan.apply_in_cad) console.log(`  Apply in CAD: ${x}`);
     console.log(`  Plan: ${plan.joints_file}`);
