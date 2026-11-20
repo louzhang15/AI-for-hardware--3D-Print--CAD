@@ -13,32 +13,9 @@
   "size": [16, 8, 12],
   "color": "#555555",
   "pins": [
-    {
-      "name": "5V",
-      "label": "VBUS",
-      "kind": "power_out",
-      "voltage": 5,
-      "voltage_max": 5.25,
-      "voltage_min": 4.75,
-      "current_max": 0.5,
-      "note": "USB 2.0 port: 500 mA guaranteed (USB 3.x: 900 mA). Many laptops shut the port off above that.",
-      "pos": [4, 6]
-    },
-    {
-      "name": "GND",
-      "label": "GND",
-      "kind": "ground",
-      "pos": [12, 6]
-    }
+    { "name": "5V", "label": "VBUS", "kind": "power_out", "voltage": 5, "voltage_max": 5.25, "voltage_min": 4.75, "current_max": 0.5, "note": "USB 2.0 port: 500 mA guaranteed (USB 3.x: 900 mA). Many laptops shut the port off above that.", "pos": [4, 6] },
+    { "name": "GND", "label": "GND", "kind": "ground", "pos": [12, 6] }
   ],
-  "breadboard": {
-    "fit": "offboard"
-  },
-  "geometry": {
-    "board": [16, 12, 8],
-    "holes": [],
-    "keepout": [],
-    "connectors": [],
-    "confidence": "confirm"
-  }
+  "breadboard": { "fit": "offboard" },
+  "geometry": { "board": [16, 12, 8], "holes": [], "keepout": [], "connectors": [], "confidence": "confirm" }
 }

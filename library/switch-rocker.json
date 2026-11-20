@@ -12,43 +12,19 @@
   ],
   "size": [14, 20, 14],
   "color": "#111111",
-  "params": {
-    "rating_a": 6
-  },
+  "params": { "rating_a": 6 },
   "pins": [
-    {
-      "name": "IN",
-      "label": "IN",
-      "kind": "power_rail",
-      "note": "Supply side.",
-      "pos": [7, 4]
-    },
-    {
-      "name": "OUT",
-      "label": "OUT",
-      "kind": "power_rail",
-      "note": "Load side.",
-      "pos": [7, 10]
-    }
+    { "name": "IN", "label": "IN", "kind": "power_rail", "note": "Supply side.", "pos": [7, 4] },
+    { "name": "OUT", "label": "OUT", "kind": "power_rail", "note": "Load side.", "pos": [7, 10] }
   ],
-  "internal": [
-    ["IN", "OUT"]
-  ],
+  "internal": [["IN", "OUT"]],
   "protection": "switch",
   "rating_a": "$rating_a",
-  "breadboard": {
-    "fit": "offboard"
-  },
+  "breadboard": { "fit": "offboard" },
   "geometry": {
     "board": [21, 15, 20],
     "holes": [],
-    "keepout": [
-      {
-        "rect": [0, 0, 21, 15],
-        "height": 20,
-        "note": "panel cut-out 21 x 15 mm, body depth about 20 mm"
-      }
-    ],
+    "keepout": [{ "rect": [0, 0, 21, 15], "height": 20, "note": "panel cut-out 21 x 15 mm, body depth about 20 mm" }],
     "connectors": [],
     "confidence": "confirm"
   }

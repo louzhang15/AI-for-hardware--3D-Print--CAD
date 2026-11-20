@@ -22,437 +22,47 @@
   "size": [68.6, 15, 53.34],
   "color": "#00878f",
   "pins": [
-    {
-      "name": "D0",
-      "label": "0",
-      "kind": "uart_rx",
-      "dir": "in",
-      "voltage": 5,
-      "vmax": 5.5,
-      "vih": 3,
-      "current_max": 0.02,
-      "note": "Serial RX, shared with the USB-serial chip. Leave free while uploading.",
-      "pos": [66.04, 2.54]
-    },
-    {
-      "name": "D1",
-      "label": "1",
-      "kind": "uart_tx",
-      "dir": "out",
-      "voltage": 5,
-      "vmax": 5.5,
-      "vih": 3,
-      "current_max": 0.02,
-      "note": "Serial TX, shared with the USB-serial chip. Leave free while uploading.",
-      "pos": [63.5, 2.54]
-    },
-    {
-      "name": "D2",
-      "label": "2",
-      "kind": "digital",
-      "dir": "io",
-      "voltage": 5,
-      "vmax": 5.5,
-      "vih": 3,
-      "current_max": 0.02,
-      "functions": ["external interrupt"],
-      "pos": [60.96, 2.54]
-    },
-    {
-      "name": "D3",
-      "label": "3",
-      "kind": "pwm",
-      "dir": "io",
-      "voltage": 5,
-      "vmax": 5.5,
-      "vih": 3,
-      "current_max": 0.02,
-      "functions": ["external interrupt"],
-      "pos": [58.42, 2.54]
-    },
-    {
-      "name": "D4",
-      "label": "4",
-      "kind": "digital",
-      "dir": "io",
-      "voltage": 5,
-      "vmax": 5.5,
-      "vih": 3,
-      "current_max": 0.02,
-      "pos": [55.88, 2.54]
-    },
-    {
-      "name": "D5",
-      "label": "5",
-      "kind": "pwm",
-      "dir": "io",
-      "voltage": 5,
-      "vmax": 5.5,
-      "vih": 3,
-      "current_max": 0.02,
-      "pos": [53.34, 2.54]
-    },
-    {
-      "name": "D6",
-      "label": "6",
-      "kind": "pwm",
-      "dir": "io",
-      "voltage": 5,
-      "vmax": 5.5,
-      "vih": 3,
-      "current_max": 0.02,
-      "pos": [50.8, 2.54]
-    },
-    {
-      "name": "D7",
-      "label": "7",
-      "kind": "digital",
-      "dir": "io",
-      "voltage": 5,
-      "vmax": 5.5,
-      "vih": 3,
-      "current_max": 0.02,
-      "pos": [48.26, 2.54]
-    },
-    {
-      "name": "D8",
-      "label": "8",
-      "kind": "digital",
-      "dir": "io",
-      "voltage": 5,
-      "vmax": 5.5,
-      "vih": 3,
-      "current_max": 0.02,
-      "pos": [44.2, 2.54]
-    },
-    {
-      "name": "D9",
-      "label": "9",
-      "kind": "pwm",
-      "dir": "io",
-      "voltage": 5,
-      "vmax": 5.5,
-      "vih": 3,
-      "current_max": 0.02,
-      "pos": [41.66, 2.54]
-    },
-    {
-      "name": "D10",
-      "label": "10",
-      "kind": "pwm",
-      "dir": "io",
-      "voltage": 5,
-      "vmax": 5.5,
-      "vih": 3,
-      "current_max": 0.02,
-      "functions": ["SPI SS"],
-      "pos": [39.12, 2.54]
-    },
-    {
-      "name": "D11",
-      "label": "11",
-      "kind": "pwm",
-      "dir": "io",
-      "voltage": 5,
-      "vmax": 5.5,
-      "vih": 3,
-      "current_max": 0.02,
-      "functions": ["SPI MOSI"],
-      "pos": [36.58, 2.54]
-    },
-    {
-      "name": "D12",
-      "label": "12",
-      "kind": "digital",
-      "dir": "io",
-      "voltage": 5,
-      "vmax": 5.5,
-      "vih": 3,
-      "current_max": 0.02,
-      "functions": ["SPI MISO"],
-      "pos": [34.04, 2.54]
-    },
-    {
-      "name": "D13",
-      "label": "13",
-      "kind": "digital",
-      "dir": "io",
-      "voltage": 5,
-      "vmax": 5.5,
-      "vih": 3,
-      "current_max": 0.02,
-      "functions": ["SPI SCK", "onboard LED L"],
-      "pos": [31.5, 2.54]
-    },
-    {
-      "name": "GND_3",
-      "label": "GND",
-      "kind": "ground",
-      "pos": [28.96, 2.54]
-    },
-    {
-      "name": "AREF",
-      "label": "AREF",
-      "kind": "analog",
-      "dir": "in",
-      "vmax": 5.5,
-      "note": "ADC reference input. Leave unconnected unless you need an external reference.",
-      "pos": [26.42, 2.54]
-    },
-    {
-      "name": "SDA",
-      "label": "SDA",
-      "kind": "i2c_sda",
-      "dir": "io",
-      "voltage": 5,
-      "vmax": 5.5,
-      "vih": 3,
-      "pullup": 5,
-      "pullup_weak": true,
-      "open_drain": true,
-      "note": "Same signal as A4.",
-      "pos": [23.88, 2.54]
-    },
-    {
-      "name": "SCL",
-      "label": "SCL",
-      "kind": "i2c_scl",
-      "dir": "io",
-      "voltage": 5,
-      "vmax": 5.5,
-      "vih": 3,
-      "pullup": 5,
-      "pullup_weak": true,
-      "open_drain": true,
-      "note": "Same signal as A5.",
-      "pos": [21.34, 2.54]
-    },
-    {
-      "name": "NC",
-      "label": "NC",
-      "kind": "nc",
-      "pos": [27.94, 50.8]
-    },
-    {
-      "name": "IOREF",
-      "label": "IOREF",
-      "kind": "power_out",
-      "voltage": 5,
-      "current_max": 0.01,
-      "note": "Tells shields the I/O voltage (5 V). Not a supply.",
-      "pos": [30.48, 50.8]
-    },
-    {
-      "name": "RESET",
-      "label": "RESET",
-      "kind": "digital",
-      "dir": "in",
-      "voltage": 5,
-      "vmax": 5.5,
-      "note": "Pull LOW to reset. Has a pull-up on the board.",
-      "pos": [33.02, 50.8]
-    },
-    {
-      "name": "3V3",
-      "label": "3.3V",
-      "kind": "power_out",
-      "voltage": 3.3,
-      "voltage_min": 3.2,
-      "voltage_max": 3.4,
-      "current_max": 0.05,
-      "note": "From an LP2985 regulator fed by 5 V. 50 mA max (Arduino spec).",
-      "pos": [35.56, 50.8]
-    },
-    {
-      "name": "5V",
-      "label": "5V",
-      "kind": "power_out",
-      "voltage": 5,
-      "voltage_min": 4.6,
-      "voltage_max": 5.25,
-      "current_max": 0.5,
-      "note": "From the onboard 5 V regulator (VIN/barrel) or from USB through a 500 mA polyfuse. About 0.4-0.5 A is safe for external parts; less if VIN is above 9 V (regulator heat).",
-      "pos": [38.1, 50.8]
-    },
-    {
-      "name": "GND",
-      "label": "GND",
-      "kind": "ground",
-      "pos": [40.64, 50.8]
-    },
-    {
-      "name": "GND_2",
-      "label": "GND",
-      "kind": "ground",
-      "pos": [43.18, 50.8]
-    },
-    {
-      "name": "VIN",
-      "label": "Vin",
-      "kind": "power_in",
-      "vmin": 7,
-      "vmax": 12,
-      "current": 0.05,
-      "current_peak": 0.1,
-      "note": "Recommended 7-12 V (absolute limits 6-20 V). Same node as the barrel jack after its reverse-polarity diode. Do not feed 5 V here.",
-      "pos": [45.72, 50.8]
-    },
-    {
-      "name": "A0",
-      "label": "A0",
-      "kind": "analog",
-      "dir": "io",
-      "voltage": 5,
-      "vmax": 5.5,
-      "vih": 3,
-      "current_max": 0.02,
-      "functions": ["ADC0", "D14"],
-      "pos": [50.8, 50.8]
-    },
-    {
-      "name": "A1",
-      "label": "A1",
-      "kind": "analog",
-      "dir": "io",
-      "voltage": 5,
-      "vmax": 5.5,
-      "vih": 3,
-      "current_max": 0.02,
-      "functions": ["ADC1", "D15"],
-      "pos": [53.34, 50.8]
-    },
-    {
-      "name": "A2",
-      "label": "A2",
-      "kind": "analog",
-      "dir": "io",
-      "voltage": 5,
-      "vmax": 5.5,
-      "vih": 3,
-      "current_max": 0.02,
-      "functions": ["ADC2", "D16"],
-      "pos": [55.88, 50.8]
-    },
-    {
-      "name": "A3",
-      "label": "A3",
-      "kind": "analog",
-      "dir": "io",
-      "voltage": 5,
-      "vmax": 5.5,
-      "vih": 3,
-      "current_max": 0.02,
-      "functions": ["ADC3", "D17"],
-      "pos": [58.42, 50.8]
-    },
-    {
-      "name": "A4",
-      "label": "A4",
-      "kind": "i2c_sda",
-      "dir": "io",
-      "voltage": 5,
-      "vmax": 5.5,
-      "vih": 3,
-      "current_max": 0.02,
-      "functions": ["ADC4", "D18", "I2C SDA (Wire)"],
-      "pullup": 5,
-      "pullup_weak": true,
-      "open_drain": true,
-      "pos": [60.96, 50.8]
-    },
-    {
-      "name": "A5",
-      "label": "A5",
-      "kind": "i2c_scl",
-      "dir": "io",
-      "voltage": 5,
-      "vmax": 5.5,
-      "vih": 3,
-      "current_max": 0.02,
-      "functions": ["ADC5", "D19", "I2C SCL (Wire)"],
-      "pullup": 5,
-      "pullup_weak": true,
-      "open_drain": true,
-      "pos": [63.5, 50.8]
-    }
+    { "name": "D0", "label": "0", "kind": "uart_rx", "dir": "in", "voltage": 5, "vmax": 5.5, "vih": 3, "current_max": 0.02, "note": "Serial RX, shared with the USB-serial chip. Leave free while uploading.", "pos": [66.04, 2.54] },
+    { "name": "D1", "label": "1", "kind": "uart_tx", "dir": "out", "voltage": 5, "vmax": 5.5, "vih": 3, "current_max": 0.02, "note": "Serial TX, shared with the USB-serial chip. Leave free while uploading.", "pos": [63.5, 2.54] },
+    { "name": "D2", "label": "2", "kind": "digital", "dir": "io", "voltage": 5, "vmax": 5.5, "vih": 3, "current_max": 0.02, "functions": ["external interrupt"], "pos": [60.96, 2.54] },
+    { "name": "D3", "label": "3", "kind": "pwm", "dir": "io", "voltage": 5, "vmax": 5.5, "vih": 3, "current_max": 0.02, "functions": ["external interrupt"], "pos": [58.42, 2.54] },
+    { "name": "D4", "label": "4", "kind": "digital", "dir": "io", "voltage": 5, "vmax": 5.5, "vih": 3, "current_max": 0.02, "pos": [55.88, 2.54] },
+    { "name": "D5", "label": "5", "kind": "pwm", "dir": "io", "voltage": 5, "vmax": 5.5, "vih": 3, "current_max": 0.02, "pos": [53.34, 2.54] },
+    { "name": "D6", "label": "6", "kind": "pwm", "dir": "io", "voltage": 5, "vmax": 5.5, "vih": 3, "current_max": 0.02, "pos": [50.8, 2.54] },
+    { "name": "D7", "label": "7", "kind": "digital", "dir": "io", "voltage": 5, "vmax": 5.5, "vih": 3, "current_max": 0.02, "pos": [48.26, 2.54] },
+    { "name": "D8", "label": "8", "kind": "digital", "dir": "io", "voltage": 5, "vmax": 5.5, "vih": 3, "current_max": 0.02, "pos": [44.2, 2.54] },
+    { "name": "D9", "label": "9", "kind": "pwm", "dir": "io", "voltage": 5, "vmax": 5.5, "vih": 3, "current_max": 0.02, "pos": [41.66, 2.54] },
+    { "name": "D10", "label": "10", "kind": "pwm", "dir": "io", "voltage": 5, "vmax": 5.5, "vih": 3, "current_max": 0.02, "functions": ["SPI SS"], "pos": [39.12, 2.54] },
+    { "name": "D11", "label": "11", "kind": "pwm", "dir": "io", "voltage": 5, "vmax": 5.5, "vih": 3, "current_max": 0.02, "functions": ["SPI MOSI"], "pos": [36.58, 2.54] },
+    { "name": "D12", "label": "12", "kind": "digital", "dir": "io", "voltage": 5, "vmax": 5.5, "vih": 3, "current_max": 0.02, "functions": ["SPI MISO"], "pos": [34.04, 2.54] },
+    { "name": "D13", "label": "13", "kind": "digital", "dir": "io", "voltage": 5, "vmax": 5.5, "vih": 3, "current_max": 0.02, "functions": ["SPI SCK", "onboard LED L"], "pos": [31.5, 2.54] },
+    { "name": "GND_3", "label": "GND", "kind": "ground", "pos": [28.96, 2.54] },
+    { "name": "AREF", "label": "AREF", "kind": "analog", "dir": "in", "vmax": 5.5, "note": "ADC reference input. Leave unconnected unless you need an external reference.", "pos": [26.42, 2.54] },
+    { "name": "SDA", "label": "SDA", "kind": "i2c_sda", "dir": "io", "voltage": 5, "vmax": 5.5, "vih": 3, "pullup": 5, "pullup_weak": true, "open_drain": true, "note": "Same signal as A4.", "pos": [23.88, 2.54] },
+    { "name": "SCL", "label": "SCL", "kind": "i2c_scl", "dir": "io", "voltage": 5, "vmax": 5.5, "vih": 3, "pullup": 5, "pullup_weak": true, "open_drain": true, "note": "Same signal as A5.", "pos": [21.34, 2.54] },
+    { "name": "NC", "label": "NC", "kind": "nc", "pos": [27.94, 50.8] },
+    { "name": "IOREF", "label": "IOREF", "kind": "power_out", "voltage": 5, "current_max": 0.01, "note": "Tells shields the I/O voltage (5 V). Not a supply.", "pos": [30.48, 50.8] },
+    { "name": "RESET", "label": "RESET", "kind": "digital", "dir": "in", "voltage": 5, "vmax": 5.5, "note": "Pull LOW to reset. Has a pull-up on the board.", "pos": [33.02, 50.8] },
+    { "name": "3V3", "label": "3.3V", "kind": "power_out", "voltage": 3.3, "voltage_min": 3.2, "voltage_max": 3.4, "current_max": 0.05, "note": "From an LP2985 regulator fed by 5 V. 50 mA max (Arduino spec).", "pos": [35.56, 50.8] },
+    { "name": "5V", "label": "5V", "kind": "power_out", "voltage": 5, "voltage_min": 4.6, "voltage_max": 5.25, "current_max": 0.5, "note": "From the onboard 5 V regulator (VIN/barrel) or from USB through a 500 mA polyfuse. About 0.4-0.5 A is safe for external parts; less if VIN is above 9 V (regulator heat).", "pos": [38.1, 50.8] },
+    { "name": "GND", "label": "GND", "kind": "ground", "pos": [40.64, 50.8] },
+    { "name": "GND_2", "label": "GND", "kind": "ground", "pos": [43.18, 50.8] },
+    { "name": "VIN", "label": "Vin", "kind": "power_in", "vmin": 7, "vmax": 12, "current": 0.05, "current_peak": 0.1, "note": "Recommended 7-12 V (absolute limits 6-20 V). Same node as the barrel jack after its reverse-polarity diode. Do not feed 5 V here.", "pos": [45.72, 50.8] },
+    { "name": "A0", "label": "A0", "kind": "analog", "dir": "io", "voltage": 5, "vmax": 5.5, "vih": 3, "current_max": 0.02, "functions": ["ADC0", "D14"], "pos": [50.8, 50.8] },
+    { "name": "A1", "label": "A1", "kind": "analog", "dir": "io", "voltage": 5, "vmax": 5.5, "vih": 3, "current_max": 0.02, "functions": ["ADC1", "D15"], "pos": [53.34, 50.8] },
+    { "name": "A2", "label": "A2", "kind": "analog", "dir": "io", "voltage": 5, "vmax": 5.5, "vih": 3, "current_max": 0.02, "functions": ["ADC2", "D16"], "pos": [55.88, 50.8] },
+    { "name": "A3", "label": "A3", "kind": "analog", "dir": "io", "voltage": 5, "vmax": 5.5, "vih": 3, "current_max": 0.02, "functions": ["ADC3", "D17"], "pos": [58.42, 50.8] },
+    { "name": "A4", "label": "A4", "kind": "i2c_sda", "dir": "io", "voltage": 5, "vmax": 5.5, "vih": 3, "current_max": 0.02, "functions": ["ADC4", "D18", "I2C SDA (Wire)"], "pullup": 5, "pullup_weak": true, "open_drain": true, "pos": [60.96, 50.8] },
+    { "name": "A5", "label": "A5", "kind": "i2c_scl", "dir": "io", "voltage": 5, "vmax": 5.5, "vih": 3, "current_max": 0.02, "functions": ["ADC5", "D19", "I2C SCL (Wire)"], "pullup": 5, "pullup_weak": true, "open_drain": true, "pos": [63.5, 50.8] }
   ],
-  "internal": [
-    ["GND", "GND_2", "GND_3"],
-    ["A4", "SDA"],
-    ["A5", "SCL"],
-    ["5V", "IOREF"]
-  ],
-  "regulators": [
-    {
-      "in": "VIN",
-      "out": "5V",
-      "gnd": "GND",
-      "type": "linear",
-      "vout": 5,
-      "dropout": 1.2,
-      "current_max": 0.5,
-      "iq": 0.01,
-      "vin_max": 20
-    },
-    {
-      "in": "5V",
-      "out": "3V3",
-      "gnd": "GND",
-      "type": "linear",
-      "vout": 3.3,
-      "dropout": 0.3,
-      "current_max": 0.05,
-      "iq": 0.001,
-      "vin_max": 16
-    }
-  ],
-  "breadboard": {
-    "fit": "offboard"
-  },
+  "internal": [["GND", "GND_2", "GND_3"], ["A4", "SDA"], ["A5", "SCL"], ["5V", "IOREF"]],
+  "regulators": [{ "in": "VIN", "out": "5V", "gnd": "GND", "type": "linear", "vout": 5, "dropout": 1.2, "current_max": 0.5, "iq": 0.01, "vin_max": 20 }, { "in": "5V", "out": "3V3", "gnd": "GND", "type": "linear", "vout": 3.3, "dropout": 0.3, "current_max": 0.05, "iq": 0.001, "vin_max": 16 }],
+  "breadboard": { "fit": "offboard" },
   "geometry": {
     "board": [68.6, 53.34, 1.6],
-    "holes": [
-      {
-        "pos": [13.97, 50.8],
-        "d": 3.2
-      },
-      {
-        "pos": [15.24, 2.54],
-        "d": 3.2
-      },
-      {
-        "pos": [66.04, 45.72],
-        "d": 3.2
-      },
-      {
-        "pos": [66.04, 17.78],
-        "d": 3.2
-      }
-    ],
-    "keepout": [
-      {
-        "rect": [-6.2, 31, 16, 12],
-        "height": 11,
-        "note": "USB-B connector, sticks out about 6 mm past the left edge"
-      },
-      {
-        "rect": [-1.8, 3, 14, 9],
-        "height": 11,
-        "note": "DC barrel jack"
-      }
-    ],
-    "connectors": [
-      {
-        "name": "USB-B",
-        "pos": [0, 38.1],
-        "side": "left"
-      },
-      {
-        "name": "DC barrel 2.1 mm",
-        "pos": [0, 7.6],
-        "side": "left"
-      }
-    ],
+    "holes": [{ "pos": [13.97, 50.8], "d": 3.2 }, { "pos": [15.24, 2.54], "d": 3.2 }, { "pos": [66.04, 45.72], "d": 3.2 }, { "pos": [66.04, 17.78], "d": 3.2 }],
+    "keepout": [{ "rect": [-6.2, 31, 16, 12], "height": 11, "note": "USB-B connector, sticks out about 6 mm past the left edge" }, { "rect": [-1.8, 3, 14, 9], "height": 11, "note": "DC barrel jack" }],
+    "connectors": [{ "name": "USB-B", "pos": [0, 38.1], "side": "left" }, { "name": "DC barrel 2.1 mm", "pos": [0, 7.6], "side": "left" }],
     "confidence": "confirm",
     "note": "Header and hole positions from the Arduino Uno reference layout (mil grid, origin bottom-left, converted). USB/jack on the left."
   }

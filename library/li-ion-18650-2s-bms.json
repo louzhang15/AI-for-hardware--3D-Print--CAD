@@ -14,35 +14,11 @@
   "size": [70, 20, 40],
   "color": "#2d6cb3",
   "pins": [
-    {
-      "name": "BAT+",
-      "label": "P+",
-      "kind": "power_out",
-      "voltage": 7.4,
-      "voltage_max": 8.4,
-      "voltage_min": 5,
-      "current_max": 3,
-      "note": "Pack output after the BMS. Full 8.4 V; the BMS cuts off at about 2.5-3.0 V per cell (5.0-6.0 V).",
-      "pos": [10, 3]
-    },
-    {
-      "name": "BAT-",
-      "label": "P-",
-      "kind": "ground",
-      "pos": [30, 3]
-    }
+    { "name": "BAT+", "label": "P+", "kind": "power_out", "voltage": 7.4, "voltage_max": 8.4, "voltage_min": 5, "current_max": 3, "note": "Pack output after the BMS. Full 8.4 V; the BMS cuts off at about 2.5-3.0 V per cell (5.0-6.0 V).", "pos": [10, 3] },
+    { "name": "BAT-", "label": "P-", "kind": "ground", "pos": [30, 3] }
   ],
-  "battery": {
-    "chemistry": "li-ion",
-    "cells": 2,
-    "capacity_ah": 2.5,
-    "bms": true,
-    "c_rating": 1.2,
-    "bms_current_a": 3
-  },
-  "breadboard": {
-    "fit": "offboard"
-  },
+  "battery": { "chemistry": "li-ion", "cells": 2, "capacity_ah": 2.5, "bms": true, "c_rating": 1.2, "bms_current_a": 3 },
+  "breadboard": { "fit": "offboard" },
   "geometry": {
     "board": [70, 40, 20],
     "holes": [],

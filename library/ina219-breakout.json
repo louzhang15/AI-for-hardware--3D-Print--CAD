@@ -4,7 +4,10 @@
   "category": "sensor",
   "description": "Measures current (through a 0.1 Ohm shunt, up to 3.2 A) and bus voltage (up to 26 V) over I2C (0x40).",
   "datasheet": "https://www.ti.com/lit/ds/symlink/ina219.pdf",
-  "sources": ["https://www.ti.com/lit/ds/symlink/ina219.pdf", "https://learn.adafruit.com/adafruit-ina219-current-sensor-breakout"],
+  "sources": [
+    "https://www.ti.com/lit/ds/symlink/ina219.pdf",
+    "https://learn.adafruit.com/adafruit-ina219-current-sensor-breakout"
+  ],
   "confidence": "verified",
   "notes": [
     "High-side: put VIN+ / VIN- in series with the + wire of the load. Max 26 V, max 3.2 A with the 0.1 Ohm shunt.",
@@ -15,90 +18,19 @@
   "size": [25.4, 8, 22.9],
   "color": "#1f4fa8",
   "pins": [
-    {
-      "name": "VCC",
-      "label": "Vcc",
-      "kind": "power_in",
-      "vmin": 3,
-      "vmax": 5.5,
-      "current": 0.001,
-      "pos": [6.35, 2]
-    },
-    {
-      "name": "GND",
-      "label": "Gnd",
-      "kind": "ground",
-      "pos": [8.89, 2]
-    },
-    {
-      "name": "SCL",
-      "label": "SCL",
-      "kind": "i2c_scl",
-      "dir": "io",
-      "vmax": 5.5,
-      "open_drain": true,
-      "pullup_ref": "VCC",
-      "pullup_ohms": 10000,
-      "pullup_weak": false,
-      "pos": [11.43, 2]
-    },
-    {
-      "name": "SDA",
-      "label": "SDA",
-      "kind": "i2c_sda",
-      "dir": "io",
-      "vmax": 5.5,
-      "open_drain": true,
-      "pullup_ref": "VCC",
-      "pullup_ohms": 10000,
-      "pullup_weak": false,
-      "pos": [13.97, 2]
-    },
-    {
-      "name": "VIN-",
-      "label": "Vin-",
-      "kind": "power_rail",
-      "vmax": 26,
-      "note": "Load side of the 0.1 Ohm shunt.",
-      "pos": [16.51, 2]
-    },
-    {
-      "name": "VIN+",
-      "label": "Vin+",
-      "kind": "power_rail",
-      "vmax": 26,
-      "note": "Supply side of the shunt. Max 26 V.",
-      "pos": [19.05, 2]
-    }
+    { "name": "VCC", "label": "Vcc", "kind": "power_in", "vmin": 3, "vmax": 5.5, "current": 0.001, "pos": [6.35, 2] },
+    { "name": "GND", "label": "Gnd", "kind": "ground", "pos": [8.89, 2] },
+    { "name": "SCL", "label": "SCL", "kind": "i2c_scl", "dir": "io", "vmax": 5.5, "open_drain": true, "pullup_ref": "VCC", "pullup_ohms": 10000, "pullup_weak": false, "pos": [11.43, 2] },
+    { "name": "SDA", "label": "SDA", "kind": "i2c_sda", "dir": "io", "vmax": 5.5, "open_drain": true, "pullup_ref": "VCC", "pullup_ohms": 10000, "pullup_weak": false, "pos": [13.97, 2] },
+    { "name": "VIN-", "label": "Vin-", "kind": "power_rail", "vmax": 26, "note": "Load side of the 0.1 Ohm shunt.", "pos": [16.51, 2] },
+    { "name": "VIN+", "label": "Vin+", "kind": "power_rail", "vmax": 26, "note": "Supply side of the shunt. Max 26 V.", "pos": [19.05, 2] }
   ],
-  "internal": [
-    ["VIN+", "VIN-"]
-  ],
-  "breadboard": {
-    "fit": "single",
-    "rows": [
-      ["VCC", "GND", "SCL", "SDA", "VIN-", "VIN+"]
-    ]
-  },
+  "internal": [["VIN+", "VIN-"]],
+  "breadboard": { "fit": "single", "rows": [["VCC", "GND", "SCL", "SDA", "VIN-", "VIN+"]] },
   "geometry": {
     "board": [25.4, 22.9, 1.6],
-    "holes": [
-      {
-        "pos": [2.5, 20.4],
-        "d": 2.5
-      },
-      {
-        "pos": [22.9, 20.4],
-        "d": 2.5
-      }
-    ],
-    "keepout": [
-      {
-        "rect": [5, 14, 15, 8],
-        "height": 8,
-        "note": "screw terminal"
-      }
-    ],
+    "holes": [{ "pos": [2.5, 20.4], "d": 2.5 }, { "pos": [22.9, 20.4], "d": 2.5 }],
+    "keepout": [{ "rect": [5, 14, 15, 8], "height": 8, "note": "screw terminal" }],
     "connectors": [],
     "confidence": "confirm"
   }

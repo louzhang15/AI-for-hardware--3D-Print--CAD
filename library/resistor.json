@@ -12,36 +12,11 @@
   ],
   "size": [11.16, 2.5, 2.5],
   "color": "#d9c49a",
-  "params": {
-    "ohms": 220,
-    "watts": 0.25
-  },
+  "params": { "ohms": 220, "watts": 0.25 },
   "pins": [
-    {
-      "name": "1",
-      "label": "1",
-      "kind": "passive",
-      "pos": [0.5, 1.25]
-    },
-    {
-      "name": "2",
-      "label": "2",
-      "kind": "passive",
-      "pos": [10.66, 1.25]
-    }
+    { "name": "1", "label": "1", "kind": "passive", "pos": [0.5, 1.25] },
+    { "name": "2", "label": "2", "kind": "passive", "pos": [10.66, 1.25] }
   ],
-  "breadboard": {
-    "fit": "single",
-    "rows": [
-      ["1", "2"]
-    ],
-    "pitch": 4
-  },
-  "geometry": {
-    "board": [6.3, 2.5, 2.5],
-    "holes": [],
-    "keepout": [],
-    "connectors": [],
-    "confidence": "verified"
-  }
+  "breadboard": { "fit": "single", "rows": [["1", null, null, null, "2"]] },
+  "geometry": { "board": [6.3, 2.5, 2.5], "holes": [], "keepout": [], "connectors": [], "confidence": "verified" }
 }

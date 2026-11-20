@@ -15,48 +15,16 @@
   "size": [32.3, 31, 12.2],
   "color": "#2a62c9",
   "pins": [
-    {
-      "name": "SIG",
-      "label": "signal (orange)",
-      "kind": "pwm",
-      "dir": "in",
-      "vih": 2,
-      "vmax_ref": "V+",
-      "vmax_offset": 0,
-      "note": "50 Hz pulses, about 0.5-2.5 ms. 3.3 V and 5 V logic both work on most servos.",
-      "pos": [0, 4.83]
-    },
-    {
-      "name": "V+",
-      "label": "V+ (red)",
-      "kind": "power_in",
-      "vmin": 4.8,
-      "vmax": 6,
-      "current": 0.15,
-      "current_peak": 0.8,
-      "pos": [0, 6.1]
-    },
-    {
-      "name": "GND",
-      "label": "GND (brown)",
-      "kind": "ground",
-      "pos": [0, 7.37]
-    }
+    { "name": "SIG", "label": "signal (orange)", "kind": "pwm", "dir": "in", "vih": 2, "vmax_ref": "V+", "vmax_offset": 0, "note": "50 Hz pulses, about 0.5-2.5 ms. 3.3 V and 5 V logic both work on most servos.", "pos": [0, 4.83] },
+    { "name": "V+", "label": "V+ (red)", "kind": "power_in", "vmin": 4.8, "vmax": 6, "current": 0.15, "current_peak": 0.8, "pos": [0, 6.1] },
+    { "name": "GND", "label": "GND (brown)", "kind": "ground", "pos": [0, 7.37] }
   ],
-  "breadboard": {
-    "fit": "offboard"
-  },
+  "breadboard": { "fit": "offboard" },
   "geometry": {
     "board": [32.3, 12.2, 31],
     "holes": [],
     "keepout": [],
-    "connectors": [
-      {
-        "name": "servo lead",
-        "pos": [0, 6.1],
-        "side": "left"
-      }
-    ],
+    "connectors": [{ "name": "servo lead", "pos": [0, 6.1], "side": "left" }],
     "confidence": "confirm"
   },
   "continuous": true

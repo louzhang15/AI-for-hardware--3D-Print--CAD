@@ -15,45 +15,10 @@
   "size": [5.2, 5, 4.2],
   "color": "#1b1b1b",
   "pins": [
-    {
-      "name": "GND",
-      "label": "GND",
-      "kind": "ground",
-      "pos": [1.3, 2.4]
-    },
-    {
-      "name": "DQ",
-      "label": "DQ",
-      "kind": "digital",
-      "dir": "io",
-      "vmax_ref": "VDD",
-      "vmax_offset": 0.5,
-      "open_drain": true,
-      "note": "1-Wire data, open drain. Needs an external 4.7 kOhm pull-up to VDD.",
-      "pos": [3.84, 2.4]
-    },
-    {
-      "name": "VDD",
-      "label": "VDD",
-      "kind": "power_in",
-      "vmin": 3,
-      "vmax": 5.5,
-      "current": 0.0015,
-      "current_peak": 0.0015,
-      "pos": [6.38, 2.4]
-    }
+    { "name": "GND", "label": "GND", "kind": "ground", "pos": [1.33, 2.4] },
+    { "name": "DQ", "label": "DQ", "kind": "digital", "dir": "io", "vmax_ref": "VDD", "vmax_offset": 0.5, "open_drain": true, "note": "1-Wire data, open drain. Needs an external 4.7 kOhm pull-up to VDD.", "pos": [2.6, 2.4] },
+    { "name": "VDD", "label": "VDD", "kind": "power_in", "vmin": 3, "vmax": 5.5, "current": 0.0015, "current_peak": 0.0015, "pos": [3.87, 2.4] }
   ],
-  "breadboard": {
-    "fit": "single",
-    "rows": [
-      ["GND", "DQ", "VDD"]
-    ]
-  },
-  "geometry": {
-    "board": [5.2, 4.2, 5],
-    "holes": [],
-    "keepout": [],
-    "connectors": [],
-    "confidence": "verified"
-  }
+  "breadboard": { "fit": "single", "rows": [["GND", "DQ", "VDD"]] },
+  "geometry": { "board": [5.2, 4.2, 5], "holes": [], "keepout": [], "connectors": [], "confidence": "verified" }
 }

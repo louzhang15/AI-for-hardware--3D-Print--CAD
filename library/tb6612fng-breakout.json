@@ -21,162 +21,28 @@
   "size": [20.3, 4, 20.3],
   "color": "#c0282d",
   "pins": [
-    {
-      "name": "VM",
-      "label": "VM",
-      "kind": "power_in",
-      "vmin": 4.5,
-      "vmax": 13.5,
-      "current": 0.002,
-      "current_peak": 0.002,
-      "note": "Motor supply 4.5-13.5 V recommended, 15 V absolute max. Add a 10-100 uF capacitor near the board.",
-      "pos": [2.53, 1.26]
-    },
-    {
-      "name": "VCC",
-      "label": "VCC",
-      "kind": "power_in",
-      "vmin": 2.7,
-      "vmax": 5.5,
-      "current": 0.002,
-      "current_peak": 0.003,
-      "note": "Logic supply 2.7-5.5 V. Use the same voltage as your microcontroller.",
-      "pos": [2.53, 3.8]
-    },
-    {
-      "name": "GND",
-      "label": "GND",
-      "kind": "ground",
-      "pos": [2.53, 6.34]
-    },
-    {
-      "name": "AO1",
-      "label": "A01",
-      "kind": "motor",
-      "dir": "out",
-      "voltage_ref": "VM",
-      "current_max": 1.2,
-      "current_peak": 3.2,
-      "pos": [2.53, 8.88]
-    },
-    {
-      "name": "AO2",
-      "label": "A02",
-      "kind": "motor",
-      "dir": "out",
-      "voltage_ref": "VM",
-      "current_max": 1.2,
-      "current_peak": 3.2,
-      "pos": [2.53, 11.42]
-    },
-    {
-      "name": "BO2",
-      "label": "B02",
-      "kind": "motor",
-      "dir": "out",
-      "voltage_ref": "VM",
-      "current_max": 1.2,
-      "current_peak": 3.2,
-      "pos": [2.53, 13.96]
-    },
-    {
-      "name": "BO1",
-      "label": "B01",
-      "kind": "motor",
-      "dir": "out",
-      "voltage_ref": "VM",
-      "current_max": 1.2,
-      "current_peak": 3.2,
-      "pos": [2.53, 16.5]
-    },
-    {
-      "name": "GND_2",
-      "label": "GND",
-      "kind": "ground",
-      "pos": [2.53, 19.04]
-    },
-    {
-      "name": "PWMA",
-      "label": "PWMA",
-      "kind": "pwm",
-      "dir": "in",
-      "voltage_ref": "VCC",
-      "vmax": 5.5,
-      "pos": [17.77, 1.26]
-    },
-    {
-      "name": "AIN2",
-      "label": "AI2",
-      "kind": "digital",
-      "dir": "in",
-      "voltage_ref": "VCC",
-      "vmax": 5.5,
-      "pos": [17.77, 3.8]
-    },
-    {
-      "name": "AIN1",
-      "label": "AI1",
-      "kind": "digital",
-      "dir": "in",
-      "voltage_ref": "VCC",
-      "vmax": 5.5,
-      "pos": [17.77, 6.34]
-    },
-    {
-      "name": "STBY",
-      "label": "STBY",
-      "kind": "digital",
-      "dir": "in",
-      "voltage_ref": "VCC",
-      "vmax": 5.5,
-      "required": true,
-      "note": "Standby: must be driven HIGH (or tied to VCC) or both outputs stay off.",
-      "pos": [17.77, 8.88]
-    },
-    {
-      "name": "BIN1",
-      "label": "BI1",
-      "kind": "digital",
-      "dir": "in",
-      "voltage_ref": "VCC",
-      "vmax": 5.5,
-      "pos": [17.77, 11.42]
-    },
-    {
-      "name": "BIN2",
-      "label": "BI2",
-      "kind": "digital",
-      "dir": "in",
-      "voltage_ref": "VCC",
-      "vmax": 5.5,
-      "pos": [17.77, 13.96]
-    },
-    {
-      "name": "PWMB",
-      "label": "PWMB",
-      "kind": "pwm",
-      "dir": "in",
-      "voltage_ref": "VCC",
-      "vmax": 5.5,
-      "pos": [17.77, 16.5]
-    },
-    {
-      "name": "GND_3",
-      "label": "GND",
-      "kind": "ground",
-      "pos": [17.77, 19.04]
-    }
+    { "name": "VM", "label": "VM", "kind": "power_in", "vmin": 4.5, "vmax": 13.5, "current": 0.002, "current_peak": 0.002, "note": "Motor supply 4.5-13.5 V recommended, 15 V absolute max. Add a 10-100 uF capacitor near the board.", "pos": [2.53, 1.26] },
+    { "name": "VCC", "label": "VCC", "kind": "power_in", "vmin": 2.7, "vmax": 5.5, "current": 0.002, "current_peak": 0.003, "note": "Logic supply 2.7-5.5 V. Use the same voltage as your microcontroller.", "pos": [2.53, 3.8] },
+    { "name": "GND", "label": "GND", "kind": "ground", "pos": [2.53, 6.34] },
+    { "name": "AO1", "label": "A01", "kind": "motor", "dir": "out", "voltage_ref": "VM", "current_max": 1.2, "current_peak": 3.2, "pos": [2.53, 8.88] },
+    { "name": "AO2", "label": "A02", "kind": "motor", "dir": "out", "voltage_ref": "VM", "current_max": 1.2, "current_peak": 3.2, "pos": [2.53, 11.42] },
+    { "name": "BO2", "label": "B02", "kind": "motor", "dir": "out", "voltage_ref": "VM", "current_max": 1.2, "current_peak": 3.2, "pos": [2.53, 13.96] },
+    { "name": "BO1", "label": "B01", "kind": "motor", "dir": "out", "voltage_ref": "VM", "current_max": 1.2, "current_peak": 3.2, "pos": [2.53, 16.5] },
+    { "name": "GND_2", "label": "GND", "kind": "ground", "pos": [2.53, 19.04] },
+    { "name": "PWMA", "label": "PWMA", "kind": "pwm", "dir": "in", "voltage_ref": "VCC", "vmax": 5.5, "pos": [17.77, 1.26] },
+    { "name": "AIN2", "label": "AI2", "kind": "digital", "dir": "in", "voltage_ref": "VCC", "vmax": 5.5, "pos": [17.77, 3.8] },
+    { "name": "AIN1", "label": "AI1", "kind": "digital", "dir": "in", "voltage_ref": "VCC", "vmax": 5.5, "pos": [17.77, 6.34] },
+    { "name": "STBY", "label": "STBY", "kind": "digital", "dir": "in", "voltage_ref": "VCC", "vmax": 5.5, "required": true, "note": "Standby: must be driven HIGH (or tied to VCC) or both outputs stay off.", "pos": [17.77, 8.88] },
+    { "name": "BIN1", "label": "BI1", "kind": "digital", "dir": "in", "voltage_ref": "VCC", "vmax": 5.5, "pos": [17.77, 11.42] },
+    { "name": "BIN2", "label": "BI2", "kind": "digital", "dir": "in", "voltage_ref": "VCC", "vmax": 5.5, "pos": [17.77, 13.96] },
+    { "name": "PWMB", "label": "PWMB", "kind": "pwm", "dir": "in", "voltage_ref": "VCC", "vmax": 5.5, "pos": [17.77, 16.5] },
+    { "name": "GND_3", "label": "GND", "kind": "ground", "pos": [17.77, 19.04] }
   ],
-  "internal": [
-    ["GND", "GND_2", "GND_3"]
-  ],
+  "internal": [["GND", "GND_2", "GND_3"]],
   "flyback": true,
   "breadboard": {
     "fit": "straddle",
-    "rows": [
-      ["VM", "VCC", "GND", "AO1", "AO2", "BO2", "BO1", "GND_2"],
-      ["PWMA", "AIN2", "AIN1", "STBY", "BIN1", "BIN2", "PWMB", "GND_3"]
-    ],
+    "rows": [["VM", "VCC", "GND", "AO1", "AO2", "BO2", "BO1", "GND_2"], ["PWMA", "AIN2", "AIN1", "STBY", "BIN1", "BIN2", "PWMB", "GND_3"]],
     "row_spacing": 6,
     "body_width_mm": 20.3
   },

@@ -14,33 +14,11 @@
   "size": [11.16, 2.7, 2.7],
   "color": "#202020",
   "pins": [
-    {
-      "name": "A",
-      "label": "anode",
-      "kind": "passive",
-      "pos": [0.5, 1.35]
-    },
-    {
-      "name": "K",
-      "label": "cathode (band)",
-      "kind": "passive",
-      "pos": [10.66, 1.35]
-    }
+    { "name": "A", "label": "anode", "kind": "passive", "pos": [0.5, 1.35] },
+    { "name": "K", "label": "cathode (band)", "kind": "passive", "pos": [10.66, 1.35] }
   ],
-  "diode": {
-    "vf": 0.45,
-    "vf_max": 0.6,
-    "if_max": 1,
-    "vr_max": 40,
-    "schottky": true
-  },
-  "breadboard": {
-    "fit": "single",
-    "rows": [
-      ["A", "K"]
-    ],
-    "pitch": 4
-  },
+  "diode": { "vf": 0.45, "vf_max": 0.6, "if_max": 1, "vr_max": 40, "schottky": true },
+  "breadboard": { "fit": "single", "rows": [["A", null, null, null, "K"]] },
   "geometry": {
     "board": [5.2, 2.7, 2.7],
     "holes": [],

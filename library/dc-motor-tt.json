@@ -13,38 +13,16 @@
   "size": [70, 22.5, 37],
   "color": "#f2c200",
   "pins": [
-    {
-      "name": "M+",
-      "label": "M+",
-      "kind": "motor",
-      "dir": "in",
-      "vmin": 3,
-      "vmax": 6,
-      "current": 0.2,
-      "current_peak": 1.2,
-      "pos": [2, 8]
-    },
-    {
-      "name": "M-",
-      "label": "M-",
-      "kind": "motor",
-      "dir": "in",
-      "pos": [2, 14.5]
-    }
+    { "name": "M+", "label": "M+", "kind": "motor", "dir": "in", "vmin": 3, "vmax": 6, "current": 0.2, "current_peak": 1.2, "pos": [2, 8] },
+    { "name": "M-", "label": "M-", "kind": "motor", "dir": "in", "pos": [2, 14.5] }
   ],
-  "breadboard": {
-    "fit": "offboard"
-  },
+  "breadboard": { "fit": "offboard" },
   "geometry": {
     "board": [70, 37, 22.5],
     "holes": [],
     "keepout": [],
     "connectors": [],
-    "shaft": {
-      "d": 5.4,
-      "flats": 3.7,
-      "note": "double-D output shaft both sides"
-    },
+    "shaft": { "d": 5.4, "flats": 3.7, "note": "double-D output shaft both sides" },
     "confidence": "confirm"
   }
 }

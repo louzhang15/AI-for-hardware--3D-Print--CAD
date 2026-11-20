@@ -14,85 +14,18 @@
   "size": [42.3, 40, 42.3],
   "color": "#7a7f87",
   "pins": [
-    {
-      "name": "A+",
-      "label": "A+ (black)",
-      "kind": "motor",
-      "dir": "in",
-      "current": 1.7,
-      "current_peak": 1.7,
-      "pos": [17.4, 42.3]
-    },
-    {
-      "name": "A-",
-      "label": "A- (green)",
-      "kind": "motor",
-      "dir": "in",
-      "current": 1.7,
-      "current_peak": 1.7,
-      "pos": [19.4, 42.3]
-    },
-    {
-      "name": "B+",
-      "label": "B+ (red)",
-      "kind": "motor",
-      "dir": "in",
-      "current": 1.7,
-      "current_peak": 1.7,
-      "pos": [21.4, 42.3]
-    },
-    {
-      "name": "B-",
-      "label": "B- (blue)",
-      "kind": "motor",
-      "dir": "in",
-      "current": 1.7,
-      "current_peak": 1.7,
-      "pos": [23.4, 42.3]
-    }
+    { "name": "A+", "label": "A+ (black)", "kind": "motor", "dir": "in", "current": 1.7, "current_peak": 1.7, "pos": [17.4, 42.3] },
+    { "name": "A-", "label": "A- (green)", "kind": "motor", "dir": "in", "current": 1.7, "current_peak": 1.7, "pos": [19.4, 42.3] },
+    { "name": "B+", "label": "B+ (red)", "kind": "motor", "dir": "in", "current": 1.7, "current_peak": 1.7, "pos": [21.4, 42.3] },
+    { "name": "B-", "label": "B- (blue)", "kind": "motor", "dir": "in", "current": 1.7, "current_peak": 1.7, "pos": [23.4, 42.3] }
   ],
-  "breadboard": {
-    "fit": "offboard"
-  },
+  "breadboard": { "fit": "offboard" },
   "geometry": {
     "board": [42.3, 42.3, 40],
-    "holes": [
-      {
-        "pos": [5.65, 5.65],
-        "d": 3
-      },
-      {
-        "pos": [36.65, 5.65],
-        "d": 3
-      },
-      {
-        "pos": [5.65, 36.65],
-        "d": 3
-      },
-      {
-        "pos": [36.65, 36.65],
-        "d": 3
-      }
-    ],
-    "keepout": [
-      {
-        "rect": [10.15, 10.15, 22, 22],
-        "height": 2,
-        "note": "22 mm centring boss on the shaft face"
-      }
-    ],
-    "connectors": [
-      {
-        "name": "6-pin JST-PH (2 unused)",
-        "pos": [21.15, 42.3],
-        "side": "bottom"
-      }
-    ],
-    "shaft": {
-      "d": 5,
-      "length": 24,
-      "flat": true
-    },
+    "holes": [{ "pos": [5.65, 5.65], "d": 3 }, { "pos": [36.65, 5.65], "d": 3 }, { "pos": [5.65, 36.65], "d": 3 }, { "pos": [36.65, 36.65], "d": 3 }],
+    "keepout": [{ "rect": [10.15, 10.15, 22, 22], "height": 2, "note": "22 mm centring boss on the shaft face" }],
+    "connectors": [{ "name": "6-pin JST-PH (2 unused)", "pos": [21.15, 42.3], "side": "bottom" }],
+    "shaft": { "d": 5, "length": 24, "flat": true },
     "confidence": "verified",
     "note": "NEMA 17 standard face: 42.3 mm square, M3 holes on a 31 mm square, 22 mm boss, 5 mm shaft. Holes and shaft are on the front face (top view here)."
   }

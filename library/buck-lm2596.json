@@ -20,74 +20,19 @@
   ],
   "size": [43, 14, 21],
   "color": "#1b4f9c",
-  "params": {
-    "vout": 5
-  },
+  "params": { "vout": 5 },
   "pins": [
-    {
-      "name": "IN+",
-      "label": "IN+",
-      "kind": "power_in",
-      "vmin": 4.5,
-      "vmax": 35,
-      "current": 0.005,
-      "note": "Input 4.5-35 V and at least about 1.5 V above the output.",
-      "pos": [2.5, 18.5]
-    },
-    {
-      "name": "IN-",
-      "label": "IN-",
-      "kind": "ground",
-      "pos": [2.5, 2.5]
-    },
-    {
-      "name": "OUT+",
-      "label": "OUT+",
-      "kind": "power_out",
-      "voltage": "$vout",
-      "current_max": 2,
-      "note": "Set by the trim pot. MEASURE before connecting anything.",
-      "pos": [40.5, 18.5]
-    },
-    {
-      "name": "OUT-",
-      "label": "OUT-",
-      "kind": "ground",
-      "pos": [40.5, 2.5]
-    }
+    { "name": "IN+", "label": "IN+", "kind": "power_in", "vmin": 4.5, "vmax": 35, "current": 0.005, "note": "Input 4.5-35 V and at least about 1.5 V above the output.", "pos": [2.5, 18.5] },
+    { "name": "IN-", "label": "IN-", "kind": "ground", "pos": [2.5, 2.5] },
+    { "name": "OUT+", "label": "OUT+", "kind": "power_out", "voltage": "$vout", "current_max": 2, "note": "Set by the trim pot. MEASURE before connecting anything.", "pos": [40.5, 18.5] },
+    { "name": "OUT-", "label": "OUT-", "kind": "ground", "pos": [40.5, 2.5] }
   ],
-  "internal": [
-    ["IN-", "OUT-"]
-  ],
-  "regulators": [
-    {
-      "in": "IN+",
-      "out": "OUT+",
-      "gnd": "IN-",
-      "type": "buck",
-      "vout": "$vout",
-      "dropout": 1.5,
-      "current_max": 2,
-      "iq": 0.005,
-      "efficiency": 0.8,
-      "vin_max": 35
-    }
-  ],
-  "breadboard": {
-    "fit": "offboard"
-  },
+  "internal": [["IN-", "OUT-"]],
+  "regulators": [{ "in": "IN+", "out": "OUT+", "gnd": "IN-", "type": "buck", "vout": "$vout", "dropout": 1.5, "current_max": 2, "iq": 0.005, "efficiency": 0.8, "vin_max": 35 }],
+  "breadboard": { "fit": "offboard" },
   "geometry": {
     "board": [43, 21, 1.6],
-    "holes": [
-      {
-        "pos": [6.5, 2.5],
-        "d": 3
-      },
-      {
-        "pos": [36.5, 18.5],
-        "d": 3
-      }
-    ],
+    "holes": [{ "pos": [6.5, 2.5], "d": 3 }, { "pos": [36.5, 18.5], "d": 3 }],
     "keepout": [],
     "connectors": [],
     "confidence": "confirm"

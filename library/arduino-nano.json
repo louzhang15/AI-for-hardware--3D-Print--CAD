@@ -20,386 +20,50 @@
   "size": [18, 8, 43.2],
   "color": "#0b5394",
   "pins": [
-    {
-      "name": "D13",
-      "label": "D13",
-      "kind": "digital",
-      "dir": "io",
-      "voltage": 5,
-      "vmax": 5.5,
-      "vih": 3,
-      "current_max": 0.02,
-      "pos": [1.38, 3.81]
-    },
-    {
-      "name": "3V3",
-      "label": "3V3",
-      "kind": "power_out",
-      "voltage": 3.3,
-      "current_max": 0.05,
-      "note": "Genuine Nano: from the FT232 (50 mA). CH340 clones: from the CH340 or a small LDO, often much less. Treat as a reference, not a supply.",
-      "pos": [1.38, 6.35]
-    },
-    {
-      "name": "AREF",
-      "label": "AREF",
-      "kind": "analog",
-      "dir": "in",
-      "vmax": 5.5,
-      "pos": [1.38, 8.89]
-    },
-    {
-      "name": "A0",
-      "label": "A0",
-      "kind": "analog",
-      "dir": "io",
-      "voltage": 5,
-      "vmax": 5.5,
-      "vih": 3,
-      "current_max": 0.02,
-      "pos": [1.38, 11.43]
-    },
-    {
-      "name": "A1",
-      "label": "A1",
-      "kind": "analog",
-      "dir": "io",
-      "voltage": 5,
-      "vmax": 5.5,
-      "vih": 3,
-      "current_max": 0.02,
-      "pos": [1.38, 13.97]
-    },
-    {
-      "name": "A2",
-      "label": "A2",
-      "kind": "analog",
-      "dir": "io",
-      "voltage": 5,
-      "vmax": 5.5,
-      "vih": 3,
-      "current_max": 0.02,
-      "pos": [1.38, 16.51]
-    },
-    {
-      "name": "A3",
-      "label": "A3",
-      "kind": "analog",
-      "dir": "io",
-      "voltage": 5,
-      "vmax": 5.5,
-      "vih": 3,
-      "current_max": 0.02,
-      "pos": [1.38, 19.05]
-    },
-    {
-      "name": "A4",
-      "label": "A4",
-      "kind": "i2c_sda",
-      "dir": "io",
-      "voltage": 5,
-      "vmax": 5.5,
-      "vih": 3,
-      "current_max": 0.02,
-      "pullup": 5,
-      "pullup_weak": true,
-      "open_drain": true,
-      "functions": ["ADC4", "I2C SDA (Wire)"],
-      "pos": [1.38, 21.59]
-    },
-    {
-      "name": "A5",
-      "label": "A5",
-      "kind": "i2c_scl",
-      "dir": "io",
-      "voltage": 5,
-      "vmax": 5.5,
-      "vih": 3,
-      "current_max": 0.02,
-      "pullup": 5,
-      "pullup_weak": true,
-      "open_drain": true,
-      "functions": ["ADC5", "I2C SCL (Wire)"],
-      "pos": [1.38, 24.13]
-    },
-    {
-      "name": "A6",
-      "label": "A6",
-      "kind": "analog",
-      "dir": "in",
-      "voltage": 5,
-      "vmax": 5.5,
-      "note": "Analog input only (no digital I/O, no pull-up).",
-      "pos": [1.38, 26.67]
-    },
-    {
-      "name": "A7",
-      "label": "A7",
-      "kind": "analog",
-      "dir": "in",
-      "voltage": 5,
-      "vmax": 5.5,
-      "note": "Analog input only (no digital I/O, no pull-up).",
-      "pos": [1.38, 29.21]
-    },
-    {
-      "name": "5V",
-      "label": "+5V",
-      "kind": "power_out",
-      "voltage": 5,
-      "voltage_min": 4.6,
-      "voltage_max": 5.25,
-      "current_max": 0.4,
-      "note": "From the onboard 5 V regulator (VIN) or from USB through a Schottky diode (about 4.6-4.7 V). Keep external loads under about 0.4 A.",
-      "pos": [1.38, 31.75]
-    },
-    {
-      "name": "RESET",
-      "label": "RST",
-      "kind": "digital",
-      "dir": "in",
-      "voltage": 5,
-      "vmax": 5.5,
-      "pos": [1.38, 34.29]
-    },
-    {
-      "name": "GND",
-      "label": "GND",
-      "kind": "ground",
-      "pos": [1.38, 36.83]
-    },
-    {
-      "name": "VIN",
-      "label": "VIN",
-      "kind": "power_in",
-      "vmin": 7,
-      "vmax": 12,
-      "current": 0.03,
-      "current_peak": 0.06,
-      "note": "Recommended 7-12 V. Do not feed 5 V here.",
-      "pos": [1.38, 39.37]
-    },
-    {
-      "name": "D12",
-      "label": "D12",
-      "kind": "digital",
-      "dir": "io",
-      "voltage": 5,
-      "vmax": 5.5,
-      "vih": 3,
-      "current_max": 0.02,
-      "pos": [16.62, 3.81]
-    },
-    {
-      "name": "D11",
-      "label": "D11",
-      "kind": "pwm",
-      "dir": "io",
-      "voltage": 5,
-      "vmax": 5.5,
-      "vih": 3,
-      "current_max": 0.02,
-      "pos": [16.62, 6.35]
-    },
-    {
-      "name": "D10",
-      "label": "D10",
-      "kind": "pwm",
-      "dir": "io",
-      "voltage": 5,
-      "vmax": 5.5,
-      "vih": 3,
-      "current_max": 0.02,
-      "pos": [16.62, 8.89]
-    },
-    {
-      "name": "D9",
-      "label": "D9",
-      "kind": "pwm",
-      "dir": "io",
-      "voltage": 5,
-      "vmax": 5.5,
-      "vih": 3,
-      "current_max": 0.02,
-      "pos": [16.62, 11.43]
-    },
-    {
-      "name": "D8",
-      "label": "D8",
-      "kind": "digital",
-      "dir": "io",
-      "voltage": 5,
-      "vmax": 5.5,
-      "vih": 3,
-      "current_max": 0.02,
-      "pos": [16.62, 13.97]
-    },
-    {
-      "name": "D7",
-      "label": "D7",
-      "kind": "digital",
-      "dir": "io",
-      "voltage": 5,
-      "vmax": 5.5,
-      "vih": 3,
-      "current_max": 0.02,
-      "pos": [16.62, 16.51]
-    },
-    {
-      "name": "D6",
-      "label": "D6",
-      "kind": "pwm",
-      "dir": "io",
-      "voltage": 5,
-      "vmax": 5.5,
-      "vih": 3,
-      "current_max": 0.02,
-      "pos": [16.62, 19.05]
-    },
-    {
-      "name": "D5",
-      "label": "D5",
-      "kind": "pwm",
-      "dir": "io",
-      "voltage": 5,
-      "vmax": 5.5,
-      "vih": 3,
-      "current_max": 0.02,
-      "pos": [16.62, 21.59]
-    },
-    {
-      "name": "D4",
-      "label": "D4",
-      "kind": "digital",
-      "dir": "io",
-      "voltage": 5,
-      "vmax": 5.5,
-      "vih": 3,
-      "current_max": 0.02,
-      "pos": [16.62, 24.13]
-    },
-    {
-      "name": "D3",
-      "label": "D3",
-      "kind": "pwm",
-      "dir": "io",
-      "voltage": 5,
-      "vmax": 5.5,
-      "vih": 3,
-      "current_max": 0.02,
-      "pos": [16.62, 26.67]
-    },
-    {
-      "name": "D2",
-      "label": "D2",
-      "kind": "digital",
-      "dir": "io",
-      "voltage": 5,
-      "vmax": 5.5,
-      "vih": 3,
-      "current_max": 0.02,
-      "pos": [16.62, 29.21]
-    },
-    {
-      "name": "GND_2",
-      "label": "GND",
-      "kind": "ground",
-      "pos": [16.62, 31.75]
-    },
-    {
-      "name": "RESET_2",
-      "label": "RST",
-      "kind": "digital",
-      "dir": "in",
-      "voltage": 5,
-      "vmax": 5.5,
-      "pos": [16.62, 34.29]
-    },
-    {
-      "name": "D0",
-      "label": "RX0",
-      "kind": "uart_rx",
-      "dir": "in",
-      "voltage": 5,
-      "vmax": 5.5,
-      "vih": 3,
-      "current_max": 0.02,
-      "note": "Serial RX, shared with USB serial.",
-      "pos": [16.62, 36.83]
-    },
-    {
-      "name": "D1",
-      "label": "TX1",
-      "kind": "uart_tx",
-      "dir": "out",
-      "voltage": 5,
-      "vmax": 5.5,
-      "vih": 3,
-      "current_max": 0.02,
-      "note": "Serial TX, shared with USB serial.",
-      "pos": [16.62, 39.37]
-    }
+    { "name": "D13", "label": "D13", "kind": "digital", "dir": "io", "voltage": 5, "vmax": 5.5, "vih": 3, "current_max": 0.02, "pos": [1.38, 3.81] },
+    { "name": "3V3", "label": "3V3", "kind": "power_out", "voltage": 3.3, "current_max": 0.05, "note": "Genuine Nano: from the FT232 (50 mA). CH340 clones: from the CH340 or a small LDO, often much less. Treat as a reference, not a supply.", "pos": [1.38, 6.35] },
+    { "name": "AREF", "label": "AREF", "kind": "analog", "dir": "in", "vmax": 5.5, "pos": [1.38, 8.89] },
+    { "name": "A0", "label": "A0", "kind": "analog", "dir": "io", "voltage": 5, "vmax": 5.5, "vih": 3, "current_max": 0.02, "pos": [1.38, 11.43] },
+    { "name": "A1", "label": "A1", "kind": "analog", "dir": "io", "voltage": 5, "vmax": 5.5, "vih": 3, "current_max": 0.02, "pos": [1.38, 13.97] },
+    { "name": "A2", "label": "A2", "kind": "analog", "dir": "io", "voltage": 5, "vmax": 5.5, "vih": 3, "current_max": 0.02, "pos": [1.38, 16.51] },
+    { "name": "A3", "label": "A3", "kind": "analog", "dir": "io", "voltage": 5, "vmax": 5.5, "vih": 3, "current_max": 0.02, "pos": [1.38, 19.05] },
+    { "name": "A4", "label": "A4", "kind": "i2c_sda", "dir": "io", "voltage": 5, "vmax": 5.5, "vih": 3, "current_max": 0.02, "pullup": 5, "pullup_weak": true, "open_drain": true, "functions": ["ADC4", "I2C SDA (Wire)"], "pos": [1.38, 21.59] },
+    { "name": "A5", "label": "A5", "kind": "i2c_scl", "dir": "io", "voltage": 5, "vmax": 5.5, "vih": 3, "current_max": 0.02, "pullup": 5, "pullup_weak": true, "open_drain": true, "functions": ["ADC5", "I2C SCL (Wire)"], "pos": [1.38, 24.13] },
+    { "name": "A6", "label": "A6", "kind": "analog", "dir": "in", "voltage": 5, "vmax": 5.5, "note": "Analog input only (no digital I/O, no pull-up).", "pos": [1.38, 26.67] },
+    { "name": "A7", "label": "A7", "kind": "analog", "dir": "in", "voltage": 5, "vmax": 5.5, "note": "Analog input only (no digital I/O, no pull-up).", "pos": [1.38, 29.21] },
+    { "name": "5V", "label": "+5V", "kind": "power_out", "voltage": 5, "voltage_min": 4.6, "voltage_max": 5.25, "current_max": 0.4, "note": "From the onboard 5 V regulator (VIN) or from USB through a Schottky diode (about 4.6-4.7 V). Keep external loads under about 0.4 A.", "pos": [1.38, 31.75] },
+    { "name": "RESET", "label": "RST", "kind": "digital", "dir": "in", "voltage": 5, "vmax": 5.5, "pos": [1.38, 34.29] },
+    { "name": "GND", "label": "GND", "kind": "ground", "pos": [1.38, 36.83] },
+    { "name": "VIN", "label": "VIN", "kind": "power_in", "vmin": 7, "vmax": 12, "current": 0.03, "current_peak": 0.06, "note": "Recommended 7-12 V. Do not feed 5 V here.", "pos": [1.38, 39.37] },
+    { "name": "D12", "label": "D12", "kind": "digital", "dir": "io", "voltage": 5, "vmax": 5.5, "vih": 3, "current_max": 0.02, "pos": [16.62, 3.81] },
+    { "name": "D11", "label": "D11", "kind": "pwm", "dir": "io", "voltage": 5, "vmax": 5.5, "vih": 3, "current_max": 0.02, "pos": [16.62, 6.35] },
+    { "name": "D10", "label": "D10", "kind": "pwm", "dir": "io", "voltage": 5, "vmax": 5.5, "vih": 3, "current_max": 0.02, "pos": [16.62, 8.89] },
+    { "name": "D9", "label": "D9", "kind": "pwm", "dir": "io", "voltage": 5, "vmax": 5.5, "vih": 3, "current_max": 0.02, "pos": [16.62, 11.43] },
+    { "name": "D8", "label": "D8", "kind": "digital", "dir": "io", "voltage": 5, "vmax": 5.5, "vih": 3, "current_max": 0.02, "pos": [16.62, 13.97] },
+    { "name": "D7", "label": "D7", "kind": "digital", "dir": "io", "voltage": 5, "vmax": 5.5, "vih": 3, "current_max": 0.02, "pos": [16.62, 16.51] },
+    { "name": "D6", "label": "D6", "kind": "pwm", "dir": "io", "voltage": 5, "vmax": 5.5, "vih": 3, "current_max": 0.02, "pos": [16.62, 19.05] },
+    { "name": "D5", "label": "D5", "kind": "pwm", "dir": "io", "voltage": 5, "vmax": 5.5, "vih": 3, "current_max": 0.02, "pos": [16.62, 21.59] },
+    { "name": "D4", "label": "D4", "kind": "digital", "dir": "io", "voltage": 5, "vmax": 5.5, "vih": 3, "current_max": 0.02, "pos": [16.62, 24.13] },
+    { "name": "D3", "label": "D3", "kind": "pwm", "dir": "io", "voltage": 5, "vmax": 5.5, "vih": 3, "current_max": 0.02, "pos": [16.62, 26.67] },
+    { "name": "D2", "label": "D2", "kind": "digital", "dir": "io", "voltage": 5, "vmax": 5.5, "vih": 3, "current_max": 0.02, "pos": [16.62, 29.21] },
+    { "name": "GND_2", "label": "GND", "kind": "ground", "pos": [16.62, 31.75] },
+    { "name": "RESET_2", "label": "RST", "kind": "digital", "dir": "in", "voltage": 5, "vmax": 5.5, "pos": [16.62, 34.29] },
+    { "name": "D0", "label": "RX0", "kind": "uart_rx", "dir": "in", "voltage": 5, "vmax": 5.5, "vih": 3, "current_max": 0.02, "note": "Serial RX, shared with USB serial.", "pos": [16.62, 36.83] },
+    { "name": "D1", "label": "TX1", "kind": "uart_tx", "dir": "out", "voltage": 5, "vmax": 5.5, "vih": 3, "current_max": 0.02, "note": "Serial TX, shared with USB serial.", "pos": [16.62, 39.37] }
   ],
-  "internal": [
-    ["GND", "GND_2"],
-    ["RESET", "RESET_2"]
-  ],
-  "regulators": [
-    {
-      "in": "VIN",
-      "out": "5V",
-      "gnd": "GND",
-      "type": "linear",
-      "vout": 5,
-      "dropout": 1.2,
-      "current_max": 0.4,
-      "iq": 0.005,
-      "vin_max": 20
-    }
-  ],
+  "internal": [["GND", "GND_2"], ["RESET", "RESET_2"]],
+  "regulators": [{ "in": "VIN", "out": "5V", "gnd": "GND", "type": "linear", "vout": 5, "dropout": 1.2, "current_max": 0.4, "iq": 0.005, "vin_max": 20 }],
   "breadboard": {
     "fit": "straddle",
-    "rows": [
-      ["D13", "3V3", "AREF", "A0", "A1", "A2", "A3", "A4", "A5", "A6", "A7", "5V", "RESET", "GND", "VIN"],
-      ["D12", "D11", "D10", "D9", "D8", "D7", "D6", "D5", "D4", "D3", "D2", "GND_2", "RESET_2", "D0", "D1"]
-    ],
+    "rows": [["D13", "3V3", "AREF", "A0", "A1", "A2", "A3", "A4", "A5", "A6", "A7", "5V", "RESET", "GND", "VIN"], ["D12", "D11", "D10", "D9", "D8", "D7", "D6", "D5", "D4", "D3", "D2", "GND_2", "RESET_2", "D0", "D1"]],
     "row_spacing": 6,
     "body_width_mm": 18
   },
   "geometry": {
     "board": [18, 43.2, 1.6],
-    "holes": [
-      {
-        "pos": [1.27, 1.27],
-        "d": 1.8
-      },
-      {
-        "pos": [16.73, 1.27],
-        "d": 1.8
-      },
-      {
-        "pos": [1.27, 41.93],
-        "d": 1.8
-      },
-      {
-        "pos": [16.73, 41.93],
-        "d": 1.8
-      }
-    ],
-    "keepout": [
-      {
-        "rect": [4.5, -1.5, 9, 8],
-        "height": 4,
-        "note": "USB connector at the top edge"
-      }
-    ],
-    "connectors": [
-      {
-        "name": "USB (mini-B or micro/C on clones)",
-        "pos": [9, 0],
-        "side": "top"
-      }
-    ],
+    "holes": [{ "pos": [1.27, 1.27], "d": 1.8 }, { "pos": [16.73, 1.27], "d": 1.8 }, { "pos": [1.27, 41.93], "d": 1.8 }, { "pos": [16.73, 41.93], "d": 1.8 }],
+    "keepout": [{ "rect": [4.5, -1.5, 9, 8], "height": 4, "note": "USB connector at the top edge" }],
+    "connectors": [{ "name": "USB (mini-B or micro/C on clones)", "pos": [9, 0], "side": "top" }],
     "confidence": "confirm",
     "note": "Nano outline 18 x 43.2 mm, rows 0.6 inch apart. Hole positions approximate."
   }

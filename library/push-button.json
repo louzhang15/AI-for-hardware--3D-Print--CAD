@@ -13,50 +13,12 @@
   "size": [6, 5, 7.5],
   "color": "#222222",
   "pins": [
-    {
-      "name": "1A",
-      "label": "1",
-      "kind": "passive",
-      "pos": [0.5, 0.5]
-    },
-    {
-      "name": "1B",
-      "label": "1",
-      "kind": "passive",
-      "pos": [0.5, 7]
-    },
-    {
-      "name": "2A",
-      "label": "2",
-      "kind": "passive",
-      "pos": [5.5, 0.5]
-    },
-    {
-      "name": "2B",
-      "label": "2",
-      "kind": "passive",
-      "pos": [5.5, 7]
-    }
+    { "name": "1A", "label": "1", "kind": "passive", "pos": [0.5, 0.5] },
+    { "name": "1B", "label": "1", "kind": "passive", "pos": [0.5, 7] },
+    { "name": "2A", "label": "2", "kind": "passive", "pos": [5.5, 0.5] },
+    { "name": "2B", "label": "2", "kind": "passive", "pos": [5.5, 7] }
   ],
-  "internal": [
-    ["1A", "1B"],
-    ["2A", "2B"]
-  ],
-  "breadboard": {
-    "fit": "straddle",
-    "rows": [
-      ["1A", "2A"],
-      ["1B", "2B"]
-    ],
-    "row_spacing": 3,
-    "pitch": 2,
-    "body_width_mm": 6
-  },
-  "geometry": {
-    "board": [6, 6, 5],
-    "holes": [],
-    "keepout": [],
-    "connectors": [],
-    "confidence": "confirm"
-  }
+  "internal": [["1A", "1B"], ["2A", "2B"]],
+  "breadboard": { "fit": "straddle", "rows": [["1A", null, "2A"], ["1B", null, "2B"]], "row_spacing": 3, "body_width_mm": 6 },
+  "geometry": { "board": [6, 6, 5], "holes": [], "keepout": [], "connectors": [], "confidence": "confirm" }
 }

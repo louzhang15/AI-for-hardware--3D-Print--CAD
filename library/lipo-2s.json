@@ -15,50 +15,16 @@
   "size": [105, 17, 34],
   "color": "#2b2b2b",
   "pins": [
-    {
-      "name": "BAT+",
-      "label": "BAT+",
-      "kind": "power_out",
-      "voltage": 7.4,
-      "voltage_max": 8.4,
-      "voltage_min": 6,
-      "current_max": 55,
-      "note": "Full 8.4 V, nominal 7.4 V, never below 6 V (3.0 V per cell; 3.3 V per cell is kinder).",
-      "pos": [4, 2]
-    },
-    {
-      "name": "BAT-",
-      "label": "BAT-",
-      "kind": "ground",
-      "pos": [10, 2]
-    }
+    { "name": "BAT+", "label": "BAT+", "kind": "power_out", "voltage": 7.4, "voltage_max": 8.4, "voltage_min": 6, "current_max": 55, "note": "Full 8.4 V, nominal 7.4 V, never below 6 V (3.0 V per cell; 3.3 V per cell is kinder).", "pos": [4, 2] },
+    { "name": "BAT-", "label": "BAT-", "kind": "ground", "pos": [10, 2] }
   ],
-  "battery": {
-    "chemistry": "lipo",
-    "cells": 2,
-    "capacity_ah": 2.2,
-    "bms": false,
-    "c_rating": 25
-  },
-  "breadboard": {
-    "fit": "offboard"
-  },
+  "battery": { "chemistry": "lipo", "cells": 2, "capacity_ah": 2.2, "bms": false, "c_rating": 25 },
+  "breadboard": { "fit": "offboard" },
   "geometry": {
     "board": [105, 34, 17],
     "holes": [],
     "keepout": [],
-    "connectors": [
-      {
-        "name": "main lead (XT60 typical)",
-        "pos": [7, 0],
-        "side": "top"
-      },
-      {
-        "name": "balance lead",
-        "pos": [20, 0],
-        "side": "top"
-      }
-    ],
+    "connectors": [{ "name": "main lead (XT60 typical)", "pos": [7, 0], "side": "top" }, { "name": "balance lead", "pos": [20, 0], "side": "top" }],
     "confidence": "confirm"
   }
 }

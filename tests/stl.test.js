@@ -214,3 +214,31 @@ test('plane cuts of a round tube stay closed and conserve volume', () => {
     assert.ok(meshStats(r.below).volume > 0 && meshStats(r.above).volume > 0);
   }
 });
+
+test('split-part script: pieces are closed, fit, and the plan says no joints were added to the mesh', async () => {
+  const { main } = await import('../scripts/split-part.mjs');
+  const { saveSTL, readSTL } = await import('../lib/node/stl.js');
+  const dir = mkdtempSync(join(tmpdir(), 'wiremap-split-'));
+  const src = join(dir, 'frame.stl');
+  // A 320 mm long frame with a through-hole: too big for the A1 mini.
+  const f = frameMesh(40, 10, 320);
+  saveSTL(src, f);
+  const log = console.log; console.log = () => {};
+  let code;
+  try { code = await main(['--stl', src, '--printer', 'bambu-a1-mini', '--out', join(dir, 'out'), '--name', 'frame']); } finally { console.log = log; }
+  assert.equal(code, 0);
+  const plan = JSON.parse(readFileSync(join(dir, 'out', 'frame.joints.json'), 'utf8'));
+  assert.equal(plan.pieces.length, 2);
+  assert.deepEqual(plan.applied_to_mesh, []);
+  let vol = 0;
+  for (const p of plan.pieces) {
+    const m = readSTL(p.file);
+    assert.ok(checkClosed(m).closed, p.file);
+    assert.ok(p.fits);
+    vol += meshStats(m).volume;
+  }
+  assert.ok(Math.abs(vol - meshStats(f).volume) < 1);
+  assert.ok(readFileSync(join(dir, 'out', 'frame.joints.scad'), 'utf8').includes('cylinder(d = pin_d'));
+  assert.ok(plan.cuts[0].features.length >= 2);
+  for (const ft of plan.cuts[0].features) assert.ok(!(ft.pos[0] > 15 && ft.pos[0] < 25 && ft.pos[1] > 15 && ft.pos[1] < 25), 'pin not in the hole');
+});

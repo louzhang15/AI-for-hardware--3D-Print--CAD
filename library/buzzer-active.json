@@ -13,36 +13,9 @@
   "size": [12, 9.5, 12],
   "color": "#111111",
   "pins": [
-    {
-      "name": "+",
-      "label": "+ (long leg)",
-      "kind": "power_in",
-      "vmin": 3.5,
-      "vmax": 5.5,
-      "current": 0.03,
-      "current_peak": 0.03,
-      "note": "About 30 mA at 5 V: drive through a transistor rather than directly from a GPIO.",
-      "pos": [2.7, 6]
-    },
-    {
-      "name": "-",
-      "label": "-",
-      "kind": "ground",
-      "pos": [9.3, 6]
-    }
+    { "name": "+", "label": "+ (long leg)", "kind": "power_in", "vmin": 3.5, "vmax": 5.5, "current": 0.03, "current_peak": 0.03, "note": "About 30 mA at 5 V: drive through a transistor rather than directly from a GPIO.", "pos": [2.7, 6] },
+    { "name": "-", "label": "-", "kind": "ground", "pos": [9.3, 6] }
   ],
-  "breadboard": {
-    "fit": "single",
-    "rows": [
-      ["+", "-"]
-    ],
-    "pitch": 3
-  },
-  "geometry": {
-    "board": [12, 12, 9.5],
-    "holes": [],
-    "keepout": [],
-    "connectors": [],
-    "confidence": "confirm"
-  }
+  "breadboard": { "fit": "single", "rows": [["+", null, null, "-"]] },
+  "geometry": { "board": [12, 12, 9.5], "holes": [], "keepout": [], "connectors": [], "confidence": "confirm" }
 }

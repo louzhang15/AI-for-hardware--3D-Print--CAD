@@ -14,38 +14,15 @@
   "size": [12, 10, 20],
   "color": "#333333",
   "pins": [
-    {
-      "name": "V+",
-      "label": "+",
-      "kind": "power_out",
-      "voltage": 6,
-      "voltage_max": 6.3,
-      "voltage_min": 5.7,
-      "current_max": 5,
-      "note": "Centre-positive barrel plug on most adapters: check the polarity symbol on the label.",
-      "pos": [6, 5]
-    },
-    {
-      "name": "GND",
-      "label": "-",
-      "kind": "ground",
-      "pos": [6, 15]
-    }
+    { "name": "V+", "label": "+", "kind": "power_out", "voltage": 6, "voltage_max": 6.3, "voltage_min": 5.7, "current_max": 5, "note": "Centre-positive barrel plug on most adapters: check the polarity symbol on the label.", "pos": [6, 5] },
+    { "name": "GND", "label": "-", "kind": "ground", "pos": [6, 15] }
   ],
-  "breadboard": {
-    "fit": "offboard"
-  },
+  "breadboard": { "fit": "offboard" },
   "geometry": {
     "board": [70, 45, 30],
     "holes": [],
     "keepout": [],
-    "connectors": [
-      {
-        "name": "barrel 5.5 x 2.1 mm",
-        "pos": [6, 0],
-        "side": "top"
-      }
-    ],
+    "connectors": [{ "name": "barrel 5.5 x 2.1 mm", "pos": [6, 0], "side": "top" }],
     "confidence": "confirm",
     "note": "Size is the barrel-to-terminal adapter end; the brick itself stays off the build."
   }

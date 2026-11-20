@@ -12,45 +12,19 @@
   ],
   "size": [12.4, 7, 13],
   "color": "#2f6fbf",
-  "params": {
-    "ohms": 10000
-  },
+  "params": { "ohms": 10000 },
   "pins": [
-    {
-      "name": "1",
-      "label": "1",
-      "kind": "passive",
-      "pos": [2.4, 8]
-    },
-    {
-      "name": "W",
-      "label": "wiper",
-      "kind": "passive",
-      "pos": [7.48, 8]
-    },
-    {
-      "name": "3",
-      "label": "3",
-      "kind": "passive",
-      "pos": [12.56, 8]
-    }
+    { "name": "1", "label": "1", "kind": "passive", "pos": [1.12, 8] },
+    { "name": "W", "label": "wiper", "kind": "passive", "pos": [6.2, 8] },
+    { "name": "3", "label": "3", "kind": "passive", "pos": [11.28, 8] }
   ],
-  "breadboard": {
-    "fit": "single",
-    "rows": [
-      ["1", "W", "3"]
-    ],
-    "pitch": 2
-  },
+  "breadboard": { "fit": "single", "rows": [["1", null, "W", null, "3"]] },
   "geometry": {
     "board": [9.8, 11, 7],
     "holes": [],
     "keepout": [],
     "connectors": [],
-    "shaft": {
-      "d": 6,
-      "length": 15
-    },
+    "shaft": { "d": 6, "length": 15 },
     "confidence": "confirm"
   }
 }

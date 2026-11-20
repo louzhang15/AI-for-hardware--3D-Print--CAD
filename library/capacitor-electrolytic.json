@@ -13,40 +13,12 @@
   ],
   "size": [6.3, 11, 6.3],
   "color": "#1d3d7a",
-  "params": {
-    "uf": 100,
-    "v_rated": 25
-  },
+  "params": { "uf": 100, "v_rated": 25 },
   "pins": [
-    {
-      "name": "+",
-      "label": "+ (long leg)",
-      "kind": "passive",
-      "pos": [1.9, 3.15]
-    },
-    {
-      "name": "-",
-      "label": "- (stripe)",
-      "kind": "passive",
-      "pos": [4.4, 3.15]
-    }
+    { "name": "+", "label": "+ (long leg)", "kind": "passive", "pos": [1.9, 3.15] },
+    { "name": "-", "label": "- (stripe)", "kind": "passive", "pos": [4.4, 3.15] }
   ],
-  "capacitor": {
-    "uf": "$uf",
-    "v_rated": "$v_rated",
-    "polarized": true
-  },
-  "breadboard": {
-    "fit": "single",
-    "rows": [
-      ["+", "-"]
-    ]
-  },
-  "geometry": {
-    "board": [6.3, 6.3, 11],
-    "holes": [],
-    "keepout": [],
-    "connectors": [],
-    "confidence": "confirm"
-  }
+  "capacitor": { "uf": "$uf", "v_rated": "$v_rated", "polarized": true },
+  "breadboard": { "fit": "single", "rows": [["+", "-"]] },
+  "geometry": { "board": [6.3, 6.3, 11], "holes": [], "keepout": [], "connectors": [], "confidence": "confirm" }
 }

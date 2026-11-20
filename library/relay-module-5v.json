@@ -14,87 +14,21 @@
   "size": [50, 19, 26],
   "color": "#1d5fa8",
   "pins": [
-    {
-      "name": "VCC",
-      "label": "VCC",
-      "kind": "power_in",
-      "vmin": 4.75,
-      "vmax": 5.25,
-      "current": 0.075,
-      "current_peak": 0.08,
-      "note": "5 V coil supply, about 70-80 mA when the relay is on.",
-      "pos": [2, 7.4]
-    },
-    {
-      "name": "GND",
-      "label": "GND",
-      "kind": "ground",
-      "pos": [2, 9.94]
-    },
-    {
-      "name": "IN",
-      "label": "IN",
-      "kind": "digital",
-      "dir": "in",
-      "vmax": 5.5,
-      "note": "Most boards are active LOW (relay on when IN is LOW). Some need 5 V logic to switch off reliably from a 3.3 V GPIO.",
-      "pos": [2, 12.48]
-    },
-    {
-      "name": "COM",
-      "label": "COM",
-      "kind": "passive",
-      "note": "Common contact.",
-      "pos": [48, 10]
-    },
-    {
-      "name": "NO",
-      "label": "NO",
-      "kind": "passive",
-      "note": "Normally open: joined to COM when the relay is on.",
-      "pos": [48, 5]
-    },
-    {
-      "name": "NC",
-      "label": "NC",
-      "kind": "passive",
-      "note": "Normally closed: joined to COM when the relay is off.",
-      "pos": [48, 15]
-    }
+    { "name": "VCC", "label": "VCC", "kind": "power_in", "vmin": 4.75, "vmax": 5.25, "current": 0.075, "current_peak": 0.08, "note": "5 V coil supply, about 70-80 mA when the relay is on.", "pos": [2, 7.4] },
+    { "name": "GND", "label": "GND", "kind": "ground", "pos": [2, 9.94] },
+    { "name": "IN", "label": "IN", "kind": "digital", "dir": "in", "vmax": 5.5, "note": "Most boards are active LOW (relay on when IN is LOW). Some need 5 V logic to switch off reliably from a 3.3 V GPIO.", "pos": [2, 12.48] },
+    { "name": "COM", "label": "COM", "kind": "passive", "note": "Common contact.", "pos": [48, 10] },
+    { "name": "NO", "label": "NO", "kind": "passive", "note": "Normally open: joined to COM when the relay is on.", "pos": [48, 5] },
+    { "name": "NC", "label": "NC", "kind": "passive", "note": "Normally closed: joined to COM when the relay is off.", "pos": [48, 15] }
   ],
   "rating_a": 10,
   "mains": false,
-  "breadboard": {
-    "fit": "offboard"
-  },
+  "breadboard": { "fit": "offboard" },
   "geometry": {
     "board": [50, 26, 1.6],
-    "holes": [
-      {
-        "pos": [3, 3],
-        "d": 3
-      },
-      {
-        "pos": [47, 3],
-        "d": 3
-      },
-      {
-        "pos": [3, 23],
-        "d": 3
-      },
-      {
-        "pos": [47, 23],
-        "d": 3
-      }
-    ],
+    "holes": [{ "pos": [3, 3], "d": 3 }, { "pos": [47, 3], "d": 3 }, { "pos": [3, 23], "d": 3 }, { "pos": [47, 23], "d": 3 }],
     "keepout": [],
-    "connectors": [
-      {
-        "name": "screw terminal COM/NO/NC",
-        "pos": [50, 10],
-        "side": "right"
-      }
-    ],
+    "connectors": [{ "name": "screw terminal COM/NO/NC", "pos": [50, 10], "side": "right" }],
     "confidence": "confirm"
   }
 }

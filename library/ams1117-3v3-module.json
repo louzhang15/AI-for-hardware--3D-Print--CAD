@@ -14,58 +14,11 @@
   "size": [24, 6, 12],
   "color": "#1b4f9c",
   "pins": [
-    {
-      "name": "VIN",
-      "label": "VIN",
-      "kind": "power_in",
-      "vmin": 4.5,
-      "vmax": 12,
-      "current": 0.005,
-      "note": "4.5-12 V (absolute max 15 V). At least about 1.2 V above 3.3 V.",
-      "pos": [9, 9.5]
-    },
-    {
-      "name": "GND",
-      "label": "GND",
-      "kind": "ground",
-      "pos": [11.54, 9.5]
-    },
-    {
-      "name": "3V3",
-      "label": "3.3V",
-      "kind": "power_out",
-      "voltage": 3.3,
-      "voltage_min": 3.24,
-      "voltage_max": 3.37,
-      "current_max": 0.8,
-      "note": "Up to 0.8 A from 5 V in if the board can shed the heat (about 1.4 W); less from higher input voltages.",
-      "pos": [14.08, 9.5]
-    }
+    { "name": "VIN", "label": "VIN", "kind": "power_in", "vmin": 4.5, "vmax": 12, "current": 0.005, "note": "4.5-12 V (absolute max 15 V). At least about 1.2 V above 3.3 V.", "pos": [9, 9.5] },
+    { "name": "GND", "label": "GND", "kind": "ground", "pos": [11.54, 9.5] },
+    { "name": "3V3", "label": "3.3V", "kind": "power_out", "voltage": 3.3, "voltage_min": 3.24, "voltage_max": 3.37, "current_max": 0.8, "note": "Up to 0.8 A from 5 V in if the board can shed the heat (about 1.4 W); less from higher input voltages.", "pos": [14.08, 9.5] }
   ],
-  "regulators": [
-    {
-      "in": "VIN",
-      "out": "3V3",
-      "gnd": "GND",
-      "type": "linear",
-      "vout": 3.3,
-      "dropout": 1.2,
-      "current_max": 0.8,
-      "iq": 0.005,
-      "vin_max": 12
-    }
-  ],
-  "breadboard": {
-    "fit": "single",
-    "rows": [
-      ["VIN", "GND", "3V3"]
-    ]
-  },
-  "geometry": {
-    "board": [24, 12, 1.6],
-    "holes": [],
-    "keepout": [],
-    "connectors": [],
-    "confidence": "confirm"
-  }
+  "regulators": [{ "in": "VIN", "out": "3V3", "gnd": "GND", "type": "linear", "vout": 3.3, "dropout": 1.2, "current_max": 0.8, "iq": 0.005, "vin_max": 12 }],
+  "breadboard": { "fit": "single", "rows": [["VIN", "GND", "3V3"]] },
+  "geometry": { "board": [24, 12, 1.6], "holes": [], "keepout": [], "connectors": [], "confidence": "confirm" }
 }

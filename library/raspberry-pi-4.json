@@ -20,500 +20,54 @@
   "size": [85, 17, 56],
   "color": "#2f8a3a",
   "pins": [
-    {
-      "name": "3V3",
-      "label": "3V3",
-      "kind": "power_out",
-      "voltage": 3.3,
-      "current_max": 0.05,
-      "physical": 1,
-      "note": "Total 3.3 V budget for header devices: keep under about 50 mA (official guidance for older boards; Pi 4 has more headroom but this is the safe figure).",
-      "pos": [8.37, 4.77]
-    },
-    {
-      "name": "5V",
-      "label": "5V",
-      "kind": "power_out",
-      "voltage": 5.1,
-      "voltage_min": 4.75,
-      "voltage_max": 5.25,
-      "current_max": 1.2,
-      "physical": 2,
-      "note": "Direct from the USB-C input (after a polyfuse). What is left of the supply after the Pi itself: with the official 3 A supply about 1.2 A is shared with the USB ports. Can also power the Pi (no protection).",
-      "pos": [8.37, 2.23]
-    },
-    {
-      "name": "GPIO2",
-      "label": "SDA1",
-      "kind": "i2c_sda",
-      "dir": "io",
-      "voltage": 3.3,
-      "vmax": 3.6,
-      "vih": 2,
-      "current_max": 0.016,
-      "physical": 3,
-      "pullup": 3.3,
-      "pullup_weak": false,
-      "open_drain": true,
-      "note": "1.8 kOhm pull-up to 3.3 V on the board.",
-      "pos": [10.91, 4.77]
-    },
-    {
-      "name": "5V_2",
-      "label": "5V",
-      "kind": "power_out",
-      "voltage": 5.1,
-      "voltage_min": 4.75,
-      "voltage_max": 5.25,
-      "current_max": 1.2,
-      "physical": 4,
-      "note": "Direct from the USB-C input (after a polyfuse). What is left of the supply after the Pi itself: with the official 3 A supply about 1.2 A is shared with the USB ports. Can also power the Pi (no protection).",
-      "pos": [10.91, 2.23]
-    },
-    {
-      "name": "GPIO3",
-      "label": "SCL1",
-      "kind": "i2c_scl",
-      "dir": "io",
-      "voltage": 3.3,
-      "vmax": 3.6,
-      "vih": 2,
-      "current_max": 0.016,
-      "physical": 5,
-      "pullup": 3.3,
-      "pullup_weak": false,
-      "open_drain": true,
-      "note": "1.8 kOhm pull-up to 3.3 V on the board.",
-      "pos": [13.45, 4.77]
-    },
-    {
-      "name": "GND",
-      "label": "GND",
-      "kind": "ground",
-      "physical": 6,
-      "pos": [13.45, 2.23]
-    },
-    {
-      "name": "GPIO4",
-      "label": "GPIO4",
-      "kind": "digital",
-      "dir": "io",
-      "voltage": 3.3,
-      "vmax": 3.6,
-      "vih": 2,
-      "current_max": 0.016,
-      "physical": 7,
-      "pos": [15.99, 4.77]
-    },
-    {
-      "name": "GPIO14",
-      "label": "TXD",
-      "kind": "uart_tx",
-      "dir": "out",
-      "voltage": 3.3,
-      "vmax": 3.6,
-      "vih": 2,
-      "current_max": 0.016,
-      "physical": 8,
-      "pos": [15.99, 2.23]
-    },
-    {
-      "name": "GND_2",
-      "label": "GND",
-      "kind": "ground",
-      "physical": 9,
-      "pos": [18.53, 4.77]
-    },
-    {
-      "name": "GPIO15",
-      "label": "RXD",
-      "kind": "uart_rx",
-      "dir": "in",
-      "voltage": 3.3,
-      "vmax": 3.6,
-      "vih": 2,
-      "current_max": 0.016,
-      "physical": 10,
-      "pos": [18.53, 2.23]
-    },
-    {
-      "name": "GPIO17",
-      "label": "GPIO17",
-      "kind": "digital",
-      "dir": "io",
-      "voltage": 3.3,
-      "vmax": 3.6,
-      "vih": 2,
-      "current_max": 0.016,
-      "physical": 11,
-      "pos": [21.07, 4.77]
-    },
-    {
-      "name": "GPIO18",
-      "label": "GPIO18",
-      "kind": "pwm",
-      "dir": "io",
-      "voltage": 3.3,
-      "vmax": 3.6,
-      "vih": 2,
-      "current_max": 0.016,
-      "physical": 12,
-      "pos": [21.07, 2.23]
-    },
-    {
-      "name": "GPIO27",
-      "label": "GPIO27",
-      "kind": "digital",
-      "dir": "io",
-      "voltage": 3.3,
-      "vmax": 3.6,
-      "vih": 2,
-      "current_max": 0.016,
-      "physical": 13,
-      "pos": [23.61, 4.77]
-    },
-    {
-      "name": "GND_3",
-      "label": "GND",
-      "kind": "ground",
-      "physical": 14,
-      "pos": [23.61, 2.23]
-    },
-    {
-      "name": "GPIO22",
-      "label": "GPIO22",
-      "kind": "digital",
-      "dir": "io",
-      "voltage": 3.3,
-      "vmax": 3.6,
-      "vih": 2,
-      "current_max": 0.016,
-      "physical": 15,
-      "pos": [26.15, 4.77]
-    },
-    {
-      "name": "GPIO23",
-      "label": "GPIO23",
-      "kind": "digital",
-      "dir": "io",
-      "voltage": 3.3,
-      "vmax": 3.6,
-      "vih": 2,
-      "current_max": 0.016,
-      "physical": 16,
-      "pos": [26.15, 2.23]
-    },
-    {
-      "name": "3V3_2",
-      "label": "3V3",
-      "kind": "power_out",
-      "voltage": 3.3,
-      "current_max": 0.05,
-      "physical": 17,
-      "note": "Total 3.3 V budget for header devices: keep under about 50 mA (official guidance for older boards; Pi 4 has more headroom but this is the safe figure).",
-      "pos": [28.69, 4.77]
-    },
-    {
-      "name": "GPIO24",
-      "label": "GPIO24",
-      "kind": "digital",
-      "dir": "io",
-      "voltage": 3.3,
-      "vmax": 3.6,
-      "vih": 2,
-      "current_max": 0.016,
-      "physical": 18,
-      "pos": [28.69, 2.23]
-    },
-    {
-      "name": "GPIO10",
-      "label": "MOSI",
-      "kind": "spi",
-      "dir": "io",
-      "voltage": 3.3,
-      "vmax": 3.6,
-      "vih": 2,
-      "current_max": 0.016,
-      "physical": 19,
-      "pos": [31.23, 4.77]
-    },
-    {
-      "name": "GND_4",
-      "label": "GND",
-      "kind": "ground",
-      "physical": 20,
-      "pos": [31.23, 2.23]
-    },
-    {
-      "name": "GPIO9",
-      "label": "MISO",
-      "kind": "spi",
-      "dir": "io",
-      "voltage": 3.3,
-      "vmax": 3.6,
-      "vih": 2,
-      "current_max": 0.016,
-      "physical": 21,
-      "pos": [33.77, 4.77]
-    },
-    {
-      "name": "GPIO25",
-      "label": "GPIO25",
-      "kind": "digital",
-      "dir": "io",
-      "voltage": 3.3,
-      "vmax": 3.6,
-      "vih": 2,
-      "current_max": 0.016,
-      "physical": 22,
-      "pos": [33.77, 2.23]
-    },
-    {
-      "name": "GPIO11",
-      "label": "SCLK",
-      "kind": "spi",
-      "dir": "io",
-      "voltage": 3.3,
-      "vmax": 3.6,
-      "vih": 2,
-      "current_max": 0.016,
-      "physical": 23,
-      "pos": [36.31, 4.77]
-    },
-    {
-      "name": "GPIO8",
-      "label": "CE0",
-      "kind": "spi",
-      "dir": "io",
-      "voltage": 3.3,
-      "vmax": 3.6,
-      "vih": 2,
-      "current_max": 0.016,
-      "physical": 24,
-      "pos": [36.31, 2.23]
-    },
-    {
-      "name": "GND_5",
-      "label": "GND",
-      "kind": "ground",
-      "physical": 25,
-      "pos": [38.85, 4.77]
-    },
-    {
-      "name": "GPIO7",
-      "label": "CE1",
-      "kind": "spi",
-      "dir": "io",
-      "voltage": 3.3,
-      "vmax": 3.6,
-      "vih": 2,
-      "current_max": 0.016,
-      "physical": 26,
-      "pos": [38.85, 2.23]
-    },
-    {
-      "name": "GPIO0",
-      "label": "ID_SD",
-      "kind": "digital",
-      "dir": "io",
-      "voltage": 3.3,
-      "vmax": 3.6,
-      "vih": 2,
-      "current_max": 0.016,
-      "physical": 27,
-      "note": "Reserved for HAT ID EEPROM. Avoid.",
-      "pos": [41.39, 4.77]
-    },
-    {
-      "name": "GPIO1",
-      "label": "ID_SC",
-      "kind": "digital",
-      "dir": "io",
-      "voltage": 3.3,
-      "vmax": 3.6,
-      "vih": 2,
-      "current_max": 0.016,
-      "physical": 28,
-      "note": "Reserved for HAT ID EEPROM. Avoid.",
-      "pos": [41.39, 2.23]
-    },
-    {
-      "name": "GPIO5",
-      "label": "GPIO5",
-      "kind": "digital",
-      "dir": "io",
-      "voltage": 3.3,
-      "vmax": 3.6,
-      "vih": 2,
-      "current_max": 0.016,
-      "physical": 29,
-      "pos": [43.93, 4.77]
-    },
-    {
-      "name": "GND_6",
-      "label": "GND",
-      "kind": "ground",
-      "physical": 30,
-      "pos": [43.93, 2.23]
-    },
-    {
-      "name": "GPIO6",
-      "label": "GPIO6",
-      "kind": "digital",
-      "dir": "io",
-      "voltage": 3.3,
-      "vmax": 3.6,
-      "vih": 2,
-      "current_max": 0.016,
-      "physical": 31,
-      "pos": [46.47, 4.77]
-    },
-    {
-      "name": "GPIO12",
-      "label": "GPIO12",
-      "kind": "pwm",
-      "dir": "io",
-      "voltage": 3.3,
-      "vmax": 3.6,
-      "vih": 2,
-      "current_max": 0.016,
-      "physical": 32,
-      "pos": [46.47, 2.23]
-    },
-    {
-      "name": "GPIO13",
-      "label": "GPIO13",
-      "kind": "pwm",
-      "dir": "io",
-      "voltage": 3.3,
-      "vmax": 3.6,
-      "vih": 2,
-      "current_max": 0.016,
-      "physical": 33,
-      "pos": [49.01, 4.77]
-    },
-    {
-      "name": "GND_7",
-      "label": "GND",
-      "kind": "ground",
-      "physical": 34,
-      "pos": [49.01, 2.23]
-    },
-    {
-      "name": "GPIO19",
-      "label": "GPIO19",
-      "kind": "pwm",
-      "dir": "io",
-      "voltage": 3.3,
-      "vmax": 3.6,
-      "vih": 2,
-      "current_max": 0.016,
-      "physical": 35,
-      "pos": [51.55, 4.77]
-    },
-    {
-      "name": "GPIO16",
-      "label": "GPIO16",
-      "kind": "digital",
-      "dir": "io",
-      "voltage": 3.3,
-      "vmax": 3.6,
-      "vih": 2,
-      "current_max": 0.016,
-      "physical": 36,
-      "pos": [51.55, 2.23]
-    },
-    {
-      "name": "GPIO26",
-      "label": "GPIO26",
-      "kind": "digital",
-      "dir": "io",
-      "voltage": 3.3,
-      "vmax": 3.6,
-      "vih": 2,
-      "current_max": 0.016,
-      "physical": 37,
-      "pos": [54.09, 4.77]
-    },
-    {
-      "name": "GPIO20",
-      "label": "GPIO20",
-      "kind": "digital",
-      "dir": "io",
-      "voltage": 3.3,
-      "vmax": 3.6,
-      "vih": 2,
-      "current_max": 0.016,
-      "physical": 38,
-      "pos": [54.09, 2.23]
-    },
-    {
-      "name": "GND_8",
-      "label": "GND",
-      "kind": "ground",
-      "physical": 39,
-      "pos": [56.63, 4.77]
-    },
-    {
-      "name": "GPIO21",
-      "label": "GPIO21",
-      "kind": "digital",
-      "dir": "io",
-      "voltage": 3.3,
-      "vmax": 3.6,
-      "vih": 2,
-      "current_max": 0.016,
-      "physical": 40,
-      "pos": [56.63, 2.23]
-    }
+    { "name": "3V3", "label": "3V3", "kind": "power_out", "voltage": 3.3, "current_max": 0.05, "physical": 1, "note": "Total 3.3 V budget for header devices: keep under about 50 mA (official guidance for older boards; Pi 4 has more headroom but this is the safe figure).", "pos": [8.37, 4.77] },
+    { "name": "5V", "label": "5V", "kind": "power_out", "voltage": 5.1, "voltage_min": 4.75, "voltage_max": 5.25, "current_max": 1.2, "physical": 2, "note": "Direct from the USB-C input (after a polyfuse). What is left of the supply after the Pi itself: with the official 3 A supply about 1.2 A is shared with the USB ports. Can also power the Pi (no protection).", "pos": [8.37, 2.23] },
+    { "name": "GPIO2", "label": "SDA1", "kind": "i2c_sda", "dir": "io", "voltage": 3.3, "vmax": 3.6, "vih": 2, "current_max": 0.016, "physical": 3, "pullup": 3.3, "pullup_weak": false, "open_drain": true, "note": "1.8 kOhm pull-up to 3.3 V on the board.", "pos": [10.91, 4.77] },
+    { "name": "5V_2", "label": "5V", "kind": "power_out", "voltage": 5.1, "voltage_min": 4.75, "voltage_max": 5.25, "current_max": 1.2, "physical": 4, "note": "Direct from the USB-C input (after a polyfuse). What is left of the supply after the Pi itself: with the official 3 A supply about 1.2 A is shared with the USB ports. Can also power the Pi (no protection).", "pos": [10.91, 2.23] },
+    { "name": "GPIO3", "label": "SCL1", "kind": "i2c_scl", "dir": "io", "voltage": 3.3, "vmax": 3.6, "vih": 2, "current_max": 0.016, "physical": 5, "pullup": 3.3, "pullup_weak": false, "open_drain": true, "note": "1.8 kOhm pull-up to 3.3 V on the board.", "pos": [13.45, 4.77] },
+    { "name": "GND", "label": "GND", "kind": "ground", "physical": 6, "pos": [13.45, 2.23] },
+    { "name": "GPIO4", "label": "GPIO4", "kind": "digital", "dir": "io", "voltage": 3.3, "vmax": 3.6, "vih": 2, "current_max": 0.016, "physical": 7, "pos": [15.99, 4.77] },
+    { "name": "GPIO14", "label": "TXD", "kind": "uart_tx", "dir": "out", "voltage": 3.3, "vmax": 3.6, "vih": 2, "current_max": 0.016, "physical": 8, "pos": [15.99, 2.23] },
+    { "name": "GND_2", "label": "GND", "kind": "ground", "physical": 9, "pos": [18.53, 4.77] },
+    { "name": "GPIO15", "label": "RXD", "kind": "uart_rx", "dir": "in", "voltage": 3.3, "vmax": 3.6, "vih": 2, "current_max": 0.016, "physical": 10, "pos": [18.53, 2.23] },
+    { "name": "GPIO17", "label": "GPIO17", "kind": "digital", "dir": "io", "voltage": 3.3, "vmax": 3.6, "vih": 2, "current_max": 0.016, "physical": 11, "pos": [21.07, 4.77] },
+    { "name": "GPIO18", "label": "GPIO18", "kind": "pwm", "dir": "io", "voltage": 3.3, "vmax": 3.6, "vih": 2, "current_max": 0.016, "physical": 12, "pos": [21.07, 2.23] },
+    { "name": "GPIO27", "label": "GPIO27", "kind": "digital", "dir": "io", "voltage": 3.3, "vmax": 3.6, "vih": 2, "current_max": 0.016, "physical": 13, "pos": [23.61, 4.77] },
+    { "name": "GND_3", "label": "GND", "kind": "ground", "physical": 14, "pos": [23.61, 2.23] },
+    { "name": "GPIO22", "label": "GPIO22", "kind": "digital", "dir": "io", "voltage": 3.3, "vmax": 3.6, "vih": 2, "current_max": 0.016, "physical": 15, "pos": [26.15, 4.77] },
+    { "name": "GPIO23", "label": "GPIO23", "kind": "digital", "dir": "io", "voltage": 3.3, "vmax": 3.6, "vih": 2, "current_max": 0.016, "physical": 16, "pos": [26.15, 2.23] },
+    { "name": "3V3_2", "label": "3V3", "kind": "power_out", "voltage": 3.3, "current_max": 0.05, "physical": 17, "note": "Total 3.3 V budget for header devices: keep under about 50 mA (official guidance for older boards; Pi 4 has more headroom but this is the safe figure).", "pos": [28.69, 4.77] },
+    { "name": "GPIO24", "label": "GPIO24", "kind": "digital", "dir": "io", "voltage": 3.3, "vmax": 3.6, "vih": 2, "current_max": 0.016, "physical": 18, "pos": [28.69, 2.23] },
+    { "name": "GPIO10", "label": "MOSI", "kind": "spi", "dir": "io", "voltage": 3.3, "vmax": 3.6, "vih": 2, "current_max": 0.016, "physical": 19, "pos": [31.23, 4.77] },
+    { "name": "GND_4", "label": "GND", "kind": "ground", "physical": 20, "pos": [31.23, 2.23] },
+    { "name": "GPIO9", "label": "MISO", "kind": "spi", "dir": "io", "voltage": 3.3, "vmax": 3.6, "vih": 2, "current_max": 0.016, "physical": 21, "pos": [33.77, 4.77] },
+    { "name": "GPIO25", "label": "GPIO25", "kind": "digital", "dir": "io", "voltage": 3.3, "vmax": 3.6, "vih": 2, "current_max": 0.016, "physical": 22, "pos": [33.77, 2.23] },
+    { "name": "GPIO11", "label": "SCLK", "kind": "spi", "dir": "io", "voltage": 3.3, "vmax": 3.6, "vih": 2, "current_max": 0.016, "physical": 23, "pos": [36.31, 4.77] },
+    { "name": "GPIO8", "label": "CE0", "kind": "spi", "dir": "io", "voltage": 3.3, "vmax": 3.6, "vih": 2, "current_max": 0.016, "physical": 24, "pos": [36.31, 2.23] },
+    { "name": "GND_5", "label": "GND", "kind": "ground", "physical": 25, "pos": [38.85, 4.77] },
+    { "name": "GPIO7", "label": "CE1", "kind": "spi", "dir": "io", "voltage": 3.3, "vmax": 3.6, "vih": 2, "current_max": 0.016, "physical": 26, "pos": [38.85, 2.23] },
+    { "name": "GPIO0", "label": "ID_SD", "kind": "digital", "dir": "io", "voltage": 3.3, "vmax": 3.6, "vih": 2, "current_max": 0.016, "physical": 27, "note": "Reserved for HAT ID EEPROM. Avoid.", "pos": [41.39, 4.77] },
+    { "name": "GPIO1", "label": "ID_SC", "kind": "digital", "dir": "io", "voltage": 3.3, "vmax": 3.6, "vih": 2, "current_max": 0.016, "physical": 28, "note": "Reserved for HAT ID EEPROM. Avoid.", "pos": [41.39, 2.23] },
+    { "name": "GPIO5", "label": "GPIO5", "kind": "digital", "dir": "io", "voltage": 3.3, "vmax": 3.6, "vih": 2, "current_max": 0.016, "physical": 29, "pos": [43.93, 4.77] },
+    { "name": "GND_6", "label": "GND", "kind": "ground", "physical": 30, "pos": [43.93, 2.23] },
+    { "name": "GPIO6", "label": "GPIO6", "kind": "digital", "dir": "io", "voltage": 3.3, "vmax": 3.6, "vih": 2, "current_max": 0.016, "physical": 31, "pos": [46.47, 4.77] },
+    { "name": "GPIO12", "label": "GPIO12", "kind": "pwm", "dir": "io", "voltage": 3.3, "vmax": 3.6, "vih": 2, "current_max": 0.016, "physical": 32, "pos": [46.47, 2.23] },
+    { "name": "GPIO13", "label": "GPIO13", "kind": "pwm", "dir": "io", "voltage": 3.3, "vmax": 3.6, "vih": 2, "current_max": 0.016, "physical": 33, "pos": [49.01, 4.77] },
+    { "name": "GND_7", "label": "GND", "kind": "ground", "physical": 34, "pos": [49.01, 2.23] },
+    { "name": "GPIO19", "label": "GPIO19", "kind": "pwm", "dir": "io", "voltage": 3.3, "vmax": 3.6, "vih": 2, "current_max": 0.016, "physical": 35, "pos": [51.55, 4.77] },
+    { "name": "GPIO16", "label": "GPIO16", "kind": "digital", "dir": "io", "voltage": 3.3, "vmax": 3.6, "vih": 2, "current_max": 0.016, "physical": 36, "pos": [51.55, 2.23] },
+    { "name": "GPIO26", "label": "GPIO26", "kind": "digital", "dir": "io", "voltage": 3.3, "vmax": 3.6, "vih": 2, "current_max": 0.016, "physical": 37, "pos": [54.09, 4.77] },
+    { "name": "GPIO20", "label": "GPIO20", "kind": "digital", "dir": "io", "voltage": 3.3, "vmax": 3.6, "vih": 2, "current_max": 0.016, "physical": 38, "pos": [54.09, 2.23] },
+    { "name": "GND_8", "label": "GND", "kind": "ground", "physical": 39, "pos": [56.63, 4.77] },
+    { "name": "GPIO21", "label": "GPIO21", "kind": "digital", "dir": "io", "voltage": 3.3, "vmax": 3.6, "vih": 2, "current_max": 0.016, "physical": 40, "pos": [56.63, 2.23] }
   ],
-  "internal": [
-    ["GND", "GND_2", "GND_3", "GND_4", "GND_5", "GND_6", "GND_7", "GND_8"],
-    ["5V", "5V_2"],
-    ["3V3", "3V3_2"]
-  ],
-  "breadboard": {
-    "fit": "offboard"
-  },
+  "internal": [["GND", "GND_2", "GND_3", "GND_4", "GND_5", "GND_6", "GND_7", "GND_8"], ["5V", "5V_2"], ["3V3", "3V3_2"]],
+  "breadboard": { "fit": "offboard" },
   "geometry": {
     "board": [85, 56, 1.4],
-    "holes": [
-      {
-        "pos": [3.5, 3.5],
-        "d": 2.7
-      },
-      {
-        "pos": [61.5, 3.5],
-        "d": 2.7
-      },
-      {
-        "pos": [3.5, 52.5],
-        "d": 2.7
-      },
-      {
-        "pos": [61.5, 52.5],
-        "d": 2.7
-      }
-    ],
-    "keepout": [
-      {
-        "rect": [65, 2, 22, 52],
-        "height": 16,
-        "note": "USB-A and Ethernet stack"
-      }
-    ],
-    "connectors": [
-      {
-        "name": "USB-C power",
-        "pos": [11.2, 56],
-        "side": "bottom"
-      },
-      {
-        "name": "micro-HDMI x2",
-        "pos": [26, 56],
-        "side": "bottom"
-      }
-    ],
+    "holes": [{ "pos": [3.5, 3.5], "d": 2.7 }, { "pos": [61.5, 3.5], "d": 2.7 }, { "pos": [3.5, 52.5], "d": 2.7 }, { "pos": [61.5, 52.5], "d": 2.7 }],
+    "keepout": [{ "rect": [65, 2, 22, 52], "height": 16, "note": "USB-A and Ethernet stack" }],
+    "connectors": [{ "name": "USB-C power", "pos": [11.2, 56], "side": "bottom" }, { "name": "micro-HDMI x2", "pos": [26, 56], "side": "bottom" }],
     "confidence": "verified",
     "note": "From the Raspberry Pi 4 mechanical drawing: 85 x 56 mm, M2.5 holes on a 58 x 49 mm pattern, header centred 3.5 mm from the top edge."
   }

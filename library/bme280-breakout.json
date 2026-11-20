@@ -15,80 +15,17 @@
   "size": [15.5, 3, 11.5],
   "color": "#6b2fa0",
   "pins": [
-    {
-      "name": "VCC",
-      "label": "VCC",
-      "kind": "power_in",
-      "vmin": 1.8,
-      "vmax": 3.6,
-      "current": 0.001,
-      "current_peak": 0.001,
-      "note": "3.3 V ONLY on this board (no regulator). 5 V destroys the sensor.",
-      "pos": [1.4, 1.6]
-    },
-    {
-      "name": "GND",
-      "label": "GND",
-      "kind": "ground",
-      "pos": [3.94, 1.6]
-    },
-    {
-      "name": "SCL",
-      "label": "SCL",
-      "kind": "i2c_scl",
-      "dir": "io",
-      "vmax": 3.6,
-      "open_drain": true,
-      "pullup_ref": "VCC",
-      "pullup_ohms": 10000,
-      "pullup_weak": false,
-      "pos": [6.48, 1.6]
-    },
-    {
-      "name": "SDA",
-      "label": "SDA",
-      "kind": "i2c_sda",
-      "dir": "io",
-      "vmax": 3.6,
-      "open_drain": true,
-      "pullup_ref": "VCC",
-      "pullup_ohms": 10000,
-      "pullup_weak": false,
-      "pos": [9.02, 1.6]
-    },
-    {
-      "name": "CSB",
-      "label": "CSB",
-      "kind": "digital",
-      "dir": "in",
-      "vmax": 3.6,
-      "note": "Chip select (SPI). Pulled up on the board = I2C mode. Leave unconnected for I2C.",
-      "pos": [11.56, 1.6]
-    },
-    {
-      "name": "SDO",
-      "label": "SDO",
-      "kind": "digital",
-      "dir": "in",
-      "vmax": 3.6,
-      "note": "I2C address: LOW = 0x76, HIGH = 0x77. Default depends on the board (usually 0x76 on purple boards).",
-      "pos": [14.1, 1.6]
-    }
+    { "name": "VCC", "label": "VCC", "kind": "power_in", "vmin": 1.8, "vmax": 3.6, "current": 0.001, "current_peak": 0.001, "note": "3.3 V ONLY on this board (no regulator). 5 V destroys the sensor.", "pos": [1.4, 1.6] },
+    { "name": "GND", "label": "GND", "kind": "ground", "pos": [3.94, 1.6] },
+    { "name": "SCL", "label": "SCL", "kind": "i2c_scl", "dir": "io", "vmax": 3.6, "open_drain": true, "pullup_ref": "VCC", "pullup_ohms": 10000, "pullup_weak": false, "pos": [6.48, 1.6] },
+    { "name": "SDA", "label": "SDA", "kind": "i2c_sda", "dir": "io", "vmax": 3.6, "open_drain": true, "pullup_ref": "VCC", "pullup_ohms": 10000, "pullup_weak": false, "pos": [9.02, 1.6] },
+    { "name": "CSB", "label": "CSB", "kind": "digital", "dir": "in", "vmax": 3.6, "note": "Chip select (SPI). Pulled up on the board = I2C mode. Leave unconnected for I2C.", "pos": [11.56, 1.6] },
+    { "name": "SDO", "label": "SDO", "kind": "digital", "dir": "in", "vmax": 3.6, "note": "I2C address: LOW = 0x76, HIGH = 0x77. Default depends on the board (usually 0x76 on purple boards).", "pos": [14.1, 1.6] }
   ],
-  "breadboard": {
-    "fit": "single",
-    "rows": [
-      ["VCC", "GND", "SCL", "SDA", "CSB", "SDO"]
-    ]
-  },
+  "breadboard": { "fit": "single", "rows": [["VCC", "GND", "SCL", "SDA", "CSB", "SDO"]] },
   "geometry": {
     "board": [15.5, 11.5, 1.6],
-    "holes": [
-      {
-        "pos": [2.5, 8.5],
-        "d": 2.5
-      }
-    ],
+    "holes": [{ "pos": [2.5, 8.5], "d": 2.5 }],
     "keepout": [],
     "connectors": [],
     "confidence": "confirm"

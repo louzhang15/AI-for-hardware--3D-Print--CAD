@@ -21,193 +21,35 @@
   "size": [15.24, 12, 20.32],
   "color": "#2e7d32",
   "pins": [
-    {
-      "name": "ENABLE",
-      "label": "EN",
-      "kind": "digital",
-      "dir": "in",
-      "voltage_ref": "VDD",
-      "vmax": 5.5,
-      "vih": 2.3,
-      "note": "Active LOW enable, pulled low on the board.",
-      "pos": [1.27, 1.27]
-    },
-    {
-      "name": "MS1",
-      "label": "MS1",
-      "kind": "digital",
-      "dir": "in",
-      "voltage_ref": "VDD",
-      "vmax": 5.5,
-      "vih": 2.3,
-      "pos": [1.27, 3.81]
-    },
-    {
-      "name": "MS2",
-      "label": "MS2",
-      "kind": "digital",
-      "dir": "in",
-      "voltage_ref": "VDD",
-      "vmax": 5.5,
-      "vih": 2.3,
-      "pos": [1.27, 6.35]
-    },
-    {
-      "name": "MS3",
-      "label": "MS3",
-      "kind": "digital",
-      "dir": "in",
-      "voltage_ref": "VDD",
-      "vmax": 5.5,
-      "vih": 2.3,
-      "pos": [1.27, 8.89]
-    },
-    {
-      "name": "RESET",
-      "label": "RST",
-      "kind": "digital",
-      "dir": "in",
-      "voltage_ref": "VDD",
-      "vmax": 5.5,
-      "vih": 2.3,
-      "required": true,
-      "note": "Floating on the board: tie to SLEEP (Pololu carriers pull SLEEP up) or to logic HIGH.",
-      "pos": [1.27, 11.43]
-    },
-    {
-      "name": "SLEEP",
-      "label": "SLP",
-      "kind": "digital",
-      "dir": "in",
-      "voltage_ref": "VDD",
-      "vmax": 5.5,
-      "vih": 2.3,
-      "required": true,
-      "note": "Pulled up on Pololu carriers; clones may differ. Must be HIGH to run.",
-      "pos": [1.27, 13.97]
-    },
-    {
-      "name": "STEP",
-      "label": "STEP",
-      "kind": "digital",
-      "dir": "in",
-      "voltage_ref": "VDD",
-      "vmax": 5.5,
-      "vih": 2.3,
-      "required": true,
-      "pos": [1.27, 16.51]
-    },
-    {
-      "name": "DIR",
-      "label": "DIR",
-      "kind": "digital",
-      "dir": "in",
-      "voltage_ref": "VDD",
-      "vmax": 5.5,
-      "vih": 2.3,
-      "required": true,
-      "pos": [1.27, 19.05]
-    },
-    {
-      "name": "VMOT",
-      "label": "VMOT",
-      "kind": "power_in",
-      "vmin": 8,
-      "vmax": 35,
-      "current": 0.005,
-      "current_peak": 0.01,
-      "note": "Motor supply 8-35 V. Add an electrolytic capacitor of at least 47-100 uF across VMOT/GND at the board.",
-      "pos": [13.97, 1.27]
-    },
-    {
-      "name": "GND",
-      "label": "GND",
-      "kind": "ground",
-      "note": "Motor ground.",
-      "pos": [13.97, 3.81]
-    },
-    {
-      "name": "2B",
-      "label": "2B",
-      "kind": "motor",
-      "dir": "out",
-      "voltage_ref": "VMOT",
-      "current_max": 1,
-      "current_peak": 2,
-      "pos": [13.97, 6.35]
-    },
-    {
-      "name": "2A",
-      "label": "2A",
-      "kind": "motor",
-      "dir": "out",
-      "voltage_ref": "VMOT",
-      "current_max": 1,
-      "current_peak": 2,
-      "pos": [13.97, 8.89]
-    },
-    {
-      "name": "1A",
-      "label": "1A",
-      "kind": "motor",
-      "dir": "out",
-      "voltage_ref": "VMOT",
-      "current_max": 1,
-      "current_peak": 2,
-      "pos": [13.97, 11.43]
-    },
-    {
-      "name": "1B",
-      "label": "1B",
-      "kind": "motor",
-      "dir": "out",
-      "voltage_ref": "VMOT",
-      "current_max": 1,
-      "current_peak": 2,
-      "pos": [13.97, 13.97]
-    },
-    {
-      "name": "VDD",
-      "label": "VDD",
-      "kind": "power_in",
-      "vmin": 3,
-      "vmax": 5.5,
-      "current": 0.008,
-      "current_peak": 0.01,
-      "note": "Logic supply 3-5.5 V. Use your microcontroller logic voltage.",
-      "pos": [13.97, 16.51]
-    },
-    {
-      "name": "GND_2",
-      "label": "GND",
-      "kind": "ground",
-      "note": "Logic ground.",
-      "pos": [13.97, 19.05]
-    }
+    { "name": "ENABLE", "label": "EN", "kind": "digital", "dir": "in", "voltage_ref": "VDD", "vmax": 5.5, "vih": 2.3, "note": "Active LOW enable, pulled low on the board.", "pos": [1.27, 1.27] },
+    { "name": "MS1", "label": "MS1", "kind": "digital", "dir": "in", "voltage_ref": "VDD", "vmax": 5.5, "vih": 2.3, "pos": [1.27, 3.81] },
+    { "name": "MS2", "label": "MS2", "kind": "digital", "dir": "in", "voltage_ref": "VDD", "vmax": 5.5, "vih": 2.3, "pos": [1.27, 6.35] },
+    { "name": "MS3", "label": "MS3", "kind": "digital", "dir": "in", "voltage_ref": "VDD", "vmax": 5.5, "vih": 2.3, "pos": [1.27, 8.89] },
+    { "name": "RESET", "label": "RST", "kind": "digital", "dir": "in", "voltage_ref": "VDD", "vmax": 5.5, "vih": 2.3, "required": true, "note": "Floating on the board: tie to SLEEP (Pololu carriers pull SLEEP up) or to logic HIGH.", "pos": [1.27, 11.43] },
+    { "name": "SLEEP", "label": "SLP", "kind": "digital", "dir": "in", "voltage_ref": "VDD", "vmax": 5.5, "vih": 2.3, "required": true, "note": "Pulled up on Pololu carriers; clones may differ. Must be HIGH to run.", "pos": [1.27, 13.97] },
+    { "name": "STEP", "label": "STEP", "kind": "digital", "dir": "in", "voltage_ref": "VDD", "vmax": 5.5, "vih": 2.3, "required": true, "pos": [1.27, 16.51] },
+    { "name": "DIR", "label": "DIR", "kind": "digital", "dir": "in", "voltage_ref": "VDD", "vmax": 5.5, "vih": 2.3, "required": true, "pos": [1.27, 19.05] },
+    { "name": "VMOT", "label": "VMOT", "kind": "power_in", "vmin": 8, "vmax": 35, "current": 0.005, "current_peak": 0.01, "note": "Motor supply 8-35 V. Add an electrolytic capacitor of at least 47-100 uF across VMOT/GND at the board.", "pos": [13.97, 1.27] },
+    { "name": "GND", "label": "GND", "kind": "ground", "note": "Motor ground.", "pos": [13.97, 3.81] },
+    { "name": "2B", "label": "2B", "kind": "motor", "dir": "out", "voltage_ref": "VMOT", "current_max": 1, "current_peak": 2, "pos": [13.97, 6.35] },
+    { "name": "2A", "label": "2A", "kind": "motor", "dir": "out", "voltage_ref": "VMOT", "current_max": 1, "current_peak": 2, "pos": [13.97, 8.89] },
+    { "name": "1A", "label": "1A", "kind": "motor", "dir": "out", "voltage_ref": "VMOT", "current_max": 1, "current_peak": 2, "pos": [13.97, 11.43] },
+    { "name": "1B", "label": "1B", "kind": "motor", "dir": "out", "voltage_ref": "VMOT", "current_max": 1, "current_peak": 2, "pos": [13.97, 13.97] },
+    { "name": "VDD", "label": "VDD", "kind": "power_in", "vmin": 3, "vmax": 5.5, "current": 0.008, "current_peak": 0.01, "note": "Logic supply 3-5.5 V. Use your microcontroller logic voltage.", "pos": [13.97, 16.51] },
+    { "name": "GND_2", "label": "GND", "kind": "ground", "note": "Logic ground.", "pos": [13.97, 19.05] }
   ],
-  "internal": [
-    ["GND", "GND_2"]
-  ],
+  "internal": [["GND", "GND_2"]],
   "flyback": true,
   "breadboard": {
     "fit": "straddle",
-    "rows": [
-      ["ENABLE", "MS1", "MS2", "MS3", "RESET", "SLEEP", "STEP", "DIR"],
-      ["VMOT", "GND", "2B", "2A", "1A", "1B", "VDD", "GND_2"]
-    ],
+    "rows": [["ENABLE", "MS1", "MS2", "MS3", "RESET", "SLEEP", "STEP", "DIR"], ["VMOT", "GND", "2B", "2A", "1A", "1B", "VDD", "GND_2"]],
     "row_spacing": 5,
     "body_width_mm": 15.24
   },
   "geometry": {
     "board": [15.24, 20.32, 1.6],
     "holes": [],
-    "keepout": [
-      {
-        "rect": [2.5, 4, 10, 10],
-        "height": 10,
-        "note": "stick-on heatsink"
-      }
-    ],
+    "keepout": [{ "rect": [2.5, 4, 10, 10], "height": 10, "note": "stick-on heatsink" }],
     "connectors": [],
     "confidence": "verified",
     "note": "Pololu carrier footprint: 0.6 x 0.8 inch, two 8-pin rows 0.5 inch apart."

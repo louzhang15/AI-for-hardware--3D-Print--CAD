@@ -19,104 +19,19 @@
   "size": [21, 3, 16],
   "color": "#1d5fa8",
   "pins": [
-    {
-      "name": "VCC",
-      "label": "VCC",
-      "kind": "power_in",
-      "vmin": 3.3,
-      "vmax": 5.5,
-      "current": 0.005,
-      "current_peak": 0.01,
-      "note": "Feeds an onboard 3.3 V LDO (662K / XC6206-type). 3.3-5 V in; at 3.3 V in the chip runs at about 3.1 V, which is fine.",
-      "pos": [1.61, 14.5]
-    },
-    {
-      "name": "GND",
-      "label": "GND",
-      "kind": "ground",
-      "pos": [4.15, 14.5]
-    },
-    {
-      "name": "SCL",
-      "label": "SCL",
-      "kind": "i2c_scl",
-      "dir": "io",
-      "vmax": 3.8,
-      "open_drain": true,
-      "pullup_ohms": 4700,
-      "pullup_weak": false,
-      "pullup": 3.3,
-      "pos": [6.69, 14.5]
-    },
-    {
-      "name": "SDA",
-      "label": "SDA",
-      "kind": "i2c_sda",
-      "dir": "io",
-      "vmax": 3.8,
-      "open_drain": true,
-      "pullup_ohms": 4700,
-      "pullup_weak": false,
-      "pullup": 3.3,
-      "pos": [9.23, 14.5]
-    },
-    {
-      "name": "XDA",
-      "label": "XDA",
-      "kind": "i2c_sda",
-      "dir": "io",
-      "vmax": 3.8,
-      "open_drain": true,
-      "note": "Auxiliary I2C master for an external magnetometer. Leave unconnected.",
-      "pos": [11.77, 14.5]
-    },
-    {
-      "name": "XCL",
-      "label": "XCL",
-      "kind": "i2c_scl",
-      "dir": "io",
-      "vmax": 3.8,
-      "open_drain": true,
-      "note": "Auxiliary I2C clock. Leave unconnected.",
-      "pos": [14.31, 14.5]
-    },
-    {
-      "name": "AD0",
-      "label": "AD0",
-      "kind": "digital",
-      "dir": "in",
-      "vmax": 3.8,
-      "note": "Address select: LOW/unconnected = 0x68 (4.7 kOhm pull-down on the board), HIGH (3.3 V) = 0x69.",
-      "pos": [16.85, 14.5]
-    },
-    {
-      "name": "INT",
-      "label": "INT",
-      "kind": "digital",
-      "dir": "out",
-      "voltage": 3.3,
-      "note": "Interrupt output (3.3 V push-pull by default).",
-      "pos": [19.39, 14.5]
-    }
+    { "name": "VCC", "label": "VCC", "kind": "power_in", "vmin": 3.3, "vmax": 5.5, "current": 0.005, "current_peak": 0.01, "note": "Feeds an onboard 3.3 V LDO (662K / XC6206-type). 3.3-5 V in; at 3.3 V in the chip runs at about 3.1 V, which is fine.", "pos": [1.61, 14.5] },
+    { "name": "GND", "label": "GND", "kind": "ground", "pos": [4.15, 14.5] },
+    { "name": "SCL", "label": "SCL", "kind": "i2c_scl", "dir": "io", "vmax": 3.8, "open_drain": true, "pullup_ohms": 4700, "pullup_weak": false, "pullup": 3.3, "pos": [6.69, 14.5] },
+    { "name": "SDA", "label": "SDA", "kind": "i2c_sda", "dir": "io", "vmax": 3.8, "open_drain": true, "pullup_ohms": 4700, "pullup_weak": false, "pullup": 3.3, "pos": [9.23, 14.5] },
+    { "name": "XDA", "label": "XDA", "kind": "i2c_sda", "dir": "io", "vmax": 3.8, "open_drain": true, "note": "Auxiliary I2C master for an external magnetometer. Leave unconnected.", "pos": [11.77, 14.5] },
+    { "name": "XCL", "label": "XCL", "kind": "i2c_scl", "dir": "io", "vmax": 3.8, "open_drain": true, "note": "Auxiliary I2C clock. Leave unconnected.", "pos": [14.31, 14.5] },
+    { "name": "AD0", "label": "AD0", "kind": "digital", "dir": "in", "vmax": 3.8, "note": "Address select: LOW/unconnected = 0x68 (4.7 kOhm pull-down on the board), HIGH (3.3 V) = 0x69.", "pos": [16.85, 14.5] },
+    { "name": "INT", "label": "INT", "kind": "digital", "dir": "out", "voltage": 3.3, "note": "Interrupt output (3.3 V push-pull by default).", "pos": [19.39, 14.5] }
   ],
-  "breadboard": {
-    "fit": "single",
-    "rows": [
-      ["VCC", "GND", "SCL", "SDA", "XDA", "XCL", "AD0", "INT"]
-    ]
-  },
+  "breadboard": { "fit": "single", "rows": [["VCC", "GND", "SCL", "SDA", "XDA", "XCL", "AD0", "INT"]] },
   "geometry": {
     "board": [21, 16, 1.6],
-    "holes": [
-      {
-        "pos": [2.5, 2.5],
-        "d": 3
-      },
-      {
-        "pos": [18.5, 2.5],
-        "d": 3
-      }
-    ],
+    "holes": [{ "pos": [2.5, 2.5], "d": 3 }, { "pos": [18.5, 2.5], "d": 3 }],
     "keepout": [],
     "connectors": [],
     "confidence": "confirm"

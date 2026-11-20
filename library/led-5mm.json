@@ -13,33 +13,11 @@
   "size": [5.8, 8.6, 5.8],
   "color": "#e5484d",
   "pins": [
-    {
-      "name": "A",
-      "label": "anode (+, long leg)",
-      "kind": "passive",
-      "pos": [1.27, 2.9]
-    },
-    {
-      "name": "K",
-      "label": "cathode (-, short leg, flat side)",
-      "kind": "passive",
-      "pos": [3.81, 2.9]
-    }
+    { "name": "A", "label": "anode (+, long leg)", "kind": "passive", "pos": [1.27, 2.9] },
+    { "name": "K", "label": "cathode (-, short leg, flat side)", "kind": "passive", "pos": [3.81, 2.9] }
   ],
-  "led": {
-    "color": "red",
-    "vf": 2,
-    "vf_min": 1.8,
-    "vf_max": 2.2,
-    "if_typ": 0.02,
-    "if_max": 0.03
-  },
-  "breadboard": {
-    "fit": "single",
-    "rows": [
-      ["A", "K"]
-    ]
-  },
+  "led": { "color": "red", "vf": 2, "vf_min": 1.8, "vf_max": 2.2, "if_typ": 0.02, "if_max": 0.03 },
+  "breadboard": { "fit": "single", "rows": [["A", "K"]] },
   "geometry": {
     "board": [5.8, 5.8, 8.6],
     "holes": [],

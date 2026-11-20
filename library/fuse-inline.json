@@ -12,38 +12,14 @@
   ],
   "size": [50, 12, 10],
   "color": "#c9302c",
-  "params": {
-    "rating_a": 5
-  },
+  "params": { "rating_a": 5 },
   "pins": [
-    {
-      "name": "IN",
-      "label": "IN",
-      "kind": "power_rail",
-      "note": "Battery / supply side.",
-      "pos": [2, 5]
-    },
-    {
-      "name": "OUT",
-      "label": "OUT",
-      "kind": "power_rail",
-      "note": "Load side.",
-      "pos": [48, 5]
-    }
+    { "name": "IN", "label": "IN", "kind": "power_rail", "note": "Battery / supply side.", "pos": [2, 5] },
+    { "name": "OUT", "label": "OUT", "kind": "power_rail", "note": "Load side.", "pos": [48, 5] }
   ],
-  "internal": [
-    ["IN", "OUT"]
-  ],
+  "internal": [["IN", "OUT"]],
   "protection": "fuse",
   "rating_a": "$rating_a",
-  "breadboard": {
-    "fit": "offboard"
-  },
-  "geometry": {
-    "board": [50, 10, 12],
-    "holes": [],
-    "keepout": [],
-    "connectors": [],
-    "confidence": "confirm"
-  }
+  "breadboard": { "fit": "offboard" },
+  "geometry": { "board": [50, 10, 12], "holes": [], "keepout": [], "connectors": [], "confidence": "confirm" }
 }
