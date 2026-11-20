@@ -110,3 +110,19 @@
 .cmp-panel .cmp-ai { margin-top: 8px; }
 .cmp-input { flex: 1; min-width: 0; padding: 8px 10px; border-radius: 8px; border: 1px solid rgba(63,216,255,.4); background: rgba(0,0,0,.35); color: #e8fbff; font: 13px var(--font); }
 .cmp-input::placeholder { color: #6fa9bb; }
+@media (max-width: 700px) {
+  .companion { right: 8px; left: 8px; bottom: 8px; align-items: stretch; }
+  .cmp-launch { justify-content: flex-end; }
+  .cmp-panel { width: auto; max-height: 36vh; padding: 8px; }
+  .cmp-actions, .cmp-msg .wire-howto, .cmp-msg .btn, .cmp-msg:not(:last-child) { display: none; }
+  .cmp-log { min-height: 0; }
+  .cmp-chips { flex-wrap: nowrap; overflow-x: auto; margin: 6px 0; }
+  .cmp-chip { white-space: nowrap; }
+  .cmp-orb { width: 46px; height: 46px; }
+  .cmp-core { inset: 15px; }
+}
+/* Phones: give the 3D view the room. Ask Wiremap covers pin lookup. */
+@media (max-width: 700px) {
+  .scene-inspect-picker, .scene-inspect-details { display: none; }
+  .view-tools .scene-toggle:not(:has(input:checked)) { display: none; }
+}

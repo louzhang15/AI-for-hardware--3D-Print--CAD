@@ -96,6 +96,11 @@ export class Scene3DView {
     }
     for (const wire of wires) if (wire.valid) this.addWire(wire);
     if (this.holo) this.applyHolo();
+    else {
+      this.grid.visible = Boolean(this.gridOn);
+      this.grid.material.color = new THREE.Color('#91a0b3');
+      this.grid.material.opacity = .27;
+    }
     this.applyFocus(this.app.focus);
     if (firstRender) this.fit();
   }
@@ -126,6 +131,7 @@ export class Scene3DView {
     this.grid.material.opacity = .27;
     this.grid.material.depthWrite = false;
     this.grid.visible = false;
+    this.gridOn = false;
     const light = new THREE.DirectionalLight(0xffffff, 2.3);
     light.position.set(250, 400, 180);
     this.scene.add(this.contents, this.grid, light, new THREE.HemisphereLight(0xffffff, 0x485365, 2));
@@ -303,12 +309,13 @@ export class Scene3DView {
     const right = new THREE.Vector3().crossVectors(axis, direction).normalize();
     const up = new THREE.Vector3().crossVectors(direction, right).normalize();
     const vertical = Math.tan(THREE.MathUtils.degToRad(this.camera.fov / 2));
-    const usable = this.inset && this.width && this.inset < this.width * .7 ? (this.width - this.inset) / this.width : 1;
-    const horizontal = vertical * this.camera.aspect * usable;
+    const free = this.width ? this.freeArea() : { w: 1, h: 1 };
+    const vertical0 = vertical * (this.height ? free.h / this.height : 1);
+    const horizontal = vertical * this.camera.aspect * (this.width ? free.w / this.width : 1);
     let distance = 23;
     for (const x of [-half.x, half.x]) for (const y of [-half.y, half.y]) for (const z of [-half.z, half.z]) {
       const offset = new THREE.Vector3(x, y, z);
-      const clearance = pad * Math.max(Math.abs(offset.dot(right)) / horizontal, Math.abs(offset.dot(up)) / vertical);
+      const clearance = pad * Math.max(Math.abs(offset.dot(right)) / horizontal, Math.abs(offset.dot(up)) / vertical0);
       distance = Math.max(distance, offset.dot(direction) + clearance);
     }
     this.controls.target.copy(center);
@@ -328,14 +335,24 @@ export class Scene3DView {
   }
 
   /** Keep the picture clear of an overlay on the right (the Ask Wiremap panel). */
-  setInset(px) {
-    this.inset = Math.max(0, px || 0);
+  setInset(inset) {
+    const v = typeof inset === 'number' ? { right: inset, bottom: 0 } : (inset || {});
+    this.insetR = Math.max(0, v.right || 0);
+    this.insetB = Math.max(0, v.bottom || 0);
     if (this.camera) { this.applyInset(); this.requestDraw(); }
+  }
+
+  /** Free area not covered by the panel: {w, h} in px. */
+  freeArea() {
+    const w = this.width - (this.insetR < this.width * .8 ? this.insetR || 0 : 0);
+    const h = this.height - (this.insetB < this.height * .8 ? this.insetB || 0 : 0);
+    return { w, h };
   }
 
   applyInset() {
     const { width, height } = this;
-    if (this.inset && width && height && this.inset < width * .7) this.camera.setViewOffset(width, height, this.inset / 2, 0, width, height);
+    const { w, h } = this.freeArea();
+    if (width && height && (w < width || h < height)) this.camera.setViewOffset(width, height, (width - w) / 2, (height - h) / 2, width, height);
     else this.camera.clearViewOffset();
     this.camera.updateProjectionMatrix();
   }
@@ -478,7 +495,7 @@ export class Scene3DView {
       h('input.tick', { type: 'checkbox', checked: enabled, onchange: (event) => change(event.target.checked) }), label);
     return [filter, tool('Fit', 'fit', () => this.fit()), tool('Top view', 'panel', () => this.fit(undefined, overhead), 'Top'),
       tool('Angled view', 'explode', () => this.fit(undefined, angle), 'Angle'),
-      toggle('Grid', this.grid.visible, (on) => { this.grid.visible = on; this.requestDraw(); }, 'Reference grid with 20 mm spacing'),
+      toggle('Grid', this.gridOn, (on) => { this.gridOn = on; this.grid.visible = on || this.holo; this.requestDraw(); }, 'Reference grid with 20 mm spacing'),
       this.assembly ? tool(this.exploded ? 'Assemble' : 'Explode', 'explode', () => this.setExploded()) :
         toggle('All pins', this.showUnused, (on) => { this.showUnused = on; this.applyFocus(this.app.focus); }),
       !this.assembly && toggle('Keep other wires', this.showOtherWires, (on) => { this.showOtherWires = on; this.applyFocus(this.app.focus); }),
@@ -517,6 +534,7 @@ export class Scene3DView {
     if (!layer || !this.parts || !this.width) return;
     const focus = this.app.focus;
     const dim = activeFocus(focus);
+    const narrow = this.width < 520;
     const items = [];
     const project = (v) => {
       const p = v.clone().project(this.camera);
@@ -527,7 +545,8 @@ export class Scene3DView {
       if (dim && !focus.parts.has(id)) continue;
       const box = new THREE.Box3().setFromObject(item.group);
       const at = project(new THREE.Vector3((box.min.x + box.max.x) / 2, box.max.y + 3, (box.min.z + box.max.z) / 2));
-      if (at) items.push({ key: `part:${id}`, cls: 'part', text: tagName(this.app, this.app.part(id)), at });
+      const tag = tagName(this.app, this.app.part(id));
+      if (at) items.push({ key: `part:${id}`, cls: 'part', text: narrow && tag.length > 12 ? `${tag.slice(0, 11)}…` : tag, at });
     }
     if (this.pinNames) {
       const keys = dim ? [...focus.pins] : (this.wiredPins.size <= 16 ? [...this.wiredPins] : []);
@@ -535,11 +554,12 @@ export class Scene3DView {
         const marker = this.pins.get(key);
         if (!marker || !marker.visible) continue;
         const at = project(marker.getWorldPosition(new THREE.Vector3()));
-        if (!at) continue;
+        const area = this.freeArea();
+        if (!at || at[0] < 0 || at[1] < 0 || at[0] > area.w || at[1] > area.h) continue;
         const pin = this.app.pin(key);
         const role = this.app.data.check.pinInfo?.[key]?.role;
         const part = this.app.part(key.split('.')[0]);
-        items.push({ key: `pin:${key}`, cls: 'pin', text: dim ? `${tagName(this.app, part)} · ${silkscreen(pin)}` : silkscreen(pin),
+        items.push({ key: `pin:${key}`, cls: 'pin', text: dim && !narrow ? `${tagName(this.app, part)} · ${silkscreen(pin)}` : silkscreen(pin),
           color: this.app.roleColor(role), at, anchor: at.slice() });
       }
     }
@@ -563,13 +583,20 @@ export class Scene3DView {
         ? [[-w / 2, -hgt - gap], [gap, -hgt / 2], [-w - gap, -hgt / 2], [-w / 2, gap], [gap, -hgt - gap], [-w - gap, -hgt - gap], [gap, gap], [-w - gap, gap]]
         : [[-w / 2, -hgt - gap]];
       let best = null;
+      const area = this.freeArea();
       for (let ring = 0; ring < 6 && !best; ring++) {
         for (const [dx, dy] of spots) {
-          const x = ax + dx * (1 + ring * 0.9); const y = ay + dy * (1 + ring * 0.9);
+          const x = Math.min(Math.max(2, ax + dx * (1 + ring * 0.9)), area.w - w - 2);
+          const y = Math.min(Math.max(2, ay + dy * (1 + ring * 0.9)), area.h - hgt - 2);
           if (!placed.some((r) => x < r.x + r.w + 2 && x + w + 2 > r.x && y < r.y + r.h + 2 && y + hgt + 2 > r.y)) { best = [x, y]; break; }
         }
       }
-      const [x, y] = best || [ax - w / 2, ay - hgt - gap];
+      // No clear spot: drop part tags, and pin tags only when the screen is already full.
+      if (!best && (it.cls === 'part' || placed.length > 18)) continue;
+      let [x, y] = best || [ax - w / 2, ay - hgt - gap];
+      const free = this.freeArea();
+      x = Math.min(Math.max(2, x), free.w - w - 2);
+      y = Math.min(Math.max(2, y), free.h - hgt - 2);
       placed.push({ x, y, w, h: hgt });
       let el = layer.querySelector(`[data-k="${CSS.escape(it.key)}"]`);
       if (!el) { el = h(`div.scene-label.${it.cls}`, { 'data-k': it.key }); layer.append(el); }

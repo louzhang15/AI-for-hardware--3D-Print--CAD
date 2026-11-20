@@ -145,7 +145,7 @@ export class PinoutView {
       h('table', null,
         h('thead', null, h('tr', null, ['#', 'Wire', 'From (part · pin)', '', 'To (part · pin)', 'What it does'].map((t) => h('th', null, t)))),
         h('tbody', null, allRows.map((r) => {
-          const tr = h('tr', { tabindex: 0, onclick: () => this.app.select({ type: 'wire', id: r.id }) },
+          const tr = h('tr', { tabindex: 0, onclick: () => this.app.select({ type: 'wire', id: r.id }), onkeydown: (e) => { if (e.key === 'Enter') this.app.select({ type: 'wire', id: r.id }); } },
             h('td', null, String(r.n)),
             h('td', null, h('span.wire-swatch', { style: { background: r.hex } }), ` ${r.colorName}`),
             h('td', null, `${r.from.partName} · `, h('b.mono', null, r.from.label)),

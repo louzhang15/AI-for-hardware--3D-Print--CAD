@@ -44,5 +44,26 @@ test('Ask Wiremap answers beginner requests and zooms to the pins', { skip: !chr
   assert.ok(await page.locator('.pinout-card').count() >= 5);
   assert.ok(await page.locator('.pinout-dest').count() > 5, 'wired pins show where they go');
   assert.match(await ask('what projects do I have'), /You have \d+ projects?/);
+
+  // Review regressions: questions are not complaints, step numbers span all phases.
+  assert.doesNotMatch(await ask('what is the reset pin'), /Unplug|capacitor|resets/);
+  assert.match(await ask('the left motor will not start'), /driven by TB6612FNG/);
+  const steps = JSON.parse(await (await fetch(new URL('/api/project/rover', server.url))).text()).steps;
+  assert.match(await ask('go to step 2'), new RegExp(steps[1].title.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
+  assert.match(await ask('how do I connect the motor to the esp32'), /including power and ground.*There are 2 motors/);
+
+  // Tags stay inside the free part of the 3D view.
+  await ask('how do I connect the motor to the esp32');
+  const box = await page.locator('.three-host').boundingBox();
+  for (const r of await page.locator('.scene-label').evaluateAll((els) => els.map((e) => e.getBoundingClientRect().toJSON()))) {
+    assert.ok(r.left >= box.x - 1 && r.right <= box.x + box.width + 1, `label inside view: ${JSON.stringify(r)}`);
+  }
+  await page.locator('input.cmp-input').press('Escape');
+  assert.ok(await page.locator('.cmp-panel').isHidden(), 'Escape closes the panel');
+
+  await page.locator('.cmp-orb').click();
+  await ask('open the robot arm');
+  await page.waitForTimeout(1200);
+  assert.match(page.url(), /#\/p\/robot-arm/);
   assert.deepEqual(errors, []);
 });

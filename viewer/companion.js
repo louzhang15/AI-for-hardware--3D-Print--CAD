@@ -38,13 +38,19 @@ export function createCompanion(app) {
     h('span.cmp-ring'), h('span.cmp-ring.r2'), h('span.cmp-core'));
   const pill = h('button.cmp-pill', { type: 'button', onclick: () => toggle(true) }, 'Ask Wiremap');
   const root = h('div.companion', { 'data-state': 'idle' }, panel, h('div.cmp-launch', null, pill, orb));
+  panel.addEventListener('keydown', (e) => { if (e.key === 'Escape') { e.stopPropagation(); toggle(false); orb.focus(); } });
 
+  // Room the panel takes over the 3D view: on the right on wide screens, at the bottom on phones.
+  const insetFor = (open) => {
+    if (!open) return { right: 0, bottom: 0 };
+    return window.innerWidth < 700 ? { right: 0, bottom: panel.offsetHeight + 20 } : { right: panel.offsetWidth + 24, bottom: 0 };
+  };
   const setState = (s) => { state = s; root.dataset.state = s; status.textContent = STATES[s]; };
   function toggle(force) {
     const open = force ?? panel.hidden;
     panel.hidden = !open;
     root.classList.toggle('open', open);
-    app.views['3d']?.setInset?.(open ? panel.offsetWidth + 24 : 0);
+    app.views['3d']?.setInset?.(insetFor(open));
     if (open) { renderChips(); if (!log.childElementCount) greet(); setTimeout(() => input.focus(), 0); }
   }
   function greet() {
@@ -75,9 +81,9 @@ export function createCompanion(app) {
 
   /** Zoom the 3D view to these wires and parts and light the exact pins. */
   async function show(wires, parts = []) {
-    if (!['3d', 'pinout'].includes(app.ui.view)) await app.switchView('3d');
+    if (app.ui.view !== '3d') await app.switchView('3d');
     app.select({ type: 'wires', id: 'assistant', ids: wires, parts }, { sheet: false });
-    setTimeout(() => { const v = app.views['3d']; v?.setInset?.(panel.hidden ? 0 : panel.offsetWidth + 24); v?.fitFocus?.(); }, 350);
+    setTimeout(() => { const v = app.views['3d']; v?.setInset?.(insetFor(!panel.hidden)); v?.fitFocus?.(); }, 350);
   }
   function wireCards(ids) { return connectionList(app, ids); }
   const stepOfWire = (id) => (app.data.project.steps || []).find((s) => (s.wires || []).includes(id));
@@ -120,7 +126,11 @@ export function createCompanion(app) {
         return answer(`No rule problems found${c.warnings ? `, with ${c.warnings} warning${c.warnings === 1 ? '' : 's'} to read` : ''}. Wiremap cannot check heat, noise or loose wires, so test one part at a time.`);
       }
       case 'step': {
-        app.gotoStep(r.n - 1);
+        const all = (app.data.project.steps || []).filter(Boolean);
+        const step = all[r.n - 1];
+        if (!step) return answer(`This project has ${all.length} steps. Say a number from 1 to ${all.length}.`);
+        const phase = step.phase || 'wire';
+        app.gotoStep(all.filter((x) => (x.phase || 'wire') === phase).indexOf(step), phase);
         return run({ kind: 'read' });
       }
       case 'view': await app.switchView(r.view); return answer(`Here is the ${r.view === 'preview' ? 'motion preview' : r.view} view.`);
@@ -132,13 +142,14 @@ export function createCompanion(app) {
         return answer(r.lines.join(' '), extra, r.lines.join(' '));
       }
       case 'connect': {
-        const a = tagName(app, r.from.parts[0]); const b = tagName(app, r.to.parts[0]);
+        const a = tagName(app, app.part(r.chain[0]) || r.from.parts[0]); const b = tagName(app, app.part(r.chain[r.chain.length - 1]) || r.to.parts[0]);
+        const many = [r.from, r.to].filter((g) => g.parts.length > 1).map((g) => `There are ${g.parts.length} ${g.key}s; showing the ${tagName(app, app.part(g === r.from ? r.chain[0] : r.chain[r.chain.length - 1]))}. Name one (for example "${tagName(app, g.parts[1])}") to see another.`);
         if (!r.wires.length) return answer(`The ${a} and the ${b} are not wired together in this project yet.`, askAI(text));
         show(r.wires, r.chain);
         const via = r.chain.slice(1, -1).map((id) => tagName(app, app.part(id)));
         const step = stepOfWire(r.wires[0]);
         const rows = connectionRows(app, r.wires);
-        const intro = `The ${a} connects to the ${b}${via.length ? ` through the ${via.join(' and ')}` : ''} with ${rows.length} wire${rows.length === 1 ? '' : 's'}. They are lit up in 3D.${step ? ` This is the step "${step.title}".` : ''}`;
+        const intro = `The ${a} connects to the ${b}${via.length ? ` through the ${via.join(' and ')}` : ''} with ${rows.length} wire${rows.length === 1 ? '' : 's'}, including power and ground. They are lit up in 3D.${step ? ` This is the step "${step.title}".` : ''}${many.length ? ` ${many.join(' ')}` : ''}`;
         const extra = h('div', null, wireCards(r.wires), h('div.cmp-tip', null, SAFETY),
           step ? h('button.btn.small', { type: 'button', onclick: () => { app.setPhase(step.phase || 'wire'); const list = (app.data.project.steps || []).filter((s) => (s.phase || 'wire') === (step.phase || 'wire')); app.gotoStep(list.indexOf(step)); } }, 'Go to that step') : null);
         add('bot', intro, extra);
@@ -169,6 +180,7 @@ export function createCompanion(app) {
           const want = r.name.toLowerCase();
           const hit = list.find((p) => p.name.toLowerCase() === want) || list.find((p) => `${label(p)} ${p.name}`.toLowerCase().includes(want));
           if (hit) { answer(`Opening ${label(hit)}.`); return open(hit); }
+          if (r.soft) return answer(`There is no view, phase or project called "${r.name}".`, h('div.cmp-chips', null, list.map((p) => h('button.cmp-chip', { type: 'button', onclick: () => open(p) }, label(p)))));
         }
         if (!list.length) return answer('No projects found. Ask your AI: "Use wiremap to start a new project".');
         return answer(`You have ${list.length} project${list.length === 1 ? '' : 's'}. Pick one:`,

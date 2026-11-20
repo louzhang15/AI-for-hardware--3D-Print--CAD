@@ -106,19 +106,28 @@ export function pathWires(app, fromIds, toIds) {
   const ids = [];
   for (let i = 0; i + 1 < chain.length; i++) ids.push(...adj.get(chain[i]).get(chain[i + 1]));
   // Also the power and ground wires of the end parts: a beginner needs those too.
+  for (const end of [chain[0], chain[chain.length - 1]]) {
+    const part = app.part(end);
+    // Power for the device being connected (servo, motor, sensor); the controller's own USB power is a separate step.
+    if (!part || ['controller', 'power', 'battery', 'protection', 'passive'].includes(part.category)) continue;
+    const keys = new Set((part?.pins || []).filter((p) => ['power_in', 'power_out', 'power_rail', 'ground'].includes(p.kind)).map((p) => p.key));
+    for (const w of wires) if (keys.has(w.fromKey) || keys.has(w.toKey)) ids.push(w.id);
+  }
   return { chain, wires: [...new Set(ids)] };
 }
 
 const SYMPTOMS = [
-  { re: /(reset|reboot|restart|brown ?out|keeps? (turning|shutting) off|crash)/, kind: 'power' },
-  { re: /(jitter|shak|twitch|buzz|stutter|flicker)/, kind: 'power' },
-  { re: /(hot|warm|smok|burn|smell|melt)/, kind: 'heat' },
-  { re: /(i2c|not found|no device|scanner|address)/, kind: 'i2c' },
-  { re: /(not (moving|spinning|working|turning|responding|doing)|doesn'?t (move|spin|work|turn|respond)|won'?t (move|spin|work|turn)|dead|nothing happens|no (power|light|response))/, kind: 'dead' },
+  { re: /\b(resets?|resetting|reboot\w*|restart(s|ing)|brown ?outs?|browns? out|keeps? (turning|shutting) off|crash(es|ing)?)\b/, kind: 'power' },
+  { re: /\b(jitter\w*|shak(es|ing|y)|twitch\w*|buzz(es|ing)?|stutter\w*|flicker\w*)\b/, kind: 'power' },
+  { re: /\b(hot|too warm|smok\w*|burn(s|ing|t|ed)?|smell\w*|melt\w*)\b/, kind: 'heat' },
+  { re: /\b(i2c (device )?not found|not found on i2c|no i2c device|i2c scanner finds nothing|wrong address)\b/, kind: 'i2c' },
+  { re: /\b(not (moving|spinning|working|turning|responding|starting|doing anything)|(doesn'?t|does not|won'?t|will not|can'?t|cannot) (move|spin|work|turn|respond|start|power on|turn on)|dead|nothing happens|no (power|light|response))\b/, kind: 'dead' },
 ];
 
 /** Deterministic first-pass troubleshooting from the checker result. */
 export function troubleshoot(app, text, partIds) {
+  // Questions about a pin or a connection are not complaints ("what is the reset pin").
+  if (/^(what|where|which|how do i (connect|wire|hook)|explain|show|go to|open)\b/.test(text)) return null;
   const kind = SYMPTOMS.find((s) => s.re.test(text))?.kind;
   if (!kind) return null;
   const check = app.data.check;
@@ -199,7 +208,7 @@ export function interpret(app, text) {
   if (/^(done|finished|i did it|did it|ok done|step done)$/.test(q)) return { kind: 'done' };
   if (/^(back|previous|go back|last step|previous step)$/.test(q)) return { kind: 'back' };
   if (/^(stop|quiet|silence|shut up)$/.test(q)) return { kind: 'stop' };
-  if (/\b(repeat|again|read( (the|this))? step|what now|what do i do( now| next)?|guide me|start|help me( start)?|where do i start)\b/.test(q)) return { kind: 'read' };
+  if (/^(repeat|again|say (that|it) again|read( (the|this))? step|what now|what do i do( now| next)?|guide me|start|help|help me( start)?|where do i start)$/.test(q)) return { kind: 'read' };
   if (/^(check|is it (safe|ok|right)|any (errors|problems)|did i do it right)/.test(q)) return { kind: 'check' };
 
   // Projects: "open the rover project", "what projects do I have"
@@ -208,13 +217,14 @@ export function interpret(app, text) {
   if (proj) return { kind: 'project', name: proj[1] };
 
   // Navigation: "go to power", "open pinout", "go to step 3"
-  const nav = /^(?:go to|goto|open|switch to|take me to|show me|show)\s+(?:the\s+)?(.+?)(?:\s+(?:tab|view|section|page|phase))?$/.exec(q);
+  const nav = /^(?:go to|goto|open|switch to|load|work on|take me to|show me|show)\s+(?:the\s+)?(.+?)(?:\s+(?:tab|view|section|page|phase))?$/.exec(q);
   if (nav) {
     const target = nav[1];
     const step = /^step\s+(\d+|[a-z]+)$/.exec(target);
     if (step) return { kind: 'step', n: Number(step[1]) || NUM[step[1]] || 1 };
     if (VIEWS[target]) return { kind: 'view', view: VIEWS[target] };
     if (PHASE_WORDS[target]) return { kind: 'phase', phase: PHASE_WORDS[target] };
+    if (/^(open|switch to|load|work on)\b/.test(q) && !findParts(app, target).length) return { kind: 'project', name: target, soft: true };
   }
 
   // Meaning of a term: "what is GND", "what does VIN mean"
