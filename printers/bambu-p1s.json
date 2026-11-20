@@ -8,6 +8,14 @@
     256
   ],
   "enclosed": true,
+  "slicer_height_mm": 250,
+  "keepout": [
+    {
+      "rect": [0, 0, 18, 28],
+      "corner": "front-left",
+      "note": "Bed exclusion from the bundled 0.4 mm nozzle profile in Bambu Studio 02.09.01.70."
+    }
+  ],
   "heated_bed": {
     "max_temp": 100
   },
@@ -34,10 +42,12 @@
   },
   "margin_mm": 5,
   "notes": [
+    "The bundled 0.4 mm nozzle profile in Bambu Studio 02.09.01.70 defaults to 250 mm of printable height.",
     "Enclosed: ABS/ASA OK.",
     "Open the lid or door for PLA/PETG so the chamber does not overheat."
   ],
   "sources": [
+    "https://cdn1.bambulab.com/documentation/quick-start-59b0cefdc0fc4/P1S/English%20version-Quick%20Start%20Guide%20for%20P1S.pdf",
     "https://3dpros.com/compares/bambu-lab-p1s-vs-bambu-lab-a1-mini",
     "https://bambuhub.net/tools/printer-comparison",
     "https://wiki.bambulab.com/en/general/filament-guide-material-table"
@@ -54,6 +64,6 @@
     "bambu-lan",
     "3mf"
   ],
-  "spec_checked": false,
-  "spec_note": "Numbers cross-checked via web search against Bambu official listings in search snippets (2026-11-20); bambulab.com itself could not be fetched from this session. Re-check against the official tech-specs page."
+  "spec_checked": true,
+  "spec_note": "Nominal build volume, included nozzle, hotend and bed limits checked against the first listed Bambu Lab document on 2026-11-20. Slicer exclusions, clearance values and optional transfer compatibility are separate from manufacturer hardware specifications."
 }

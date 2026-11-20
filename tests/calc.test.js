@@ -119,7 +119,11 @@ test('fuse size: 125% up to standard, never above wire', () => {
   assert.ok(w.warnings.some((x) => /No fuse fits/.test(x)));
   const tight = c.fuseSize({ current: 4, wireAwg: 20 }); // pvc 20 AWG = 4.5 A ceiling
   assert.equal(tight.value, 4);
-  assert.ok(c.fuseSize({ current: 2, voltage: 48 }).warnings.some((x) => /32 V/.test(x)));
+  const overVoltage = c.fuseSize({ current: 2, voltage: 48 });
+  assert.equal(overVoltage.value, null);
+  assert.equal(overVoltage.type, null);
+  assert.ok(overVoltage.warnings.some((x) => /32 V/.test(x)));
+  assert.equal(c.fuseSize({ current: 2, voltage: 32 }).value, 3);
 });
 
 test('print fits', () => {

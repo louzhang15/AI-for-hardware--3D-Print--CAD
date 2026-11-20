@@ -1,0 +1,60 @@
+{
+  "meta": {
+    "name": "Servo signal lacks a common ground",
+    "description": "Deliberately incorrect checker fixture. Never use as a build guide."
+  },
+  "parts": [
+    {
+      "id": "usb",
+      "library": "usb-5v"
+    },
+    {
+      "id": "esp",
+      "library": "esp32-devkit-v1"
+    },
+    {
+      "id": "supply",
+      "library": "dc-adapter-5v-3a"
+    },
+    {
+      "id": "servo",
+      "library": "servo-mg996r"
+    }
+  ],
+  "wires": [
+    {
+      "id": "w1",
+      "from": "usb.5V",
+      "to": "esp.VIN"
+    },
+    {
+      "id": "w2",
+      "from": "usb.GND",
+      "to": "esp.GND"
+    },
+    {
+      "id": "w3",
+      "from": "supply.V+",
+      "to": "servo.V+"
+    },
+    {
+      "id": "w4",
+      "from": "supply.GND",
+      "to": "servo.GND"
+    },
+    {
+      "id": "w5",
+      "from": "esp.GPIO25",
+      "to": "servo.SIG"
+    }
+  ],
+  "expect": [
+    {
+      "rule": "common-ground",
+      "level": "error",
+      "wires": [
+        "w5"
+      ]
+    }
+  ]
+}

@@ -51,6 +51,15 @@ test('fitPart: diagonal fit on the A1 mini', () => {
   assert.ok(diagonalFit(200, 20, 170, 170) !== null);
 });
 
+test('P1S and X1 Carbon use the bundled slicer height limit by default', () => {
+  for (const profile of [p1s, load('bambu-x1c')]) {
+    assert.equal(profile.volume[2], 256);
+    assert.deepEqual(usableVolume(profile), [246, 246, 250]);
+    assert.equal(fitPart([246, 246, 250], profile).fits, true);
+    assert.equal(fitPart([246, 246, 251], profile).fits, false);
+  }
+});
+
 test('fitPart: too big gets a split suggestion', () => {
   const r = fitPart([300, 200, 40], mini);
   assert.equal(r.fits, false);

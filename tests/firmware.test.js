@@ -105,7 +105,9 @@ test('Arduino .ino: defines, consts, comments and strings', () => {
 });
 
 test('PlatformIO esp32dev with lib_deps and a pins header', () => {
-  const ini = parsePlatformio(load('repo-pio').find((f) => f.path === 'platformio.ini').text);
+  const fixture = load('repo-pio').find((f) => f.path === 'platformio.ini').text.replace(/\r\n/g, '\n');
+  const ini = parsePlatformio(fixture);
+  assert.deepEqual(parsePlatformio(fixture.replace(/\n/g, '\r\n')), ini);
   assert.equal(ini.env, 'esp32dev');
   assert.equal(ini.board, 'esp32dev');
   assert.equal(ini.framework, 'arduino');

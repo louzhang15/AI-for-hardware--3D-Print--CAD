@@ -17,6 +17,7 @@ const COMMANDS = {
   export: ['export.mjs', 'pins.h, BOM CSV, WireViz, KiCad netlist, HTML guide'],
   'import-repo': ['import-repo.mjs', 'Read pin definitions and parts from firmware'],
   inbox: ['inbox.mjs', 'Requests sent from the viewer to the AI'],
+  feedback: ['feedback.mjs', 'Record and review reusable design corrections'],
   serve: ['../viewer/serve.mjs', 'Start the local viewer'],
   new: ['new-project.mjs', 'Create a project from a template'],
   install: ['install.mjs', 'Install the skill for Claude Code / Codex (asks first)'],

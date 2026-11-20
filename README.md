@@ -16,21 +16,27 @@ what voltage each part needs, what to 3D print, and how to put it together.
 ## Quick start
 
 ```bash
-git clone <this repo> wiremap
-```
-
-```bash
-cd wiremap && node bin/wiremap.mjs check projects/robot-arm.json
-```
-
-```bash
+git clone https://github.com/Louiszhang2005-1/AI-for-hardware--3D-Print--CAD.git wiremap
+cd wiremap
+node bin/wiremap.mjs check projects/robot-arm.json
 node viewer/serve.mjs
 ```
 
-Open the printed `http://127.0.0.1:...` link to see the reference robot arm.
+Open the printed localhost link and select the reference robot arm or rover.
+Use `node bin/wiremap.mjs new robot-arm my-arm` to start an editable copy.
 Then open Claude Code or Codex in the folder and say:
 
 > Use wiremap: 4-servo robot arm with an ESP32. I have a breadboard and a Bambu A1 mini, and I use build123d.
+
+### SolidWorks and Bambu Studio example
+
+The reference arm includes a printable electronics tie-down deck. The [CAD folder](cad/robot-arm/) has an editable SolidWorks part, a STEP file, a watertight STL, and the Windows script that generated them. The arm links and gripper depend on the builder's measured servos and mechanical design.
+
+```bash
+node bin/wiremap.mjs export-print --project projects/robot-arm.json --out exports/robot-arm
+```
+
+Open `exports/robot-arm/plates/pla_plate_1.3mf` in Bambu Studio. Select your printer, nozzle, and filament, then slice the plate. The default project profile is the A1 mini. The [bring-up sketch](firmware/arm_bringup/) is for I²C detection and keeps the servo outputs disabled. See the [validation results](docs/VALIDATION.md) for the six tested printer profiles.
 
 ### Use it in every project
 
@@ -75,7 +81,7 @@ Codex reads `AGENTS.md`. All three are generated from `skills/wiremap/SKILL.md`
 | Wire too thin, voltage drop, fuse bigger than the wire | 26 AWG carrying 4 A | Warning |
 | Under-voltage, regulator dropout, linear regulator heat | | Warning |
 | Required pin floating, no ground, unpowered part | TB6612 STBY floating | Warning |
-| Missing protection | Lithium pack with no fuse (error), no switch, no BMS, motor with no flyback path | Error / warning |
+| Missing protection | Lithium pack with no fuse or no BMS/cutoff on a load path, no switch, motor with no flyback path | Error / warning |
 | Mains or > 60 V DC | | Error (out of scope) |
 
 "0 errors" means **no rule violations found**, not "safe": heat, EMI,
@@ -89,7 +95,18 @@ node bin/wiremap.mjs --help
 
 `check`, `layout-breadboard`, `calc`, `fit-printer`, `split-part`,
 `export-print`, `part-geometry`, `export`, `import-repo`, `inbox`, `serve`,
-`new`, `install`. Each also runs as `node scripts/<name>.mjs`.
+`feedback`, `new`, `install`. Each also runs as `node scripts/<name>.mjs`.
+
+## Keep AI corrections for future builds
+
+Use **Corrections** in a project to save what the AI said, what should replace it, and any evidence. Approve a correction for the current project or for other projects in the same workspace. The Wiremap skill reads approved corrections at the start of later work, then checks them against the current project and parts. Pending and dismissed entries stay out of the approved list.
+
+```bash
+node bin/wiremap.mjs feedback list --project robot-arm
+node bin/wiremap.mjs feedback list --project robot-arm --all
+```
+
+The history stays in `.wiremap/feedback.jsonl` in the project workspace. Keep a copy of that file when moving the workspace if you want to carry the history with it. The correction log provides local memory for the skill. Model weights stay unchanged.
 
 ## Tests
 
@@ -106,9 +123,9 @@ auto-activation prompt set (≥ 95 % of 40 hardware prompts trigger the skill,
 ## Limits
 
 - Rule-based checks, not circuit simulation. No PCB layout (export a KiCad netlist instead). No mains projects.
-- Wiremap has no CAD engine: your AI writes build123d / CadQuery / OpenSCAD / FreeCAD / Fusion code using the part geometry and fit calculators. `split-part` cuts STL meshes with closed caps, but joint features (pins, dovetails, flanges) are added in CAD from the generated snippet.
+- Wiremap provides part geometry, fit checks, and mesh export for external CAD tools. `split-part` cuts STL meshes with closed caps. Add joint features in CAD using the generated plan.
 - Part geometry (board outlines, hole positions) is approximate unless marked verified; electrical data cites its sources. Parts that vary between sellers are marked "Confirm on your board".
-- Printer profiles must be checked against the maker's spec page (`spec_checked` in each file).
+- Printer profiles list the maker's specifications. Check the loaded slicer preset for nozzle-specific exclusions and machine settings before sending a job.
 - Sending prints to a Bambu printer over LAN needs Developer Mode and an optional printer MCP server (for example [synman/bambu-mcp](https://github.com/synman/bambu-mcp)); otherwise open the 3MF in your slicer.
 - The PRD planned React + react-three-fiber; the viewer uses plain ES modules + three.js so it runs with no build step.
 - The viewer→AI link is a file inbox (`.wiremap/inbox.jsonl`) the AI checks between steps; the viewer also shows a ready-to-paste prompt.

@@ -1,0 +1,55 @@
+{
+  "meta": {
+    "name": "Power wire too thin for a multi-servo branch",
+    "description": "Deliberately incorrect checker fixture. Never use as a build guide."
+  },
+  "parts": [
+    {
+      "id": "supply",
+      "library": "dc-adapter-5v-3a"
+    },
+    {
+      "id": "servo",
+      "library": "servo-mg996r"
+    },
+    {
+      "id": "extra",
+      "library": "servo-mg996r"
+    }
+  ],
+  "wires": [
+    {
+      "id": "w1",
+      "from": "supply.V+",
+      "to": "servo.V+",
+      "gauge": 30
+    },
+    {
+      "id": "w2",
+      "from": "servo.V+",
+      "to": "extra.V+",
+      "gauge": 18
+    },
+    {
+      "id": "w3",
+      "from": "supply.GND",
+      "to": "servo.GND",
+      "gauge": 18
+    },
+    {
+      "id": "w4",
+      "from": "supply.GND",
+      "to": "extra.GND",
+      "gauge": 18
+    }
+  ],
+  "expect": [
+    {
+      "rule": "wire-gauge",
+      "level": "warning",
+      "wires": [
+        "w1"
+      ]
+    }
+  ]
+}

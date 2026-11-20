@@ -1,0 +1,51 @@
+{
+  "meta": {
+    "name": "Full LiPo voltage exceeds servo rating",
+    "description": "Deliberately incorrect checker fixture. Never use as a build guide."
+  },
+  "parts": [
+    {
+      "id": "battery",
+      "library": "lipo-2s"
+    },
+    {
+      "id": "fuse",
+      "library": "fuse-inline",
+      "params": {
+        "rating_a": 3
+      }
+    },
+    {
+      "id": "servo",
+      "library": "servo-mg996r"
+    }
+  ],
+  "wires": [
+    {
+      "id": "w1",
+      "from": "battery.BAT+",
+      "to": "fuse.IN",
+      "gauge": 18
+    },
+    {
+      "id": "w2",
+      "from": "fuse.OUT",
+      "to": "servo.V+",
+      "gauge": 18
+    },
+    {
+      "id": "w3",
+      "from": "battery.BAT-",
+      "to": "servo.GND"
+    }
+  ],
+  "expect": [
+    {
+      "rule": "over-voltage",
+      "level": "error",
+      "pins": [
+        "servo.V+"
+      ]
+    }
+  ]
+}

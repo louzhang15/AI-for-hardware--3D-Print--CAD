@@ -1,0 +1,38 @@
+{
+  "meta": {
+    "name": "Direct battery feed without inline protection",
+    "description": "Deliberately incorrect checker fixture. Never use as a build guide."
+  },
+  "parts": [
+    {
+      "id": "battery",
+      "library": "lipo-2s"
+    },
+    {
+      "id": "buck",
+      "library": "buck-lm2596"
+    }
+  ],
+  "wires": [
+    {
+      "id": "w1",
+      "from": "battery.BAT+",
+      "to": "buck.IN+"
+    },
+    {
+      "id": "w2",
+      "from": "battery.BAT-",
+      "to": "buck.IN-"
+    }
+  ],
+  "expect": [
+    {
+      "rule": "missing-fuse",
+      "level": "error",
+      "pins": [
+        "battery.BAT+",
+        "buck.IN+"
+      ]
+    }
+  ]
+}

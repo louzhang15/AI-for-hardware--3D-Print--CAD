@@ -1,0 +1,87 @@
+{
+  "meta": {
+    "name": "Four MG996R motors overload a 5 A supply at stall",
+    "description": "Deliberately incorrect checker fixture. Never use as a build guide."
+  },
+  "parts": [
+    {
+      "id": "supply",
+      "library": "dc-adapter-6v-5a"
+    },
+    {
+      "id": "servo0",
+      "library": "servo-mg996r"
+    },
+    {
+      "id": "servo1",
+      "library": "servo-mg996r"
+    },
+    {
+      "id": "servo2",
+      "library": "servo-mg996r"
+    },
+    {
+      "id": "servo3",
+      "library": "servo-mg996r"
+    }
+  ],
+  "wires": [
+    {
+      "id": "w1",
+      "from": "supply.V+",
+      "to": "servo0.V+",
+      "gauge": 18
+    },
+    {
+      "id": "w2",
+      "from": "supply.GND",
+      "to": "servo0.GND",
+      "gauge": 18
+    },
+    {
+      "id": "w3",
+      "from": "supply.V+",
+      "to": "servo1.V+",
+      "gauge": 18
+    },
+    {
+      "id": "w4",
+      "from": "supply.GND",
+      "to": "servo1.GND",
+      "gauge": 18
+    },
+    {
+      "id": "w5",
+      "from": "supply.V+",
+      "to": "servo2.V+",
+      "gauge": 18
+    },
+    {
+      "id": "w6",
+      "from": "supply.GND",
+      "to": "servo2.GND",
+      "gauge": 18
+    },
+    {
+      "id": "w7",
+      "from": "supply.V+",
+      "to": "servo3.V+",
+      "gauge": 18
+    },
+    {
+      "id": "w8",
+      "from": "supply.GND",
+      "to": "servo3.GND",
+      "gauge": 18
+    }
+  ],
+  "expect": [
+    {
+      "rule": "overload",
+      "level": "warning",
+      "pins": [
+        "supply.V+"
+      ]
+    }
+  ]
+}

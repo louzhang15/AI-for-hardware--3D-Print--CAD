@@ -10,6 +10,7 @@ import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { matchHardware } from '../hooks/keywords.js';
 import { plan, GLOBAL_LINE } from '../scripts/install.mjs';
+import { renderAgents } from '../scripts/sync-skill.mjs';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 
@@ -64,8 +65,9 @@ test('prompt hook returns valid hook JSON for hardware and nothing otherwise', (
 test('skill mirrors (AGENTS.md, .claude/skills) are in sync with skills/wiremap/SKILL.md', () => {
   const r = spawnSync(process.execPath, [join(root, 'scripts', 'sync-skill.mjs'), '--check']);
   assert.equal(r.status, 0, r.stderr.toString() + ' — run `node scripts/sync-skill.mjs`');
-  const skill = readFileSync(join(root, 'skills', 'wiremap', 'SKILL.md'), 'utf8');
+  const skill = readFileSync(join(root, 'skills', 'wiremap', 'SKILL.md'), 'utf8').replace(/\r\n/g, '\n');
   assert.match(skill, /^---\nname: wiremap\ndescription: .+\n---\n/);
+  assert.equal(renderAgents(skill.replace(/\n/g, '\r\n')), renderAgents(skill));
 });
 
 test('every command the skill names exists in the CLI', () => {

@@ -1,0 +1,57 @@
+{
+  "meta": {
+    "name": "5 V ultrasonic echo directly into ESP32",
+    "description": "Deliberately incorrect checker fixture. Never use as a build guide."
+  },
+  "parts": [
+    {
+      "id": "supply",
+      "library": "dc-adapter-5v-3a"
+    },
+    {
+      "id": "esp",
+      "library": "esp32-devkit-v1"
+    },
+    {
+      "id": "sonar",
+      "library": "hc-sr04"
+    }
+  ],
+  "wires": [
+    {
+      "id": "w1",
+      "from": "supply.V+",
+      "to": "esp.VIN"
+    },
+    {
+      "id": "w2",
+      "from": "supply.GND",
+      "to": "esp.GND"
+    },
+    {
+      "id": "w3",
+      "from": "supply.V+",
+      "to": "sonar.VCC"
+    },
+    {
+      "id": "w4",
+      "from": "supply.GND",
+      "to": "sonar.GND"
+    },
+    {
+      "id": "w5",
+      "from": "sonar.ECHO",
+      "to": "esp.GPIO25"
+    }
+  ],
+  "expect": [
+    {
+      "rule": "logic-level",
+      "level": "error",
+      "pins": [
+        "sonar.ECHO",
+        "esp.GPIO25"
+      ]
+    }
+  ]
+}

@@ -66,7 +66,7 @@ Node-only helpers live in `lib/node/` and `scripts/`.
       "dropout": 1.1, "current_max": 0.6, "iq": 0.005, "efficiency": 0.9, "vin_max": 12 }
   ],
   "battery": { "chemistry": "lipo", "cells": 2, "capacity_ah": 2.2, "bms": false, "c_rating": 25 },
-  "protection": "fuse",                 // fuse | switch | bms | diode : part is in series in a supply path; its internal group is the series path
+  "protection": "fuse",                 // fuse | switch | bms | low-voltage-cutoff | diode
   "rating_a": 5,                        // for protection parts
   "flyback": true,                      // motor outputs have flyback diodes built in
   "mains": false,                       // true => checker refuses (out of scope)
@@ -97,6 +97,11 @@ Node-only helpers live in `lib/node/` and `scripts/`.
 
 Signal pins of a microcontroller are usually `digital` with `dir: "io"`,
 `voltage` = logic level and `vmax` = absolute max (ESP32: 3.3 / 3.6).
+For two-terminal DC motors on a bridge, both `motor` output pins can point
+their `voltage_ref` at the driver's motor supply `power_in` pin. The checker
+adds the motor's declared typical and peak current to that rail once.
+
+For series protection devices, the `internal` pin group defines the protected path. Use `low-voltage-cutoff` for a modeled cutoff device in the load path and `battery.bms` for verified protection built into the pack.
 
 ## Project file (`projects/<name>.json`)
 

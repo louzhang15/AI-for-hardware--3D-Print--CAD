@@ -176,6 +176,7 @@
         "fuse",
         "switch",
         "bms",
+        "low-voltage-cutoff",
         "diode"
       ]
     },

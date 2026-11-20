@@ -1,10 +1,11 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { execFileSync } from 'node:child_process';
-import { mkdtempSync, writeFileSync, readFileSync } from 'node:fs';
+import { execFileSync, spawnSync } from 'node:child_process';
+import { existsSync, mkdtempSync, writeFileSync, readFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { makeMesh, parseSTL, writeBinarySTL, planeCut, meshStats, checkClosed, triangulateLoops, polygonArea } from '../lib/node/stl.js';
+import { fileURLToPath } from 'node:url';
+import { makeMesh, orientMesh, parseSTL, writeBinarySTL, planeCut, meshStats, checkClosed, triangulateLoops, polygonArea } from '../lib/node/stl.js';
 import { crc32, writeZip, build3MF, packPlates, shelfPack } from '../lib/node/threemf.js';
 
 // Quad (a, b, c, d) CCW seen from outside -> two triangles.
@@ -184,6 +185,95 @@ test('shelf packing respects the bed and reports overflow', () => {
   assert.deepEqual(r.overflow.sort(), [1, 2]);
   const z = writeZip([{ name: 'a.txt', data: 'hello' }]);
   assert.equal(z.readUInt32LE(0), 0x04034b50);
+});
+
+test('shelf packing stays outside the slicer exclusion even on a full-width row', () => {
+  const opts = { keepouts: [[0, 0, 18, 28]] };
+  const result = shelfPack([{ size: [235, 50] }, { size: [50, 45] }], [256, 256], opts);
+  assert.deepEqual(result.placed, [{ index: 0, x: 5, y: 28 }, { index: 1, x: 5, y: 83 }]);
+  assert.deepEqual(result.overflow, []);
+  const narrow = shelfPack([{ size: [85, 60] }], [256, 256], opts);
+  assert.deepEqual(narrow.placed, [{ index: 0, x: 18, y: 5 }]);
+});
+
+test('rotating an odd axis permutation preserves winding and packing rejects excessive height', () => {
+  const mesh = boxMesh([60, 125, 30], [-30, 10, 50]);
+  const rotated = orientMesh(mesh, { axes: [0, 2, 1], rotationDeg: 0 });
+  assert.deepEqual(rotated.bbox.size, [60, 30, 125]);
+  assert.ok(checkClosed(rotated).closed);
+  assert.equal(meshStats(rotated).volume, meshStats(mesh).volume);
+  const result = packPlates([{ name: 'tall', mesh: rotated }], [100, 100, 120]);
+  assert.deepEqual(result.plates, []);
+  assert.deepEqual(result.tooBig, ['tall']);
+});
+
+test('print export rotates each fitting split mesh and leaves an out-of-bounds piece off the plate', () => {
+  const dir = mkdtempSync(join(tmpdir(), 'wiremap-print-'));
+  const source = join(dir, 'design.scad');
+  const original = join(dir, 'original.stl');
+  const rotated = join(dir, 'rotated.stl');
+  const tall = join(dir, 'tall.stl');
+  writeFileSync(source, 'cube([200, 20, 3]);');
+  writeFileSync(original, writeBinarySTL(boxMesh([300, 100, 100])));
+  writeFileSync(rotated, writeBinarySTL(boxMesh([200, 20, 3], [-50, 3, -7])));
+  writeFileSync(tall, writeBinarySTL(boxMesh([169, 169, 181])));
+  const project = join(dir, 'project.json');
+  writeFileSync(project, JSON.stringify({
+    printer: { profile: 'bambu-a1-mini', material: 'PLA' },
+    prints: [{ id: 'frame', source, files: [original], pieces: [{ file: rotated }, { file: tall }] }],
+  }));
+  const out = join(dir, 'out');
+  const cli = fileURLToPath(new URL('../bin/wiremap.mjs', import.meta.url));
+  const run = spawnSync(process.execPath, [cli, 'export-print', '--project', project, '--out', out, '--json'], { encoding: 'utf8' });
+  assert.equal(run.status, 1, run.stdout + run.stderr);
+  const report = JSON.parse(run.stdout);
+  assert.deepEqual(report.plates.map(({ parts }) => parts), [['frame:rotated.stl']]);
+  assert.deepEqual(report.tooBig, ['frame:tall.stl']);
+  assert.equal(report.prints[0].fits, false);
+  assert.ok(report.prints[0].pieceFits[0].rotationDeg > 0);
+  assert.ok(existsSync(join(out, 'frame', 'assets', 'design.scad')));
+  assert.ok(existsSync(join(out, 'frame', 'assets', 'rotated.stl')));
+  assert.ok(existsSync(join(out, 'frame', 'oriented', 'rotated.3mf')));
+  assert.equal(existsSync(join(out, 'frame', 'oriented', 'tall.3mf')), false);
+  const plate = readFileSync(report.plates[0].file, 'utf8');
+  const vertices = [...plate.matchAll(/<vertex x="([0-9.]+)" y="([0-9.]+)" z="([0-9.]+)"\/>/g)];
+  assert.equal(vertices.length, 8);
+  assert.ok(vertices.every(([, x, y, z]) => x <= 170 && y <= 170 && z <= 3));
+});
+
+test('print export retires stale generated 3MFs while preserving edited and untracked files', () => {
+  const dir = mkdtempSync(join(tmpdir(), 'wiremap-print-rerun-'));
+  const source = join(dir, 'deck.stl');
+  const project = join(dir, 'project.json');
+  const out = join(dir, 'out');
+  writeFileSync(project, JSON.stringify({
+    printer: { profile: 'bambu-a1-mini' },
+    prints: [{ id: 'deck', files: [source] }],
+  }));
+  writeFileSync(source, writeBinarySTL(boxMesh([100, 60, 30])));
+  const cli = fileURLToPath(new URL('../bin/wiremap.mjs', import.meta.url));
+  const run = () => spawnSync(process.execPath, [cli, 'export-print', '--project', project, '--out', out, '--json'], { encoding: 'utf8' });
+  const original = run();
+  assert.equal(original.status, 0, original.stdout + original.stderr);
+  const same = run();
+  assert.equal(same.status, 0, same.stdout + same.stderr);
+  const plate = JSON.parse(original.stdout).plates[0].file;
+  const userPlate = join(out, 'plates', 'user-slicer-project.3mf');
+  const edited = join(out, 'deck', 'oriented', 'deck.3mf');
+  writeFileSync(userPlate, 'existing user file');
+  writeFileSync(edited, 'user-edited export');
+  writeFileSync(source, writeBinarySTL(boxMesh([169, 169, 181])));
+
+  const rerun = run();
+  assert.equal(rerun.status, 1, rerun.stdout + rerun.stderr);
+  const report = JSON.parse(rerun.stdout);
+  assert.deepEqual(report.plates, []);
+  assert.deepEqual(report.retired3mfs, ['plates/pla_plate_1.3mf']);
+  assert.equal(existsSync(plate), false);
+  assert.equal(readFileSync(userPlate, 'utf8'), 'existing user file');
+  assert.equal(readFileSync(edited, 'utf8'), 'user-edited export');
+  assert.match(report.warnings.join('\n'), /Preserved modified 3MF/);
+  assert.match(report.warnings.join('\n'), /Preserved untracked 3MF/);
 });
 
 // Extrude an outer polygon (CCW) with one hole (CCW given, reversed inside) along z.

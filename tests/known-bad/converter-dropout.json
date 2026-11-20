@@ -1,0 +1,49 @@
+{
+  "meta": {
+    "name": "Buck converter cannot create 5 V from a 5 V input",
+    "description": "Deliberately incorrect checker fixture. Never use as a build guide."
+  },
+  "parts": [
+    {
+      "id": "supply",
+      "library": "dc-adapter-5v-3a"
+    },
+    {
+      "id": "buck",
+      "library": "buck-lm2596"
+    },
+    {
+      "id": "sonar",
+      "library": "hc-sr04"
+    }
+  ],
+  "wires": [
+    {
+      "id": "w1",
+      "from": "supply.V+",
+      "to": "buck.IN+"
+    },
+    {
+      "id": "w2",
+      "from": "supply.GND",
+      "to": "buck.IN-"
+    },
+    {
+      "id": "w3",
+      "from": "buck.OUT+",
+      "to": "sonar.VCC"
+    },
+    {
+      "id": "w4",
+      "from": "buck.OUT-",
+      "to": "sonar.GND"
+    }
+  ],
+  "expect": [
+    {
+      "rule": "regulator-dropout",
+      "level": "warning",
+      "pins": ["buck.IN+"]
+    }
+  ]
+}

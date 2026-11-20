@@ -59,7 +59,7 @@ export const VIEWS = [
   { id: 'assembly', label: 'Assembly', icon: 'print' },
 ];
 const PHASE_VIEW = { define: 'sketch', parts: '3d', power: 'power', wire: 'sketch', firmware: 'sketch', print: 'assembly', assemble: 'assembly', test: 'sketch' };
-const PHASE_LEFT = { parts: 'parts', power: 'power' };
+const PHASE_LEFT = { define: 'requirements', parts: 'parts', power: 'power' };
 
 // ------------------------------------------------------------------ app object
 
@@ -345,6 +345,21 @@ app.setHave = async (partId, have) => {
   catch (e) { toast(`Could not save: ${e.message}`, 'error'); }
 };
 
+app.saveRequirements = async (changes) => {
+  const { name } = app.data;
+  await postJSON(`/api/project/${encodeURIComponent(name)}/state`, { requirements: changes });
+  if (app.data?.name !== name) return;
+  const project = app.data.project;
+  const requirements = { ...project.meta?.requirements };
+  for (const [key, value] of Object.entries(changes)) {
+    if (value === null) delete requirements[key];
+    else requirements[key] = value;
+  }
+  project.meta = { ...project.meta, requirements };
+  renderLeft();
+  toast('Requirements saved', 'ok');
+};
+
 app.savePositions = async (positions) => {
   for (const [id, pos] of Object.entries(positions)) {
     const p = (app.data.project.parts || []).find((x) => x.id === id) || (app.data.project.prints || []).find((x) => x.id === id);
@@ -626,7 +641,8 @@ async function renderHome() {
       logo(36),
       h('div', { style: { flex: 1 } }, h('h1', null, 'Wiremap'), h('div.tag-line', null, 'Your hardware build, checked and shown step by step.')),
       themeButtons()),
-    h('div.section-title', null, 'Projects', h('span.grow')),
+    h('div.section-title', null, 'Projects', h('span.grow'),
+      h('button.btn.small.primary', { onclick: openNewProject }, icon('plus', 14), 'New from template')),
     list,
     startBox());
   root.append(h('div.home', null, inner));
@@ -638,10 +654,40 @@ async function renderHome() {
     return;
   }
   if (!data.projects.length) {
-    list.replaceWith(h('div.empty-home', null, h('p', { style: { fontSize: '15px', margin: '0 0 6px', color: 'var(--text)' } }, 'No projects yet.'), h('p', { style: { margin: 0 } }, `Ask your AI to start one. It writes ${data.projectsDir}/<name>.json and this page fills in by itself.`)));
+    list.replaceWith(h('div.empty-home', null, h('p', { style: { fontSize: '15px', margin: '0 0 6px', color: 'var(--text)' } }, 'No projects yet.'), h('p', { style: { margin: 0 } }, `Start with a template or ask your AI to write a project in ${data.projectsDir}/.`)));
     return;
   }
   for (const p of data.projects) list.append(projectCard(p));
+}
+
+async function openNewProject(event) {
+  const button = event.currentTarget;
+  button.disabled = true;
+  let templates;
+  try { ({ templates } = JSON.parse(await api('/api/templates'))); }
+  catch (error) { toast(`Could not load templates: ${error.message}`, 'error'); return; }
+  finally { button.disabled = false; }
+  if (app.route.page !== 'home') return;
+  if (!templates.length) { toast('No local templates are available.'); return; }
+  const template = h('select.input', { 'aria-label': 'Template' }, templates.map((name) => h('option', { value: name }, name)));
+  const name = h('input.input', { required: true, maxlength: 80, type: 'text', placeholder: 'My robot arm' });
+  const error = h('p.form-error', { role: 'alert', hidden: true });
+  const create = h('button.btn.primary', { form: 'new-project-form', type: 'submit' }, 'Create project');
+  const form = h('form#new-project-form.intake-form', { onsubmit: async (event) => {
+    event.preventDefault();
+    create.disabled = true;
+    error.hidden = true;
+    try {
+      const project = await postJSON('/api/projects', { name: name.value, template: template.value });
+      if (form.isConnected) location.hash = `#/p/${encodeURIComponent(project.name)}`;
+    } catch (failure) {
+      error.textContent = failure.message;
+      error.hidden = false;
+      create.disabled = false;
+    }
+  } }, h('label.intake-field', null, 'Template', template), h('label.intake-field', null, 'Project name', name), error);
+  openModal({ title: 'New project from template', body: form, actions: [h('button.btn.ghost', { onclick: closeModal }, 'Cancel'), create] });
+  name.focus();
 }
 
 function logo(size = 28) {
@@ -770,6 +816,11 @@ function renderRight() {
 }
 app.renderLeft = renderLeft;
 app.renderRight = renderRight;
+app.setLeftPanel = (panel) => {
+  app.ui.left = panel;
+  saveUi();
+  renderLeft();
+};
 
 function renderCenterBar() {
   const bar = clear(app.els.centerBar);

@@ -1,0 +1,453 @@
+{
+  "$schema": "../schema/project.schema.json",
+  "meta": {
+    "name": "Two-motor ESP32 rover",
+    "description": "Tethered bench prototype for a low-voltage rover with two TT gear motors and a TB6612FNG driver.",
+    "phase": "define",
+    "requirements": {
+      "size": "Small desktop chassis",
+      "payload": "None",
+      "runtime": "Tethered bench prototype",
+      "budget": "Set your parts budget",
+      "power": "Separate regulated 5 V supplies for motors and logic",
+      "on_hand": [
+        "USB data cable",
+        "Multimeter"
+      ]
+    }
+  },
+  "printer": {
+    "profile": "bambu-a1-mini",
+    "material": "PLA"
+  },
+  "cad": {
+    "tool": "solidworks"
+  },
+  "parts": [
+    {
+      "id": "usb",
+      "library": "usb-5v",
+      "position": [
+        -158,
+        0,
+        -45
+      ],
+      "bom": {
+        "why": "Separately powers and programs the controller through micro-USB."
+      },
+      "name": "5 V USB controller supply",
+      "verify": true,
+      "notes": ["Use a USB 5 V source rated at least 1 A for this design. Keep the motor power supply disconnected during flashing."],
+      "pins": {
+        "5V": {
+          "current_max": 1
+        }
+      }
+    },
+    {
+      "id": "esp",
+      "library": "esp32-devkit-v1",
+      "position": [
+        -105,
+        0,
+        -45
+      ],
+      "bom": {
+        "why": "Runs firmware and provides 3.3 V logic."
+      },
+      "verify": true,
+      "bb": {
+        "offboard": true
+      }
+    },
+    {
+      "id": "drive-supply",
+      "library": "dc-adapter-5v-3a",
+      "position": [
+        -100,
+        0,
+        50
+      ],
+      "bom": {
+        "why": "Supplies the motor rail independently of USB."
+      },
+      "name": "Regulated 5 V 4 A motor supply",
+      "verify": true,
+      "notes": ["Verify the regulated output voltage and 4 A rating on the actual adapter before wiring."],
+      "pins": {
+        "V+": {
+          "current_max": 4
+        }
+      }
+    },
+    {
+      "id": "driver",
+      "library": "tb6612fng-breakout",
+      "position": [
+        -20,
+        0,
+        0
+      ],
+      "bom": {
+        "why": "Drives one TT gear motor on each H-bridge."
+      },
+      "bb": { "offboard": true }
+    },
+    {
+      "id": "motor-left",
+      "library": "dc-motor-tt",
+      "position": [
+        75,
+        0,
+        -42
+      ],
+      "bom": {
+        "why": "Left wheel drive."
+      },
+      "name": "Left TT gear motor",
+      "verify": true
+    },
+    {
+      "id": "motor-right",
+      "library": "dc-motor-tt",
+      "position": [
+        75,
+        0,
+        42
+      ],
+      "bom": {
+        "why": "Right wheel drive."
+      },
+      "name": "Right TT gear motor",
+      "verify": true
+    },
+    {
+      "id": "standby-pulldown",
+      "library": "resistor",
+      "position": [-17, 0, 32],
+      "params": { "ohms": 10000 },
+      "bb": { "offboard": true },
+      "bom": { "why": "Keeps the driver disabled through controller reset." }
+    }
+  ],
+  "wires": [
+    {
+      "id": "usb-power",
+      "from": "usb.5V",
+      "to": "esp.VIN",
+      "color": "red",
+      "label": "Controller USB 5 V",
+      "gauge": 24,
+      "length_mm": 250
+    },
+    {
+      "id": "usb-ground",
+      "from": "usb.GND",
+      "to": "esp.GND",
+      "color": "black",
+      "label": "Controller USB return",
+      "gauge": 24,
+      "length_mm": 250
+    },
+    {
+      "id": "logic-power",
+      "from": "esp.3V3",
+      "to": "driver.VCC",
+      "color": "red",
+      "label": "3.3 V motor driver logic",
+      "gauge": 24,
+      "length_mm": 125
+    },
+    {
+      "id": "logic-ground",
+      "from": "esp.GND",
+      "to": "driver.GND",
+      "color": "black",
+      "label": "Logic reference",
+      "gauge": 24,
+      "length_mm": 125
+    },
+    {
+      "id": "drive-power",
+      "from": "drive-supply.V+",
+      "to": "driver.VM",
+      "color": "red",
+      "label": "5 V motor rail",
+      "gauge": 18,
+      "length_mm": 100
+    },
+    {
+      "id": "drive-ground",
+      "from": "drive-supply.GND",
+      "to": "driver.GND_2",
+      "color": "black",
+      "label": "Motor return",
+      "gauge": 18,
+      "length_mm": 100
+    },
+    {
+      "id": "standby",
+      "from": "esp.GPIO23",
+      "to": "driver.STBY",
+      "color": "white",
+      "label": "Active-high standby release"
+    },
+    {
+      "id": "standby-resistor",
+      "from": "driver.STBY",
+      "to": "standby-pulldown.1",
+      "color": "white",
+      "label": "Standby pull-down"
+    },
+    {
+      "id": "standby-return",
+      "from": "standby-pulldown.2",
+      "to": "driver.GND_3",
+      "color": "black",
+      "label": "Standby pull-down return"
+    },
+    {
+      "id": "left-pwm",
+      "from": "esp.GPIO25",
+      "to": "driver.PWMA",
+      "color": "orange",
+      "label": "Left speed"
+    },
+    {
+      "id": "left-dir-1",
+      "from": "esp.GPIO26",
+      "to": "driver.AIN1",
+      "color": "white",
+      "label": "Left direction 1"
+    },
+    {
+      "id": "left-dir-2",
+      "from": "esp.GPIO27",
+      "to": "driver.AIN2",
+      "color": "white",
+      "label": "Left direction 2"
+    },
+    {
+      "id": "right-pwm",
+      "from": "esp.GPIO32",
+      "to": "driver.PWMB",
+      "color": "orange",
+      "label": "Right speed"
+    },
+    {
+      "id": "right-dir-1",
+      "from": "esp.GPIO18",
+      "to": "driver.BIN1",
+      "color": "white",
+      "label": "Right direction 1"
+    },
+    {
+      "id": "right-dir-2",
+      "from": "esp.GPIO19",
+      "to": "driver.BIN2",
+      "color": "white",
+      "label": "Right direction 2"
+    },
+    {
+      "id": "left-plus",
+      "from": "driver.AO1",
+      "to": "motor-left.M+",
+      "color": "purple",
+      "label": "Left motor lead 1",
+      "gauge": 22,
+      "length_mm": 150
+    },
+    {
+      "id": "left-minus",
+      "from": "driver.AO2",
+      "to": "motor-left.M-",
+      "color": "purple",
+      "label": "Left motor lead 2",
+      "gauge": 22,
+      "length_mm": 150
+    },
+    {
+      "id": "right-plus",
+      "from": "driver.BO1",
+      "to": "motor-right.M+",
+      "color": "purple",
+      "label": "Right motor lead 1",
+      "gauge": 22,
+      "length_mm": 150
+    },
+    {
+      "id": "right-minus",
+      "from": "driver.BO2",
+      "to": "motor-right.M-",
+      "color": "purple",
+      "label": "Right motor lead 2",
+      "gauge": 22,
+      "length_mm": 150
+    }
+  ],
+  "steps": [
+    {
+      "id": "scope",
+      "phase": "define",
+      "title": "Plan a tethered rover bench test",
+      "text": "Keep the vehicle restrained with wheels clear. A mobile battery version needs its own power design and checker run.",
+      "parts": [],
+      "wires": [],
+      "warnings": [],
+      "tools": [],
+      "done": false
+    },
+    {
+      "id": "confirm-parts",
+      "phase": "parts",
+      "title": "Check the driver variant and motors",
+      "text": "Find VM, VCC, STBY and both channel pin names on your driver. Verify that each 5 V motor's starting and stall current are within the actual driver's continuous and transient limits.",
+      "parts": [
+        "driver",
+        "motor-left",
+        "motor-right"
+      ],
+      "wires": [],
+      "warnings": [],
+      "tools": [],
+      "done": false
+    },
+    {
+      "id": "logic-power",
+      "phase": "power",
+      "title": "Connect the logic and signal reference",
+      "text": "Power the ESP32 through its normal USB cable. With power disconnected, bring 3.3 V to driver VCC and connect the ground reference.",
+      "parts": [
+        "usb",
+        "esp",
+        "driver"
+      ],
+      "wires": [
+        "usb-power",
+        "usb-ground",
+        "logic-power",
+        "logic-ground"
+      ],
+      "warnings": [],
+      "tools": [],
+      "done": false
+    },
+    {
+      "id": "motor-power",
+      "phase": "power",
+      "title": "Prepare the motor supply",
+      "text": "Use a sealed regulated 5 V supply. Connect it to motor VM and driver return using rated connections. Keep motor current out of breadboard rails.",
+      "parts": [
+        "drive-supply",
+        "driver"
+      ],
+      "wires": [
+        "drive-power",
+        "drive-ground"
+      ],
+      "warnings": [
+        "Leave the supply unplugged during wiring. Add the motor suppression capacitors and local bulk capacitance recommended by the actual module vendor."
+      ],
+      "tools": [],
+      "done": false
+    },
+    {
+      "id": "control-signals",
+      "phase": "wire",
+      "title": "Connect standby, speed and direction",
+      "text": "Use the named GPIOs for the driver inputs. Wire the 10 kΩ standby pull-down directly next to the driver with insulated leads. Firmware must leave STBY low until the direction and zero-duty PWM are configured.",
+      "parts": [
+        "esp",
+        "driver",
+        "standby-pulldown"
+      ],
+      "wires": [
+        "standby",
+        "standby-resistor",
+        "standby-return",
+        "left-pwm",
+        "left-dir-1",
+        "left-dir-2",
+        "right-pwm",
+        "right-dir-1",
+        "right-dir-2"
+      ],
+      "warnings": [],
+      "tools": [],
+      "done": false
+    },
+    {
+      "id": "motor-leads",
+      "phase": "wire",
+      "title": "Connect the motor leads",
+      "text": "Connect each pair to its own bridge. Keep the wires restrained and clear of rotating parts.",
+      "parts": [
+        "driver",
+        "motor-left",
+        "motor-right"
+      ],
+      "wires": [
+        "left-plus",
+        "left-minus",
+        "right-plus",
+        "right-minus"
+      ],
+      "warnings": [
+        "Keep motor power off until bring-up."
+      ],
+      "tools": [],
+      "done": false
+    },
+    {
+      "id": "pin-header",
+      "phase": "firmware",
+      "title": "Export and confirm the firmware pins",
+      "text": "Export pins.h from this map and compare it with the firmware. Initialize standby low, set both PWM outputs to zero, and then use a short manual test for each wheel.",
+      "parts": [
+        "esp",
+        "driver"
+      ],
+      "wires": [
+        "standby",
+        "left-pwm",
+        "right-pwm"
+      ],
+      "warnings": [],
+      "tools": [],
+      "done": false
+    },
+    {
+      "id": "clearance",
+      "phase": "assemble",
+      "title": "Secure the electronics and free the wheels",
+      "text": "Fasten the controller and driver and keep motor wiring away from the wheel and gearbox. Put the rover on a stable stand.",
+      "parts": [],
+      "wires": [],
+      "warnings": [],
+      "tools": [],
+      "done": false
+    },
+    {
+      "id": "meter",
+      "phase": "test",
+      "title": "Check power before enabling either motor",
+      "text": "Verify continuity and absence of shorts with power removed. Check the motor supply voltage and ground reference before applying PWM to one motor at a time.",
+      "parts": [
+        "drive-supply",
+        "driver"
+      ],
+      "wires": [
+        "drive-power",
+        "drive-ground",
+        "standby"
+      ],
+      "warnings": [
+        "Keep the chassis supported and the wheels clear of fingers and cables."
+      ],
+      "tools": [
+        "Multimeter"
+      ],
+      "done": false
+    }
+  ]
+}

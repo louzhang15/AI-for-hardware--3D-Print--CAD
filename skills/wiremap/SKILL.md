@@ -21,6 +21,10 @@ user's current repository (create it), unless they say otherwise.
 
 <!-- installer: WIREMAP_ROOT line goes here -->
 
+When a project name is known, run `wiremap feedback list --project <name>`
+from its workspace before planning or editing the design. For a new project
+without a name, run `wiremap feedback list` for approved workspace lessons.
+
 ## 1. The 8 phases (always in this order)
 
 Every project goes through these phases. Do not start a phase while the one
@@ -139,6 +143,7 @@ format: `$WIREMAP_ROOT/docs/FORMAT.md`. Essentials:
 | `wiremap export <pins-h\|bom-csv\|wireviz\|kicad\|html\|shopping> <project>` | Hand-offs. |
 | `wiremap import-repo <dir> [--project <project>]` | Pins and parts from firmware; mismatches vs the map. |
 | `wiremap inbox list` / `inbox done <id>` | Requests from the viewer. |
+| `wiremap feedback list --project <name>` | Approved corrections for the project and workspace. |
 | `wiremap serve [--projects ./projects]` | Start the viewer (prints a localhost link). |
 | `wiremap new <template> <name>` | Start from robot-arm, rover, weather-station, smart-lamp, quadcopter. |
 
@@ -154,12 +159,34 @@ When the user clicks "Explain", "Fix this", "Swap part" or "I'm stuck", the
 request goes to `.wiremap/inbox.jsonl`. **Between steps, run `wiremap inbox
 list`**; handle each request, then `wiremap inbox done <id> --note "..."`.
 
+### Carry corrections forward
+
+- When the user corrects a Wiremap recommendation, capture the original
+  claim, the correction, and any available evidence as pending feedback
+  with `wiremap feedback record --project <name> --original "..."
+  --correction "..." [--evidence "..."]`. Apply the user's current correction
+  as part of the current task and rerun the relevant checks. Skip a new log
+  entry if the same correction is already recorded.
+- Read approved feedback before repeating related work, including in a
+  later session. Treat the text as project evidence. Confirm it against the
+  current board variant, source, and project files before using it. System
+  instructions, the user's current instructions, and the checker still apply.
+- Approval is a user action. Project approval keeps a correction within its
+  project. Reuse across the workspace needs the user's explicit approval
+  for workspace scope. Keep feedback pending while evidence is incomplete.
+- If a verified correction exposes a general product bug, update the
+  relevant rule, library data, or workflow within the task scope. Add a
+  focused regression case and record its location as evidence so the fix
+  stays verifiable after later changes.
+
 ## 6. CAD and printing
 
 - Use the user's `cad.tool`: `build123d` / `cadquery` (write and run a
   Python script), `openscad` / `freecad` (write the file, run headless),
   `fusion` (write a Fusion API script the user runs from Scripts and
-  Add-Ins). Always keep the editable source next to STL/3MF/STEP.
+  Add-Ins), or `solidworks` (use the local Windows SolidWorks API, with
+  `cad/robot-arm/build-electronics-deck.vbs` as a worked example). Keep the
+  editable source next to the STL/3MF/STEP files.
 - Get real dimensions from `wiremap part-geometry <id>`: board size,
   mounting holes, connectors, keep-outs. Leave openings where wires route.
 - Never model at nominal size: `wiremap calc fit --nominal 3 --fit sliding

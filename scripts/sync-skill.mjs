@@ -10,7 +10,10 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const SOURCE = join(root, 'skills', 'wiremap', 'SKILL.md');
 
+const normalizeNewlines = (text) => text.replace(/\r\n/g, '\n');
+
 export function splitFrontmatter(text) {
+  text = normalizeNewlines(text);
   const m = /^---\n([\s\S]*?)\n---\n/.exec(text);
   return m ? { front: m[1], body: text.slice(m[0].length) } : { front: '', body: text };
 }
@@ -28,7 +31,7 @@ ${body.replace(/^\s*# Wiremap\n+/, '')}`;
 }
 
 export function targets() {
-  const skill = readFileSync(SOURCE, 'utf8');
+  const skill = normalizeNewlines(readFileSync(SOURCE, 'utf8'));
   return [
     [join(root, '.claude', 'skills', 'wiremap', 'SKILL.md'), skill],
     [join(root, 'AGENTS.md'), renderAgents(skill)],
@@ -38,7 +41,7 @@ export function targets() {
 export async function main(argv) {
   let stale = 0;
   for (const [file, content] of targets()) {
-    const cur = existsSync(file) ? readFileSync(file, 'utf8') : null;
+    const cur = existsSync(file) ? normalizeNewlines(readFileSync(file, 'utf8')) : null;
     if (cur === content) continue;
     if (argv.includes('--check')) { console.error(`out of date: ${file}`); stale++; continue; }
     mkdirSync(dirname(file), { recursive: true });

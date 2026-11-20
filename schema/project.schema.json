@@ -219,6 +219,7 @@
               "fuse",
               "switch",
               "bms",
+              "low-voltage-cutoff",
               "diode"
             ]
           },
@@ -651,7 +652,8 @@
             "cadquery",
             "openscad",
             "freecad",
-            "fusion"
+            "fusion",
+            "solidworks"
           ]
         }
       }

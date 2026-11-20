@@ -1,0 +1,38 @@
+{
+  "meta": {
+    "name": "Two supply outputs tied together",
+    "description": "Deliberately incorrect checker fixture. Never use as a build guide."
+  },
+  "parts": [
+    {
+      "id": "supply",
+      "library": "dc-adapter-5v-3a"
+    },
+    {
+      "id": "aux",
+      "library": "dc-adapter-6v-5a"
+    }
+  ],
+  "wires": [
+    {
+      "id": "w1",
+      "from": "supply.V+",
+      "to": "aux.V+"
+    },
+    {
+      "id": "w2",
+      "from": "supply.GND",
+      "to": "aux.GND"
+    }
+  ],
+  "expect": [
+    {
+      "rule": "supplies-fighting",
+      "level": "error",
+      "pins": [
+        "supply.V+",
+        "aux.V+"
+      ]
+    }
+  ]
+}

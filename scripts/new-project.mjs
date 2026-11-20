@@ -3,6 +3,7 @@
 import { readFileSync, writeFileSync, existsSync, mkdirSync, readdirSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
+import { parseArgs } from 'node:util';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const SOURCES = [join(ROOT, 'templates'), join(ROOT, 'projects')];
@@ -17,35 +18,57 @@ export function listTemplates() {
 }
 
 /** Fresh copy of a template: progress cleared, schema path pointed at this install. */
-export function instantiate(template, name, projectsDir) {
+export function instantiate(template, name) {
   const p = JSON.parse(readFileSync(template, 'utf8'));
   p.$schema = resolve(ROOT, 'schema', 'project.schema.json');
-  p.meta = { ...(p.meta || {}), name, template: template.split(/[\\/]/).pop().replace(/\.json$/, '') };
-  if (!p.meta.phase) p.meta.phase = 'define';
+  p.meta = { ...p.meta, name, phase: 'define', template: template.split(/[\\/]/).pop().replace(/\.json$/, '') };
   for (const s of p.steps || []) s.done = false;
   if (p.breadboard) delete p.breadboard.layout;
-  for (const part of p.parts || []) { delete part.bb; if (part.bom) delete part.bom.checked; }
+  for (const part of p.parts || []) {
+    if (!part.bb?.offboard) delete part.bb;
+    if (part.bom) delete part.bom.checked;
+  }
   for (const w of p.wires || []) delete w.bb;
-  void projectsDir;
   return p;
 }
 
+export function projectSlug(name) {
+  return name.toLowerCase().replace(/[^a-z0-9._-]+/g, '-').replace(/^[.-]+|[.-]+$/g, '') || 'project';
+}
+
+export function createProject(template, name, projectsDir) {
+  const file = join(projectsDir, `${projectSlug(name)}.json`);
+  mkdirSync(projectsDir, { recursive: true });
+  writeFileSync(file, JSON.stringify(instantiate(template, name), null, 2) + '\n', { flag: 'wx' });
+  return file;
+}
+
 export async function main(argv) {
-  const args = argv.filter((a) => !a.startsWith('--'));
-  const dirIdx = argv.indexOf('--dir');
-  const dir = resolve(dirIdx >= 0 ? argv[dirIdx + 1] : 'projects');
-  const templates = listTemplates();
-  if (argv.includes('--help') || args.length < 2) {
-    console.log(`Usage: wiremap new <template> <name> [--dir projects]\nTemplates: ${[...templates.keys()].join(', ')}`);
-    return args.length < 2 && !argv.includes('--help') ? 2 : 0;
+  let args;
+  try {
+    args = parseArgs({ args: argv, allowPositionals: true, options: {
+      dir: { type: 'string', default: 'projects' }, help: { type: 'boolean', short: 'h' },
+    } });
+  } catch (error) {
+    console.error(error.message);
+    return 2;
   }
-  const [tpl, name] = args;
+  const templates = listTemplates();
+  if (args.values.help || args.positionals.length !== 2) {
+    console.log(`Usage: wiremap new <template> <name> [--dir projects]\nTemplates: ${[...templates.keys()].join(', ')}`);
+    return args.values.help ? 0 : 2;
+  }
+  const [tpl, name] = args.positionals;
   if (!templates.has(tpl)) { console.error(`Unknown template "${tpl}". Templates: ${[...templates.keys()].join(', ')}`); return 2; }
-  const slug = name.toLowerCase().replace(/[^a-z0-9._-]+/g, '-').replace(/^-+|-+$/g, '') || 'project';
-  const file = join(dir, `${slug}.json`);
-  if (existsSync(file)) { console.error(`${file} already exists; pick another name.`); return 2; }
-  mkdirSync(dir, { recursive: true });
-  writeFileSync(file, JSON.stringify(instantiate(templates.get(tpl), name, dir), null, 2) + '\n');
+  const dir = resolve(args.values.dir);
+  let file;
+  try {
+    file = createProject(templates.get(tpl), name, dir);
+  } catch (error) {
+    if (error.code !== 'EEXIST') throw error;
+    console.error(`${error.path} already exists; pick another name.`);
+    return 2;
+  }
   console.log(`Created ${file} from the ${tpl} template. Next: wiremap check ${file}`);
   return 0;
 }
