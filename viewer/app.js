@@ -224,6 +224,7 @@ function computeFocus() {
   if (sel) {
     f.kind = sel.type;
     if (sel.type === 'wire') addWire(sel.id);
+    else if (sel.type === 'wires') { for (const id of sel.ids || []) addWire(id); for (const id of sel.parts || []) f.parts.add(id); }
     else if (sel.type === 'pin') {
       const net = check.nets.netOfPin.get(sel.id);
       f.pins.add(sel.id);

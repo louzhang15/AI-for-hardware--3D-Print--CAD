@@ -27,8 +27,14 @@
     "type": "rover",
     "title": "See how the rover steers",
     "motors": [
-      { "label": "Left motor", "part": "motor-left" },
-      { "label": "Right motor", "part": "motor-right" }
+      {
+        "label": "Left motor",
+        "part": "motor-left"
+      },
+      {
+        "label": "Right motor",
+        "part": "motor-right"
+      }
     ]
   },
   "parts": [
@@ -45,7 +51,9 @@
       },
       "name": "5 V USB controller supply",
       "verify": true,
-      "notes": ["Use a USB 5 V source rated at least 1 A for this design. Keep the motor power supply disconnected during flashing."],
+      "notes": [
+        "Use a USB 5 V source rated at least 1 A for this design. Keep the motor power supply disconnected during flashing."
+      ],
       "pins": {
         "5V": {
           "current_max": 1
@@ -81,7 +89,9 @@
       },
       "name": "Regulated 5 V 4 A motor supply",
       "verify": true,
-      "notes": ["Verify the regulated output voltage and 4 A rating on the actual adapter before wiring."],
+      "notes": [
+        "Verify the regulated output voltage and 4 A rating on the actual adapter before wiring."
+      ],
       "pins": {
         "V+": {
           "current_max": 4
@@ -99,7 +109,9 @@
       "bom": {
         "why": "Drives one TT gear motor on each H-bridge."
       },
-      "bb": { "offboard": true }
+      "bb": {
+        "offboard": true
+      }
     },
     {
       "id": "motor-left",
@@ -132,10 +144,20 @@
     {
       "id": "standby-pulldown",
       "library": "resistor",
-      "position": [-17, 0, 32],
-      "params": { "ohms": 10000 },
-      "bb": { "offboard": true },
-      "bom": { "why": "Keeps the driver disabled through controller reset." }
+      "position": [
+        -17,
+        0,
+        32
+      ],
+      "params": {
+        "ohms": 10000
+      },
+      "bb": {
+        "offboard": true
+      },
+      "bom": {
+        "why": "Keeps the driver disabled through controller reset."
+      }
     }
   ],
   "wires": [
@@ -338,7 +360,7 @@
       ],
       "warnings": [],
       "tools": [],
-      "done": false
+      "done": true
     },
     {
       "id": "motor-power",

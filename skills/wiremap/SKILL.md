@@ -196,8 +196,19 @@ format: `$WIREMAP_ROOT/docs/FORMAT.md`. Essentials:
 After the first project file exists, start the viewer once in the
 background: `node $WIREMAP_ROOT/viewer/serve.mjs --projects ./projects` and
 give the user the printed `http://127.0.0.1:<port>` link. It updates live as
-you edit the file. It shows the circuit sketch (every pin labelled), the
-breadboard, the 3D view, the power tree and the guided steps.
+you edit the file. It shows the Pinout tab (every board with every pin's
+silkscreen name and where each wire goes), the circuit sketch, the
+breadboard, the 3D view with pin name tags (and a hologram mode), the power
+tree and the guided steps. Point beginners at the Pinout tab first.
+
+The viewer's **Ask Wiremap** panel (orb, bottom right; V to talk) answers
+plain requests locally from the project file and checker: "how do I connect
+the motor to the ESP32" (zooms 3D to the exact pins), "where does SDA go",
+"what is GND", "my servo jitters" (first-pass troubleshooting), "go to
+power", "go to step 3", "open the rover project", "done". It uses the
+browser's speech APIs, no API key. Questions it can't answer go to the inbox
+for you. Give every step `parts` and `wires` and every part a `description`
+so its answers stay good.
 
 When the user clicks "Explain", "Fix this", "Swap part" or "I'm stuck", the
 request goes to `.wiremap/inbox.jsonl`. **Between steps, run `wiremap inbox
@@ -275,7 +286,22 @@ has both Claude Code and Codex, offer a cross-model review. Show the user
 every disagreement. A phase completes only when every reviewer passes or the
 user accepts a flagged risk on purpose (record it in the step's `warnings`).
 
-## 8. Talking to the user
+## 8. Token budget
+
+Wiremap runs on the user's own Claude Code or Codex plan; spend tokens
+carefully, and either assistant can pick up where the other stopped (the
+project file and inbox hold all state).
+
+- If `graphify` is installed (`pip install graphifyy`), keep a code graph
+  (`graphify update .`) and run `graphify query "<question>"` before reading
+  source files; read only the lines it points to.
+- Use `wiremap check --json`, `part-geometry` and `calc` output instead of
+  reading library JSON or source by hand.
+- Short answers: result first, short sentences, no filler. Code stays normal.
+- Prefer existing skills, plugins, MCP servers and GitHub projects (listed
+  in the README) over writing new tooling.
+
+## 9. Talking to the user
 
 Plain language first, detail on request: "This wire carries power to the
 servos" before "6 V, up to 4.8 A, 18 AWG". One step at a time. Point at the

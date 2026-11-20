@@ -1,144 +1,213 @@
-// Voice companion: a small workshop assistant panel with clear states
-// (ready, listening, thinking, speaking). It reads the current step aloud,
-// answers "where does SDA go", moves between steps, and forwards anything
-// else to the user's AI through the inbox. Uses the browser's own speech
-// APIs; no network service and no API key.
-import { h, icon, splitKey } from './util.js';
-import { connectionRows, sayConnection, tagName, silkscreen } from './pinout.js';
+// "Ask Wiremap": a beginner-friendly workshop assistant. Say or type a plain
+// request ("how do I connect the motor to the ESP32", "my servo jitters",
+// "go to power", "what is GND") and it zooms the 3D view to the exact pins,
+// explains in plain words, and reads steps aloud. It runs locally from the
+// project file and checker; questions it can't answer go to Claude Code or
+// Codex through the inbox. No API keys, no network service.
+import { h, icon, store, api } from './util.js';
+import { connectionRows, connectionList, sayConnection, tagName, silkscreen } from './pinout.js';
+import { interpret, suggestions, explainTerm } from './assistant.js';
 
-const article = (w) => (/^[aeiou]/i.test(w) ? 'an' : 'a');
 const STATES = { idle: 'Ready', listening: 'Listening…', thinking: 'Thinking…', speaking: 'Speaking…' };
 const Recognition = typeof window !== 'undefined' && (window.SpeechRecognition || window.webkitSpeechRecognition);
-
-/** Find a pin or part named in free text. Exported for tests. */
-export function interpret(app, text) {
-  const q = String(text || '').toLowerCase().replace(/[?.!,]/g, ' ').replace(/\s+/g, ' ').trim();
-  if (!q) return { kind: 'none' };
-  if (/^(next|done|next step|go on|continue)\b/.test(q)) return { kind: 'next' };
-  if (/^(back|previous|go back|last step)\b/.test(q)) return { kind: 'back' };
-  if (/\b(repeat|again|read( (the|this))? step|what now|what do i do)\b/.test(q)) return { kind: 'read' };
-  if (/\b(stop|quiet|silence)\b/.test(q)) return { kind: 'stop' };
-  if (/\b(check|errors?|status|is it safe)\b/.test(q)) return { kind: 'check' };
-  const wires = app.data.check.model.wires.filter((w) => w.valid);
-  const step = app.currentStep();
-  const stepWires = new Set(step?.wires || []);
-  const rows = connectionRows(app, [...wires.filter((w) => stepWires.has(w.id)), ...wires.filter((w) => !stepWires.has(w.id))].map((w) => w.id));
-  const ask = q.replace(/\s+(go|goes|connect|connects|connected|plug|plugs|plugged)(\s+(to|into|in))?$/, '');
-  const m = /^(?:where (?:does|do|is|should)|what (?:does|is)|which wire (?:goes to|is)|connect|plug)\s+(?:the\s+)?(.*?)\s*(?:pin\s+)?([a-z0-9+_/-]+)$/.exec(ask);
-  if (m) {
-    const token = m[2];
-    const partHint = m[1].replace(/\b(the|my|on|of|pin|from)\b/g, '').trim();
-    const norm = (v) => String(v || '').toLowerCase();
-    const match = (e) => (norm(e.label) === token || norm(e.name) === token || norm(e.label).split(/[\s/()]+/).includes(token)) &&
-      (!partHint || norm(e.partName).includes(partHint) || norm(e.fullName).includes(partHint) || norm(e.part).includes(partHint));
-    const hits = rows.filter((r) => match(r.from) || match(r.to))
-      .map((r) => (match(r.from) ? r : { ...r, from: r.to, to: r.from }));
-    if (hits.length) return { kind: 'pin', rows: hits.slice(0, 3) };
-  }
-  const showQ = /^(?:show|find|where is|zoom to|focus(?: on)?)\s+(?:me\s+)?(?:the\s+)?(.+)$/.exec(q);
-  if (showQ) {
-    const name = showQ[1];
-    const part = app.data.check.model.partList.find((p) => [p.id, p.name, tagName(app, p)].some((s) => String(s || '').toLowerCase().includes(name)));
-    if (part) return { kind: 'part', part };
-  }
-  return { kind: 'ask', text };
-}
+const SAFETY = 'Unplug all power before you plug in or move any wire.';
 
 export function createCompanion(app) {
   let state = 'idle';
   let rec = null;
-  let open = false;
+  let voiceOut = store.get('wiremap.voice', true) !== false;
   const status = h('span.cmp-status', null, STATES.idle);
-  const said = h('p.cmp-said', { 'aria-live': 'polite' }, 'Ask me where a wire goes, or press Read step.');
-  const orb = h('button.cmp-orb', { type: 'button', 'aria-label': 'Workshop assistant', title: 'Workshop assistant (V to talk)', onclick: () => toggle() },
-    h('span.cmp-ring'), h('span.cmp-ring.r2'), h('span.cmp-core'));
-  const input = h('input.cmp-input', { type: 'text', placeholder: 'Type: where does SDA go?', 'aria-label': 'Ask the assistant',
+  const log = h('div.cmp-log', { 'aria-live': 'polite' });
+  const chips = h('div.cmp-chips');
+  const input = h('input.cmp-input', { type: 'text', placeholder: 'Ask anything, e.g. how do I connect the servo?', 'aria-label': 'Ask Wiremap',
     onkeydown: (e) => { if (e.key === 'Enter' && input.value.trim()) { handle(input.value); input.value = ''; } } });
-  const mic = h('button.btn.small.cmp-mic', { type: 'button', disabled: !Recognition, title: Recognition ? 'Talk (V)' : 'Voice input needs Chrome or Edge',
-    onclick: () => listen() }, icon('mic', 14), h('span', null, 'Talk'));
-  const readBtn = h('button.btn.small', { type: 'button', onclick: () => readStep() }, icon('play', 14), h('span', null, 'Read step'));
-  const stopBtn = h('button.btn.small.ghost', { type: 'button', onclick: () => stop() }, icon('x', 14), h('span', null, 'Stop'));
-  const panel = h('div.cmp-panel', { hidden: true },
-    h('div.cmp-head', null, h('strong', null, 'Workshop assistant'), status),
-    said, h('div.cmp-actions', null, mic, readBtn, stopBtn), input);
-  const root = h('div.companion', { 'data-state': 'idle' }, panel, orb);
+  const mic = h('button.btn.small.cmp-mic', { type: 'button', disabled: !Recognition,
+    title: Recognition ? 'Talk (or press V)' : 'Voice needs Chrome or Edge. You can type instead.', onclick: () => listen() }, icon('mic', 14), h('span', null, 'Talk'));
+  const voiceBtn = h('button.btn.small.ghost', { type: 'button', 'aria-pressed': String(voiceOut), title: 'Read answers aloud',
+    onclick: () => { voiceOut = !voiceOut; store.set('wiremap.voice', voiceOut); voiceBtn.setAttribute('aria-pressed', String(voiceOut)); voiceBtn.lastChild.textContent = voiceOut ? 'Voice on' : 'Voice off'; if (!voiceOut) stopSpeaking(); } },
+  icon('play', 14), h('span', null, voiceOut ? 'Voice on' : 'Voice off'));
+  const panel = h('div.cmp-panel', { hidden: true, role: 'dialog', 'aria-label': 'Ask Wiremap' },
+    h('div.cmp-head', null, h('strong', null, 'Ask Wiremap'), status,
+      h('button.cmp-close', { type: 'button', 'aria-label': 'Close', onclick: () => toggle(false) }, icon('x', 14))),
+    log, chips,
+    h('div.cmp-row', null, input, mic),
+    h('div.cmp-actions', null,
+      h('button.btn.small', { type: 'button', onclick: () => run({ kind: 'read' }, 'What do I do now?') }, icon('steps', 14), h('span', null, 'What do I do now?')),
+      voiceBtn));
+  const orb = h('button.cmp-orb', { type: 'button', 'aria-label': 'Ask Wiremap', title: 'Ask Wiremap (press V to talk)', onclick: () => toggle() },
+    h('span.cmp-ring'), h('span.cmp-ring.r2'), h('span.cmp-core'));
+  const pill = h('button.cmp-pill', { type: 'button', onclick: () => toggle(true) }, 'Ask Wiremap');
+  const root = h('div.companion', { 'data-state': 'idle' }, panel, h('div.cmp-launch', null, pill, orb));
 
-  function setState(s) { state = s; root.dataset.state = s; status.textContent = STATES[s]; }
+  const setState = (s) => { state = s; root.dataset.state = s; status.textContent = STATES[s]; };
   function toggle(force) {
-    open = force ?? !open;
+    const open = force ?? panel.hidden;
     panel.hidden = !open;
     root.classList.toggle('open', open);
+    app.views['3d']?.setInset?.(open ? panel.offsetWidth + 24 : 0);
+    if (open) { renderChips(); if (!log.childElementCount) greet(); setTimeout(() => input.focus(), 0); }
   }
-  function say(text) {
-    said.textContent = text;
-    if (!('speechSynthesis' in window)) { setState('idle'); return; }
+  function greet() {
+    add('bot', 'Hi! I can show you exactly where each wire goes and help when something does not work. Tap a question below, type, or press Talk.');
+  }
+  function renderChips() {
+    chips.replaceChildren(...suggestions(app).map((q) => h('button.cmp-chip', { type: 'button', onclick: () => handle(q) }, q)));
+  }
+  function add(who, text, extra) {
+    const msg = h(`div.cmp-msg.${who}`, null, h('p', null, text), extra || null);
+    log.append(msg);
+    while (log.childElementCount > 12) log.firstChild.remove();
+    log.scrollTop = log.scrollHeight;
+    return msg;
+  }
+  function stopSpeaking() { if ('speechSynthesis' in window) window.speechSynthesis.cancel(); if (state === 'speaking') setState('idle'); }
+  function speak(text) {
+    if (!voiceOut || !('speechSynthesis' in window)) { setState('idle'); return; }
     window.speechSynthesis.cancel();
     const u = new SpeechSynthesisUtterance(text);
-    u.rate = 1.02;
+    u.rate = 1;
     u.onstart = () => setState('speaking');
-    u.onend = () => setState('idle');
-    u.onerror = () => setState('idle');
+    u.onend = u.onerror = () => setState('idle');
     window.speechSynthesis.speak(u);
   }
-  function stop() {
-    if ('speechSynthesis' in window) window.speechSynthesis.cancel();
-    if (rec) { try { rec.abort(); } catch { /* ignore */ } rec = null; }
-    setState('idle');
+  /** Answer in the log and out loud. */
+  function answer(text, extra, spoken) { add('bot', text, extra); speak(spoken || text); }
+
+  /** Zoom the 3D view to these wires and parts and light the exact pins. */
+  async function show(wires, parts = []) {
+    if (!['3d', 'pinout'].includes(app.ui.view)) await app.switchView('3d');
+    app.select({ type: 'wires', id: 'assistant', ids: wires, parts }, { sheet: false });
+    setTimeout(() => { const v = app.views['3d']; v?.setInset?.(panel.hidden ? 0 : panel.offsetWidth + 24); v?.fitFocus?.(); }, 350);
   }
-  function readStep() {
+  function wireCards(ids) { return connectionList(app, ids); }
+  const stepOfWire = (id) => (app.data.project.steps || []).find((s) => (s.wires || []).includes(id));
+  const askAI = (text, context) => h('button.btn.small.cmp-ai', { type: 'button', onclick: () => {
     const step = app.currentStep();
-    if (!step) { say('There is no step in this phase.'); return; }
-    const rows = connectionRows(app, step.wires || []);
-    const parts = [step.title + '.', step.text || ''];
-    for (const r of rows) parts.push(`Wire ${r.n}. ${sayConnection(r)}`);
-    for (const w of step.warnings || []) parts.push(`Warning: ${w}`);
-    say(parts.filter(Boolean).join(' '));
+    app.inbox({ kind: 'ask', target: step ? `step:${step.id}` : 'project', text: `${text}\n\n${context || ''}`.trim(), title: 'Question from Ask Wiremap' });
+  } }, icon('help', 14), 'Ask my AI (Claude Code or Codex)');
+
+  async function run(r, text) {
+    switch (r.kind) {
+      case 'next': app.nextStep(1); return run({ kind: 'read' });
+      case 'back': app.nextStep(-1); return run({ kind: 'read' });
+      case 'done': {
+        const step = app.currentStep();
+        if (step) await app.setStepDone(step.id, true);
+        answer('Nice work. Step marked done.');
+        app.nextStep(1);
+        return setTimeout(() => run({ kind: 'read' }), 200);
+      }
+      case 'stop': stopSpeaking(); return setState('idle');
+      case 'read': {
+        const step = app.currentStep();
+        if (!step) return answer('This section has no steps. Try "go to wiring".');
+        const rows = connectionRows(app, step.wires || []);
+        if (rows.length) show(step.wires, step.parts || []);
+        const intro = `${step.title}. ${step.text || ''}`;
+        const extra = h('div', null, rows.length ? wireCards(step.wires) : null,
+          (step.warnings || []).map((w) => h('div.cmp-warn', null, icon('alert', 13), w)),
+          rows.length ? h('div.cmp-tip', null, SAFETY, ' Say "done" when finished.') : null);
+        add('bot', intro, extra);
+        return speak([intro, ...rows.map((x) => `Wire ${x.n}. ${sayConnection(x)}`), ...(step.warnings || []).map((w) => `Careful: ${w}`)].join(' '));
+      }
+      case 'check': {
+        const c = app.data.check;
+        if (c.errors) {
+          const first = c.issues.find((i) => i.level === 'error');
+          show(first.wires, first.parts);
+          return answer(`Stop: ${c.errors} problem${c.errors === 1 ? '' : 's'} could damage parts. The first: ${first.message}`, first.fix ? h('div.cmp-tip', null, `Fix: ${first.fix}`) : null);
+        }
+        return answer(`No rule problems found${c.warnings ? `, with ${c.warnings} warning${c.warnings === 1 ? '' : 's'} to read` : ''}. Wiremap cannot check heat, noise or loose wires, so test one part at a time.`);
+      }
+      case 'step': {
+        app.gotoStep(r.n - 1);
+        return run({ kind: 'read' });
+      }
+      case 'view': await app.switchView(r.view); return answer(`Here is the ${r.view === 'preview' ? 'motion preview' : r.view} view.`);
+      case 'phase': app.setPhase(r.phase); return answer(`Opened ${r.phase}.`);
+      case 'explain': return answer(r.text);
+      case 'trouble': {
+        show(r.wires, r.parts);
+        const extra = h('div', null, r.wires.length ? wireCards(r.wires.slice(0, 6)) : null, askAI(text, r.lines.join('\n')));
+        return answer(r.lines.join(' '), extra, r.lines.join(' '));
+      }
+      case 'connect': {
+        const a = tagName(app, r.from.parts[0]); const b = tagName(app, r.to.parts[0]);
+        if (!r.wires.length) return answer(`The ${a} and the ${b} are not wired together in this project yet.`, askAI(text));
+        show(r.wires, r.chain);
+        const via = r.chain.slice(1, -1).map((id) => tagName(app, app.part(id)));
+        const step = stepOfWire(r.wires[0]);
+        const rows = connectionRows(app, r.wires);
+        const intro = `The ${a} connects to the ${b}${via.length ? ` through the ${via.join(' and ')}` : ''} with ${rows.length} wire${rows.length === 1 ? '' : 's'}. They are lit up in 3D.${step ? ` This is the step "${step.title}".` : ''}`;
+        const extra = h('div', null, wireCards(r.wires), h('div.cmp-tip', null, SAFETY),
+          step ? h('button.btn.small', { type: 'button', onclick: () => { app.setPhase(step.phase || 'wire'); const list = (app.data.project.steps || []).filter((s) => (s.phase || 'wire') === (step.phase || 'wire')); app.gotoStep(list.indexOf(step)); } }, 'Go to that step') : null);
+        add('bot', intro, extra);
+        return speak([intro, ...rows.map((x) => `Wire ${x.n}. ${sayConnection(x)}`), SAFETY].join(' '));
+      }
+      case 'pin': {
+        show(r.rows.map((x) => x.id), []);
+        const lines = r.rows.map((x) => `${x.from.fullName} pin ${x.from.label} goes to ${x.to.fullName} pin ${x.to.label} (${x.colorName} wire).`);
+        const meaning = explainTerm(r.rows[0].from.name) || explainTerm(r.rows[0].from.label);
+        return answer(`${lines.join(' ')}${meaning ? ` ${meaning}` : ''}`, wireCards(r.rows.map((x) => x.id)));
+      }
+      case 'part': {
+        const part = r.group.parts[0];
+        const ids = app.data.check.model.wires.filter((w) => w.valid && (w.fromKey.startsWith(`${part.id}.`) || w.toKey.startsWith(`${part.id}.`))).map((w) => w.id);
+        show(ids, r.group.parts.map((p) => p.id));
+        const used = part.pins.filter((p) => app.data.check.pinInfo?.[p.key]?.connected).map((p) => silkscreen(p));
+        const more = r.group.parts.length > 1 ? ` There are ${r.group.parts.length} of these; they are all lit.` : '';
+        return answer(`This is the ${tagName(app, part)}. ${part.description || ''}${more} ${used.length ? `Its wired pins: ${used.slice(0, 10).join(', ')}.` : 'Nothing is wired to it yet.'}`);
+      }
+      case 'projects':
+      case 'project': {
+        let list = [];
+        try { list = JSON.parse(await api('/api/projects')); } catch { /* offline */ }
+        list = Array.isArray(list) ? list : (list.projects || []);
+        const label = (p) => p.meta?.name || p.name;
+        const open = (p) => { location.hash = `#/p/${encodeURIComponent(p.name)}`; };
+        if (r.kind === 'project') {
+          const want = r.name.toLowerCase();
+          const hit = list.find((p) => p.name.toLowerCase() === want) || list.find((p) => `${label(p)} ${p.name}`.toLowerCase().includes(want));
+          if (hit) { answer(`Opening ${label(hit)}.`); return open(hit); }
+        }
+        if (!list.length) return answer('No projects found. Ask your AI: "Use wiremap to start a new project".');
+        return answer(`You have ${list.length} project${list.length === 1 ? '' : 's'}. Pick one:`,
+          h('div.cmp-chips', null, list.map((p) => h('button.cmp-chip', { type: 'button', onclick: () => open(p) }, label(p)))));
+      }
+      case 'ask': return answer('I can\'t answer that from the project file alone. Send it to your AI?', askAI(text));
+      default: return setState('idle');
+    }
   }
+
+  async function handle(text) {
+    toggle(true);
+    add('you', text);
+    setState('thinking');
+    try { await run(interpret(app, text), text); }
+    catch (e) { console.error(e); answer('Something went wrong showing that. Try asking another way.'); }
+    renderChips();
+  }
+
   function listen() {
     if (!Recognition) return;
-    stop();
+    stopSpeaking();
     rec = new Recognition();
     rec.lang = navigator.language || 'en-US';
     rec.interimResults = false;
-    rec.maxAlternatives = 1;
     rec.onstart = () => setState('listening');
-    rec.onerror = (e) => { setState('idle'); said.textContent = e.error === 'not-allowed' ? 'Microphone blocked. Allow it in the browser, or type below.' : 'Did not catch that. Try again or type.'; };
+    rec.onerror = (e) => { setState('idle'); add('bot', e.error === 'not-allowed' ? 'The microphone is blocked. Allow it in the browser bar, or type your question.' : 'I did not catch that. Try again, or type it.'); };
     rec.onend = () => { if (state === 'listening') setState('idle'); };
     rec.onresult = (e) => handle(e.results[0][0].transcript);
     rec.start();
   }
-  async function handle(text) {
-    toggle(true);
-    setState('thinking');
-    said.textContent = `“${text}”`;
-    const r = interpret(app, text);
-    if (r.kind === 'next') { app.nextStep(1); setTimeout(readStep, 150); }
-    else if (r.kind === 'back') { app.nextStep(-1); setTimeout(readStep, 150); }
-    else if (r.kind === 'read') readStep();
-    else if (r.kind === 'stop') stop();
-    else if (r.kind === 'check') {
-      const c = app.data.check;
-      say(c.errors ? `${c.errors} error${c.errors === 1 ? '' : 's'} found. The first one: ${c.issues[0].message}` : `No rule violations found, with ${c.warnings} warning${c.warnings === 1 ? '' : 's'}. Heat, noise and mechanical load are not checked.`);
-    } else if (r.kind === 'pin') {
-      app.select({ type: 'wire', id: r.rows[0].id }, { sheet: false });
-      say(r.rows.map((row) => `${row.from.fullName} pin ${row.from.label} goes to ${row.to.fullName} pin ${row.to.label}, with ${article(row.colorName)} ${row.colorName} wire.`).join(' '));
-    } else if (r.kind === 'part') {
-      app.select({ type: 'part', id: r.part.id }, { sheet: false });
-      const used = r.part.pins.filter((p) => app.data.check.pinInfo?.[p.key]?.connected).map((p) => silkscreen(p));
-      say(`Here is ${tagName(app, r.part)}. ${used.length ? `Its wired pins are ${used.slice(0, 8).join(', ')}.` : 'Nothing is wired to it yet.'}`);
-    } else if (r.kind === 'ask') {
-      const step = app.currentStep();
-      say('That needs your AI. Sending the question to Claude Code or Codex.');
-      app.inbox({ kind: 'ask', target: step ? `step:${step.id}` : 'project', text, title: 'Question from the workshop assistant' });
-    } else setState('idle');
-  }
 
   window.addEventListener('keydown', (e) => {
-    if (e.key.toLowerCase() !== 'v' || e.metaKey || e.ctrlKey || e.altKey) return;
+    if (e.key.toLowerCase() !== 'v' || e.metaKey || e.ctrlKey || e.altKey || !root.isConnected) return;
     if (/^(input|textarea|select)$/i.test(document.activeElement?.tagName || '')) return;
-    if (!root.isConnected) return;
     toggle(true);
     if (Recognition) listen(); else input.focus();
   });
-  return { root, readStep, handle, stop, splitKey };
+  // First visit: open once so beginners find it.
+  if (store.get('wiremap.askSeen', false) !== true) { store.set('wiremap.askSeen', true); setTimeout(() => toggle(true), 600); }
+  return { root, handle, toggle };
 }

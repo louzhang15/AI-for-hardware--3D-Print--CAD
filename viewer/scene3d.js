@@ -275,7 +275,7 @@ export class Scene3DView {
       const part = key.split('.')[0];
       const inspected = this.inspectedPart === part;
       pin.visible = this.showUnused || this.wiredPins.has(key) || selected || inspected;
-      pin.userData.ring.visible = (selection?.type === 'pin' || selection?.type === 'wire') && focus.pins.has(key);
+      pin.userData.ring.visible = ['pin', 'wire', 'wires'].includes(selection?.type) && focus.pins.has(key);
       shade(pin, !dim || inspected || selected || focus.pins.has(key) || (!focus.pins.size && focus.parts.has(part)));
     }
     for (const [id, { mesh, role }] of this.wires) {
@@ -297,17 +297,18 @@ export class Scene3DView {
     this.app.renderCenterBar();
   }
 
-  fit(box = new THREE.Box3().setFromObject(this.contents), direction = this.camera.position.clone().sub(this.controls.target).normalize()) {
+  fit(box = new THREE.Box3().setFromObject(this.contents), direction = this.camera.position.clone().sub(this.controls.target).normalize(), pad = 1.16) {
     const center = box.isEmpty() ? new THREE.Vector3() : box.getCenter(new THREE.Vector3());
     const half = box.getSize(new THREE.Vector3()).multiplyScalar(.5);
     const right = new THREE.Vector3().crossVectors(axis, direction).normalize();
     const up = new THREE.Vector3().crossVectors(direction, right).normalize();
     const vertical = Math.tan(THREE.MathUtils.degToRad(this.camera.fov / 2));
-    const horizontal = vertical * this.camera.aspect;
+    const usable = this.inset && this.width && this.inset < this.width * .7 ? (this.width - this.inset) / this.width : 1;
+    const horizontal = vertical * this.camera.aspect * usable;
     let distance = 23;
     for (const x of [-half.x, half.x]) for (const y of [-half.y, half.y]) for (const z of [-half.z, half.z]) {
       const offset = new THREE.Vector3(x, y, z);
-      const clearance = 1.16 * Math.max(Math.abs(offset.dot(right)) / horizontal, Math.abs(offset.dot(up)) / vertical);
+      const clearance = pad * Math.max(Math.abs(offset.dot(right)) / horizontal, Math.abs(offset.dot(up)) / vertical);
       distance = Math.max(distance, offset.dot(direction) + clearance);
     }
     this.controls.target.copy(center);
@@ -324,6 +325,29 @@ export class Scene3DView {
     this.inspector?.showPinList();
     this.resize();
     this.fit(new THREE.Box3().setFromObject(item.group), overhead);
+  }
+
+  /** Keep the picture clear of an overlay on the right (the Ask Wiremap panel). */
+  setInset(px) {
+    this.inset = Math.max(0, px || 0);
+    if (this.camera) { this.applyInset(); this.requestDraw(); }
+  }
+
+  applyInset() {
+    const { width, height } = this;
+    if (this.inset && width && height && this.inset < width * .7) this.camera.setViewOffset(width, height, this.inset / 2, 0, width, height);
+    else this.camera.clearViewOffset();
+    this.camera.updateProjectionMatrix();
+  }
+
+  /** Zoom to everything in the current focus (parts and wire ends). */
+  fitFocus() {
+    if (!this.parts) return;
+    const box = new THREE.Box3();
+    for (const id of this.app.focus.parts) if (this.parts.has(id)) box.expandByObject(this.parts.get(id).group);
+    for (const id of this.app.focus.wires) if (this.wires.has(id)) box.expandByObject(this.wires.get(id).mesh);
+    // Extra room so the pin name tags around the edges stay on screen.
+    if (!box.isEmpty()) this.fit(box, undefined, 1.6);
   }
 
   focusWire(id) {
@@ -359,7 +383,7 @@ export class Scene3DView {
     this.height = height;
     this.renderer.setSize(width, height, false);
     this.camera.aspect = width / height;
-    this.camera.updateProjectionMatrix();
+    this.applyInset();
     if (previouslyUnsized) this.fit();
     this.requestDraw();
   }

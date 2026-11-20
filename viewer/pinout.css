@@ -61,14 +61,16 @@
 .leader-svg line { stroke-width: 1.5; opacity: .85; }
 .three-host.holo .leader-svg line { filter: drop-shadow(0 0 3px rgba(63,216,255,.8)); }
 
-/* Workshop assistant (voice companion) */
+/* Ask Wiremap assistant */
 .center { position: relative; }
-.companion { position: absolute; right: 16px; bottom: 16px; z-index: 30; display: flex; align-items: flex-end; gap: 10px; pointer-events: none; }
+.companion { position: absolute; right: 16px; bottom: 16px; z-index: 30; display: flex; flex-direction: column; align-items: flex-end; gap: 10px; pointer-events: none; }
 .companion > * { pointer-events: auto; }
+.cmp-launch { display: flex; align-items: center; gap: 8px; }
+.companion.open .cmp-pill { display: none; }
+.cmp-pill { border: 1px solid rgba(63,216,255,.55); background: #04101c; color: #bff4ff; font: 600 13px var(--font); padding: 8px 12px; border-radius: 999px; cursor: pointer; box-shadow: 0 0 14px rgba(63,216,255,.25); }
 .cmp-orb { position: relative; width: 58px; height: 58px; border-radius: 50%; border: 0; padding: 0; cursor: pointer;
   background: radial-gradient(circle at 50% 50%, #0b2235 0%, #04101c 72%); box-shadow: 0 0 0 1px rgba(63,216,255,.5), 0 6px 22px rgba(4,16,28,.45); }
-.cmp-core { position: absolute; inset: 19px; border-radius: 50%; background: radial-gradient(circle, #bff4ff 0%, #3fd8ff 45%, rgba(63,216,255,0) 72%);
-  box-shadow: 0 0 14px #3fd8ff; transition: transform .2s; }
+.cmp-core { position: absolute; inset: 19px; border-radius: 50%; background: radial-gradient(circle, #bff4ff 0%, #3fd8ff 45%, rgba(63,216,255,0) 72%); box-shadow: 0 0 14px #3fd8ff; }
 .cmp-ring { position: absolute; inset: 7px; border-radius: 50%; border: 1.5px solid rgba(63,216,255,.55); border-top-color: transparent; }
 .cmp-ring.r2 { inset: 12px; border-color: rgba(63,216,255,.35); border-bottom-color: transparent; }
 .companion[data-state="listening"] .cmp-core { animation: cmp-pulse .9s ease-in-out infinite; background: radial-gradient(circle, #fff 0%, #5cffb0 45%, rgba(92,255,176,0) 72%); box-shadow: 0 0 18px #5cffb0; }
@@ -80,18 +82,31 @@
 @keyframes cmp-pulse { 50% { transform: scale(1.35); } }
 @keyframes cmp-talk { from { transform: scale(.85); } to { transform: scale(1.25); } }
 @media (prefers-reduced-motion: reduce) { .companion * { animation: none !important; } }
-.cmp-panel { width: 300px; padding: 12px; border-radius: 12px; color: #d6f6ff; font-size: 13px;
-  background: linear-gradient(160deg, rgba(8,30,48,.96), rgba(4,16,28,.96)); border: 1px solid rgba(63,216,255,.45);
-  box-shadow: 0 0 22px rgba(63,216,255,.18), 0 10px 30px rgba(0,0,0,.35); }
-.cmp-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 6px; }
-.cmp-head strong { color: #3fd8ff; letter-spacing: .08em; text-transform: uppercase; font-size: 11.5px; }
+.cmp-panel { width: min(380px, calc(100vw - 40px)); max-height: min(560px, 70vh); display: flex; flex-direction: column; padding: 12px; border-radius: 14px; color: #d6f6ff; font-size: 13px;
+  background: linear-gradient(160deg, rgba(8,30,48,.97), rgba(4,16,28,.97)); border: 1px solid rgba(63,216,255,.45); box-shadow: 0 0 22px rgba(63,216,255,.18), 0 10px 30px rgba(0,0,0,.35); }
+.cmp-panel[hidden] { display: none; }
+.cmp-head { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+.cmp-head strong { color: #3fd8ff; letter-spacing: .08em; text-transform: uppercase; font-size: 12px; flex: 1; }
 .cmp-status { font: 600 11px var(--mono); color: #8fdcf0; }
 .companion[data-state="listening"] .cmp-status { color: #5cffb0; }
-.cmp-said { margin: 0 0 10px; line-height: 1.45; max-height: 130px; overflow: auto; }
-.cmp-actions { display: flex; gap: 6px; margin-bottom: 8px; flex-wrap: wrap; }
+.cmp-close { background: none; border: 0; color: #8fdcf0; cursor: pointer; padding: 2px; }
+.cmp-log { flex: 1; overflow: auto; display: grid; gap: 8px; align-content: start; padding-right: 2px; min-height: 80px; }
+.cmp-msg p { margin: 0; line-height: 1.45; }
+.cmp-msg.you { justify-self: end; max-width: 85%; background: rgba(63,216,255,.16); border: 1px solid rgba(63,216,255,.35); padding: 6px 9px; border-radius: 10px 10px 2px 10px; }
+.cmp-msg.bot { max-width: 100%; }
+.cmp-msg .wire-howto { margin: 8px 0 0; }
+.cmp-msg .wire-howto-row { background: rgba(255,255,255,.95); }
+.cmp-tip, .cmp-warn { margin-top: 6px; padding: 6px 8px; border-radius: 8px; font-size: 12px; }
+.cmp-tip { background: rgba(92,255,176,.1); border: 1px solid rgba(92,255,176,.35); color: #c9ffe6; }
+.cmp-warn { background: rgba(255,190,80,.12); border: 1px solid rgba(255,190,80,.4); color: #ffe2ad; display: flex; gap: 6px; align-items: flex-start; }
+.cmp-chips { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0; }
+.cmp-chip { border: 1px solid rgba(63,216,255,.4); background: rgba(63,216,255,.08); color: #bff4ff; border-radius: 999px; padding: 4px 9px; font: 12px var(--font); cursor: pointer; text-align: left; }
+.cmp-chip:hover { background: rgba(63,216,255,.2); }
+.cmp-row { display: flex; gap: 6px; }
+.cmp-actions { display: flex; gap: 6px; margin-top: 8px; flex-wrap: wrap; }
 .cmp-panel .btn { background: rgba(63,216,255,.1); color: #d6f6ff; border-color: rgba(63,216,255,.4); }
 .cmp-panel .btn:hover:not(:disabled) { background: rgba(63,216,255,.22); }
 .cmp-panel .btn:disabled { opacity: .45; }
-.cmp-input { width: 100%; box-sizing: border-box; padding: 7px 9px; border-radius: 8px; border: 1px solid rgba(63,216,255,.4);
-  background: rgba(0,0,0,.35); color: #e8fbff; font: 13px var(--font); }
+.cmp-panel .cmp-ai { margin-top: 8px; }
+.cmp-input { flex: 1; min-width: 0; padding: 8px 10px; border-radius: 8px; border: 1px solid rgba(63,216,255,.4); background: rgba(0,0,0,.35); color: #e8fbff; font: 13px var(--font); }
 .cmp-input::placeholder { color: #6fa9bb; }
