@@ -20,8 +20,12 @@ question, work from the user's description, screenshot, or model.
 - If the user asks about the open document or current selection, run
   `wiremap solidworks-session --json` on the Windows PC running SOLIDWORKS.
   Read a fresh snapshot when the user changes the selection or document.
-  The snapshot identifies the active document, configuration, sketch constraint
-  status while editing, and selection. Use visible error text or a screenshot
+  The snapshot identifies the active document, file path, configuration,
+  sketch constraint status while editing, material, bounding box (mm), mass,
+  the last features in the tree, every feature or mate with a rebuild error or
+  warning (with its error code), and the selection. Start an error answer at
+  the first failing feature. Use the bounding box with `wiremap fit-printer
+  --size` for printer questions. Use visible error text or a screenshot
   for details that the snapshot cannot see. If the session is unavailable,
   continue with the evidence the user has provided.
 - For a how-to, name the document and editing context (part, assembly, drawing,
@@ -212,7 +216,9 @@ switches to the other when one runs out of tokens), with the access level
 the user picks in the panel: Read only (default), Can edit project, or Full
 access. The pop-out button floats the panel above SOLIDWORKS or Bambu Studio
 (Chrome/Edge); other browsers get a small popup window (`?overlay=1`). If no
-CLI is available, the question goes to the inbox for you. Give every step `parts` and `wires` and every part a `description`
+CLI is available, the question goes to the inbox for you. On Windows, the
+panel's SOLIDWORKS switch (on by default) adds a live snapshot of the open
+model to every chatbot question. Give every step `parts` and `wires` and every part a `description`
 so its answers stay good.
 
 When the user clicks "Explain", "Fix this", "Swap part" or "I'm stuck", the

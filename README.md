@@ -172,3 +172,11 @@ key; **AI: Auto** switches to the other one when one runs out of tokens.
 The pop-out button keeps the panel on top of SOLIDWORKS or Bambu Studio
 (Document Picture-in-Picture, Chrome or Edge). Other browsers open a small
 popup window at `?overlay=1`.
+
+On Windows with SOLIDWORKS open, the panel shows the active document and a
+**SOLIDWORKS** switch. When it is on, every chatbot question includes a live
+snapshot: document, configuration, sketch status, material, size, mass, the
+features or mates with rebuild errors, and the selection. Ask "why is my
+model failing?" or "will this part fit my printer?". The same snapshot is
+available as `wiremap solidworks-session --json`. Set
+`WIREMAP_SOLIDWORKS_FIXTURE=<file.json>` to replay a saved snapshot on any OS.

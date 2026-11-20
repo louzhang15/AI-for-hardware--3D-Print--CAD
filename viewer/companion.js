@@ -42,11 +42,28 @@ export function createCompanion(app) {
     } },
   h('option', { value: 'read' }, 'Read only'), h('option', { value: 'edit' }, 'Can edit project'), h('option', { value: 'full' }, 'Full access'));
   accessSel.value = access;
+  // Live SOLIDWORKS link (Windows): status line, on/off, refreshed while the panel is open.
+  let swOn = store.get('wiremap.solidworks', true) !== false;
+  let swInfo = null;
+  const swText = h('span.cmp-sw-text', null, 'Looking for SOLIDWORKS…');
+  const swBox = h('input', { type: 'checkbox', checked: swOn, 'aria-label': 'Share the open SOLIDWORKS model with the AI',
+    onchange: () => { swOn = swBox.checked; store.set('wiremap.solidworks', swOn); refreshSw(); } });
+  const swLine = h('label.cmp-sw', { hidden: true, title: 'When on, the AI sees the open SOLIDWORKS document, its feature tree errors, size, mass and your selection.' },
+    swBox, h('b', null, 'SOLIDWORKS'), swText);
+  async function refreshSw() {
+    try { swInfo = JSON.parse(await api('/api/solidworks')); } catch { swInfo = null; }
+    swLine.hidden = !swInfo || swInfo.status === 'unsupported';
+    swLine.classList.toggle('active', Boolean(swInfo?.active && swOn));
+    swText.textContent = !swOn ? 'off' : swInfo?.active ? swInfo.text : (swInfo?.text || 'not found');
+    renderChips();
+  }
+  setInterval(() => { if (!panel.hidden && !document.hidden) refreshSw(); }, 15000);
   const popBtn = h('button.cmp-close', { type: 'button', 'aria-label': 'Pop out over other apps', title: 'Pop out: keep Ask Wiremap on top of SOLIDWORKS or Bambu Studio', onclick: () => popOut() }, icon('external', 14));
   const panel = h('div.cmp-panel', { hidden: true, role: 'dialog', 'aria-label': 'Ask Wiremap' },
     h('div.cmp-head', null, h('strong', null, 'Ask Wiremap'), status, popBtn,
       h('button.cmp-close', { type: 'button', 'aria-label': 'Close', onclick: () => toggle(false) }, icon('x', 14))),
     h('div.cmp-settings', null, providerSel, accessSel),
+    swLine,
     log, chips,
     h('div.cmp-row', null, input, mic),
     h('div.cmp-actions', null,
@@ -69,13 +86,18 @@ export function createCompanion(app) {
     panel.hidden = !open;
     root.classList.toggle('open', open);
     app.views['3d']?.setInset?.(insetFor(open));
-    if (open) { renderChips(); if (!log.childElementCount) greet(); setTimeout(() => input.focus(), 0); }
+    if (open) { renderChips(); refreshSw(); if (!log.childElementCount) greet(); setTimeout(() => input.focus(), 0); }
   }
   function greet() {
     add('bot', 'Hi! I can show you exactly where each wire goes and help when something does not work. Tap a question below, type, or press Talk.');
   }
   function renderChips() {
-    chips.replaceChildren(...suggestions(app).map((q) => h('button.cmp-chip', { type: 'button', onclick: () => handle(q) }, q)));
+    const sw = swOn && swInfo?.active ? [
+      swInfo.problems ? 'Why is my SOLIDWORKS model failing?' : null,
+      swInfo.selected ? 'What did I select in SOLIDWORKS?' : null,
+      swInfo.type === 'part' ? 'Will this part fit my printer?' : null,
+    ].filter(Boolean) : [];
+    chips.replaceChildren(...[...sw, ...suggestions(app)].slice(0, 8).map((q) => h('button.cmp-chip', { type: 'button', onclick: () => handle(q) }, q)));
   }
   function add(who, text, extra) {
     history.push({ who, text: String(text) });
@@ -219,7 +241,7 @@ export function createCompanion(app) {
     setState('thinking');
     try {
       const res = await postJSON('/api/chat', {
-        question: text, project: app.data?.name, provider, access,
+        question: text, project: app.data?.name, provider, access, solidworks: swOn,
         step: step ? `${step.title}: ${step.text || ''}` : '',
         selection: sel ? `${sel.type} ${sel.id || ''}` : '',
         history: history.slice(-7, -1),

@@ -1,0 +1,24 @@
+{
+  "status": "active",
+  "revision": "33.2.0",
+  "document": {
+    "title": "servo-bracket.SLDPRT", "type": "part", "path": "C:\\Users\\me\\cad\\servo-bracket.SLDPRT",
+    "unsavedChanges": true, "configuration": "Default", "activeSketch": null, "material": "PLA",
+    "sizeMm": [62.5, 40, 3.2], "mass": { "grams": 7.9, "volumeCm3": 6.4 }
+  },
+  "features": {
+    "total": 14,
+    "recent": [
+      { "name": "Origin", "type": "OriginProfileFeature", "suppressed": false, "errorCode": 0, "warning": false },
+      { "name": "Base-Extrude", "type": "Extrusion", "suppressed": false, "errorCode": 0, "warning": false },
+      { "name": "Servo mount holes", "type": "HoleWzd", "suppressed": false, "errorCode": 0, "warning": false },
+      { "name": "Fillet1", "type": "Fillet", "suppressed": false, "errorCode": 33, "warning": false }
+    ],
+    "problems": [
+      { "name": "Fillet1", "type": "Fillet", "suppressed": false, "errorCode": 33, "warning": false },
+      { "name": "Coincident3", "type": "MateCoincident", "suppressed": false, "errorCode": 47, "warning": true }
+    ]
+  },
+  "selectionCount": 1,
+  "selection": [{ "typeCode": 2, "name": "Face<1>" }]
+}

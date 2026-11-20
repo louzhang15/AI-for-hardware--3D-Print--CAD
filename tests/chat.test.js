@@ -94,3 +94,37 @@ test('HTTP route answers, refuses foreign origins, and validates input', { skip 
   const prov = await (await fetch(new URL('/api/chat/providers', server.url))).json();
   assert.deepEqual(prov, { claude: true, codex: true });
 });
+
+test('SOLIDWORKS snapshot becomes plain chatbot context and a panel status', async () => {
+  process.env.WIREMAP_SOLIDWORKS_FIXTURE = fileURLToPath(new URL('./fixtures/solidworks/bracket.json', import.meta.url));
+  const sw = await import('../scripts/solidworks-session.mjs');
+  const report = await sw.readSession();
+  const text = sw.describeSession(report);
+  assert.match(text, /"servo-bracket\.SLDPRT" \(part\)/);
+  assert.match(text, /62\.5 x 40 x 3\.2 mm/);
+  assert.match(text, /--size 63x40x4/);
+  assert.match(text, /Fillet1 \[Fillet\] error code 33/);
+  assert.match(text, /Coincident3 \[MateCoincident\] warning/);
+  assert.match(text, /Selected \(1\): Face<1> \(face\)/);
+  assert.doesNotMatch(text, /Origin \[/, 'reference features are left out');
+  assert.deepEqual(sw.sessionStatus(report), { active: true, title: 'servo-bracket.SLDPRT', type: 'part', selected: 1, problems: 2,
+    text: 'servo-bracket.SLDPRT · part · 1 selected · 2 rebuild problems' });
+  delete process.env.WIREMAP_SOLIDWORKS_FIXTURE;
+});
+
+test('chat route sends live SOLIDWORKS context unless the user turns it off', { skip }, async (t) => {
+  process.env.WIREMAP_SOLIDWORKS_FIXTURE = fileURLToPath(new URL('./fixtures/solidworks/bracket.json', import.meta.url));
+  t.after(() => { delete process.env.WIREMAP_SOLIDWORKS_FIXTURE; });
+  const { startServer } = await import('../viewer/serve.mjs');
+  const server = await startServer({ port: 0, projectsDir: fileURLToPath(new URL('../projects', import.meta.url)) });
+  t.after(() => server.close());
+  const origin = new URL(server.url).origin;
+  const post = (body) => fetch(new URL('/api/chat', server.url), { method: 'POST', headers: { 'Content-Type': 'application/json', Origin: origin }, body: JSON.stringify(body) });
+  assert.equal((await post({ question: 'why is my model failing?' })).status, 200);
+  assert.match(calls().at(-1).input, /Live context:[\s\S]*Fillet1 \[Fillet\] error code 33/);
+  assert.equal((await post({ question: 'why is my model failing?', solidworks: false })).status, 200);
+  assert.doesNotMatch(calls().at(-1).input, /servo-bracket/);
+  const status = await (await fetch(new URL('/api/solidworks', server.url))).json();
+  assert.equal(status.active, true);
+  assert.equal(status.problems, 2);
+});

@@ -520,6 +520,11 @@ export async function startServer(opts = {}) {
       const changed = await updateState(real, body);
       return json(res, 200, { ok: true, changed });
     }
+    if (pathname === '/api/solidworks' && req.method === 'GET') {
+      const sw = await import('../scripts/solidworks-session.mjs');
+      const report = await sw.readSession();
+      return json(res, 200, { ...sw.sessionStatus(report), status: report.status });
+    }
     if (pathname === '/api/chat/providers' && req.method === 'GET') {
       const { detectProviders } = await import('../lib/node/chat.js');
       return json(res, 200, await detectProviders(true));
@@ -536,11 +541,18 @@ export async function startServer(opts = {}) {
       const { chat } = await import('../lib/node/chat.js');
       chatBusy = true;
       try {
+        // Live SOLIDWORKS context, when the user allows it and SOLIDWORKS is open.
+        let swContext = '';
+        if (body.solidworks !== false) {
+          const sw = await import('../scripts/solidworks-session.mjs');
+          const report = await sw.readSession();
+          if (report.status === 'active') swContext = sw.describeSession(report);
+        }
         const out = await chat({
           question, project: name, projectFile, wiremapRoot: ROOT, cwd: repoDir,
           access: ['read', 'edit', 'full'].includes(body.access) ? body.access : 'read',
           step: String(body.step || '').slice(0, 600), selection: String(body.selection || '').slice(0, 300),
-          context: String(body.context || '').slice(0, 2000),
+          context: [String(body.context || '').slice(0, 2000), swContext].filter(Boolean).join('\n'),
           history: Array.isArray(body.history) ? body.history.slice(-6).map((t) => ({ who: t?.who === 'you' ? 'you' : 'bot', text: String(t?.text || '') })) : [],
         }, provider);
         return json(res, 200, out);

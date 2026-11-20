@@ -39,9 +39,120 @@ For i = 1 To count
   items = items & "{""typeCode"":" & selectionType & ",""name"":" & Quote(SelectionName(selection, i)) & "}"
 Next
 
+Dim docPath, material, size, mass, tree
+docPath = PathOf(doc)
+material = MaterialOf(doc, kind)
+size = BoxOf(doc, kind)
+mass = MassOf(doc)
+tree = FeatureTree(doc)
+
 WScript.StdOut.WriteLine "{""status"":""active"",""revision"":" & Quote(revision) & ",""document"":{""title"":" & Quote(title) & _
-  ",""type"":" & Quote(kind) & ",""unsavedChanges"":" & dirty & ",""configuration"":" & Quote(config) & _
-  ",""activeSketch"":" & Quote(sketch) & "},""selectionCount"":" & count & ",""selection"":[" & items & "]}"
+  ",""type"":" & Quote(kind) & ",""path"":" & Quote(docPath) & ",""unsavedChanges"":" & dirty & ",""configuration"":" & Quote(config) & _
+  ",""activeSketch"":" & Quote(sketch) & ",""material"":" & Quote(material) & ",""sizeMm"":" & size & ",""mass"":" & mass & _
+  "},""features"":" & tree & ",""selectionCount"":" & count & ",""selection"":[" & items & "]}"
+
+' Decimal point regardless of the Windows locale.
+Function Num(value)
+  Num = Replace(CStr(Round(CDbl(value), 3)), ",", ".")
+End Function
+
+Function PathOf(model)
+  On Error Resume Next
+  PathOf = model.GetPathName
+End Function
+
+Function MaterialOf(model, docKind)
+  On Error Resume Next
+  Dim db
+  MaterialOf = Empty
+  If docKind = "part" Then MaterialOf = model.GetMaterialPropertyName2("", db)
+  If MaterialOf = "" Then MaterialOf = Empty
+End Function
+
+' Bounding box in mm: [x, y, z] sizes, or null.
+Function BoxOf(model, docKind)
+  On Error Resume Next
+  Dim b
+  BoxOf = "null"
+  If docKind = "part" Then
+    b = model.GetPartBox(True)
+  ElseIf docKind = "assembly" Then
+    b = model.GetBox(0)
+  Else
+    Exit Function
+  End If
+  If Err.Number <> 0 Or Not IsArray(b) Then Exit Function
+  If UBound(b) < 5 Then Exit Function
+  BoxOf = "[" & Num(Abs(b(3) - b(0)) * 1000) & "," & Num(Abs(b(4) - b(1)) * 1000) & "," & Num(Abs(b(5) - b(2)) * 1000) & "]"
+End Function
+
+' Mass in grams and volume in cm3, or null.
+Function MassOf(model)
+  On Error Resume Next
+  Dim mp
+  MassOf = "null"
+  Set mp = model.Extension.CreateMassProperty
+  If Err.Number <> 0 Or mp Is Nothing Then Exit Function
+  MassOf = "{""grams"":" & Num(mp.Mass * 1000) & ",""volumeCm3"":" & Num(mp.Volume * 1000000) & "}"
+  If Err.Number <> 0 Then MassOf = "null"
+End Function
+
+' Feature tree: the last 40 features plus every feature or mate with an error or warning.
+Function FeatureTree(model)
+  On Error Resume Next
+  Dim feat, subFeat, list, problems, total, entry, recent(39), nRecent, k, start
+  total = 0
+  nRecent = 0
+  problems = ""
+  Set feat = model.FirstFeature
+  Do While Not feat Is Nothing
+    total = total + 1
+    entry = FeatureJson(feat)
+    recent(nRecent Mod 40) = entry
+    nRecent = nRecent + 1
+    If HasProblem(feat) Then problems = AddItem(problems, entry)
+    If feat.GetTypeName2 = "MateGroup" Then
+      Set subFeat = feat.GetFirstSubFeature
+      Do While Not subFeat Is Nothing
+        If HasProblem(subFeat) Then problems = AddItem(problems, FeatureJson(subFeat))
+        Set subFeat = subFeat.GetNextSubFeature
+      Loop
+    End If
+    If total > 2000 Then Exit Do
+    Set feat = feat.GetNextFeature
+  Loop
+  list = ""
+  start = 0
+  If nRecent > 40 Then start = nRecent - 40
+  For k = start To nRecent - 1
+    list = AddItem(list, recent(k Mod 40))
+  Next
+  FeatureTree = "{""total"":" & total & ",""recent"":[" & list & "],""problems"":[" & problems & "]}"
+End Function
+
+Function AddItem(listText, item)
+  If listText = "" Then AddItem = item Else AddItem = listText & "," & item
+End Function
+
+Function HasProblem(feat)
+  On Error Resume Next
+  Dim isWarning, code
+  isWarning = False
+  code = feat.GetErrorCode2(isWarning)
+  HasProblem = (Err.Number = 0 And code <> 0)
+End Function
+
+Function FeatureJson(feat)
+  On Error Resume Next
+  Dim isWarning, code, suppressed
+  isWarning = False
+  code = feat.GetErrorCode2(isWarning)
+  If Err.Number <> 0 Then code = 0: Err.Clear
+  suppressed = LCase(CStr(feat.IsSuppressed))
+  If suppressed <> "true" Then suppressed = "false"
+  FeatureJson = "{""name"":" & Quote(feat.Name) & ",""type"":" & Quote(feat.GetTypeName2) & _
+    ",""suppressed"":" & suppressed & ",""errorCode"":" & CLng(code) & ",""warning"":" & LCase(CStr(CBool(isWarning))) & "}"
+End Function
 
 Function ConfigurationName(model)
   On Error Resume Next

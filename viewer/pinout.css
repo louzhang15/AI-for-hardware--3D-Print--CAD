@@ -142,3 +142,8 @@ body.overlay-mode { background: #04101c; }
 body.overlay-mode .companion { position: fixed; inset: 8px; align-items: stretch; }
 body.overlay-mode .cmp-panel { width: auto; max-height: none; flex: 1; }
 body.overlay-mode .cmp-launch { display: none; }
+.cmp-sw { display: flex; align-items: center; gap: 6px; margin: -2px 0 8px; font-size: 12px; color: #8fdcf0; }
+.cmp-sw[hidden] { display: none; }
+.cmp-sw b { font: 700 10.5px var(--mono); letter-spacing: .06em; color: #6fa9bb; }
+.cmp-sw.active b { color: #5cffb0; }
+.cmp-sw-text { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
