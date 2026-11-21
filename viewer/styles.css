@@ -527,6 +527,12 @@ svg .lit .sk-wire { filter: drop-shadow(0 0 3px rgba(255,255,255,.25)); }
 .scene-workspace { height: 100%; display: flex; flex-direction: column; background: var(--stage); }
 .three-host { position: relative; flex: 1; min-height: 0; overflow: hidden; }
 .three-host canvas { display: block; width: 100%; height: 100%; outline: none; }
+.scene-labels { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+.scene-label rect { fill: var(--panel); stroke: var(--line); }
+.scene-label line { stroke: var(--muted); }
+.scene-label text { fill: var(--text); font: 600 12px Consolas, monospace; }
+.scene-label.active rect, .scene-label.active line { stroke: var(--accent); }
+.scene-label.estimated line { stroke-dasharray: 2 2; }
 .scene-status { margin: 0; padding: 7px 13px; background: var(--warn-soft); color: var(--text-2); }
 .scene-toggle { display: inline-flex; align-items: center; gap: 5px; min-height: 30px; padding: 0 4px; font-size: 12px; white-space: nowrap; }
 .scene-toggle .tick { width: 13px; height: 13px; }
@@ -536,6 +542,7 @@ svg .lit .sk-wire { filter: drop-shadow(0 0 3px rgba(255,255,255,.25)); }
   background: var(--panel); border-bottom: 1px solid var(--line);
 }
 .scene-inspect-field { display: grid; gap: 2px; font-size: 11px; font-weight: 650; color: var(--muted); min-width: 0; width: min(188px, 46%); }
+.scene-connection-field { width: min(290px, 100%); }
 .scene-inspect-field select.input { background: var(--panel-2); }
 .scene-inspect-picker button { min-height: 30px; }
 .scene-inspect-details {
@@ -548,6 +555,16 @@ svg .lit .sk-wire { filter: drop-shadow(0 0 3px rgba(255,255,255,.25)); }
 .scene-inspect-key { font: 12px var(--mono); padding: 2px 5px; border-radius: 4px; background: var(--accent-soft); color: var(--accent); }
 .scene-inspect-meta { color: var(--muted); }
 .scene-inspect-details .scene-inspect-wire { margin-top: 4px; }
+.scene-wire-facts { color: var(--muted); margin-left: 10px; }
+.scene-wire-path { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); gap: 8px; align-items: center; max-width: 580px; margin-top: 6px; }
+.scene-wire-end {
+  min-width: 0; min-height: 48px; padding: 5px 8px; border: 1px solid var(--line-2); border-radius: 6px;
+  display: grid; gap: 1px; background: var(--panel-2); text-align: left; cursor: pointer;
+}
+.scene-wire-end:hover { border-color: var(--accent); }
+.scene-end-part { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 11px; color: var(--muted); }
+.scene-end-pin { display: inline-flex; align-items: baseline; flex-wrap: wrap; gap: 5px; color: var(--muted); font: 11px var(--mono); }
+.scene-end-pin strong { color: var(--text); font-size: 14px; }
 .scene-inspect-connections { list-style: none; margin: 6px 0 0; padding: 0; display: grid; gap: 4px; }
 .scene-inspect-row { display: flex; align-items: center; gap: 5px; flex-wrap: wrap; }
 .scene-inspect-row .btn { max-width: 100%; height: auto; min-height: 27px; text-align: left; white-space: normal; overflow-wrap: anywhere; }

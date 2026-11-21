@@ -202,6 +202,8 @@ breadboard, the 3D view, the power tree and the guided steps.
 When the user clicks "Explain", "Fix this", "Swap part" or "I'm stuck", the
 request goes to `.wiremap/inbox.jsonl`. **Between steps, run `wiremap inbox
 list`**; handle each request, then `wiremap inbox done <id> --note "..."`.
+For a desktop companion request, use `wiremap inbox reply <id> --text "..."`
+or `--file` for a multiline answer so it appears in the companion and can be read aloud.
 
 ### Carry corrections forward
 

@@ -295,3 +295,4 @@
   .home-page .home-card-body { padding: 15px 15px 0; }
   .home-page .home-card-footer { padding-block: 5px; }
 }
+.home-header-actions { display: flex; gap: 8px; align-items: center; justify-content: flex-end; flex-wrap: wrap; }

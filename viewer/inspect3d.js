@@ -14,11 +14,16 @@ export function createInspector(view) {
   let listedPart;
   let listedPin;
   let listedMapPart;
+  let listedWireSelection;
   let mapEntries = [];
   let connections = [];
   let activePin = '';
 
   const choosePart = h('select.input', { 'aria-label': 'Component', onchange: () => selectPart(choosePart.value) });
+  const chooseWire = h('select.input', { 'aria-label': 'Connection', onchange: () => {
+    if (chooseWire.value) app.select({ type: 'wire', id: chooseWire.value }, { sheet: false });
+    else app.clearSelection();
+  } });
   const choosePin = h('select.input', { 'aria-label': 'Pin', onchange: () => {
     if (choosePin.value) app.select({ type: 'pin', id: choosePin.value }, { sheet: false });
     else selectPart(choosePart.value);
@@ -31,6 +36,7 @@ export function createInspector(view) {
   const clear = h('button.btn.ghost.small.scene-inspect-clear', { type: 'button', 'aria-label': 'Clear connection selection',
     onclick: () => { app.clearSelection(); choosePart.focus(); } }, 'Clear');
   const picker = h('div.scene-inspect-picker', null,
+    h('label.scene-inspect-field.scene-connection-field', null, 'Connection', chooseWire),
     h('label.scene-inspect-field', null, 'Component', choosePart),
     h('label.scene-inspect-field', null, 'Pin', choosePin),
     typeof view.focusPart === 'function' || typeof view.focusWire === 'function' ? focus : null, clear);
@@ -48,7 +54,7 @@ export function createInspector(view) {
         context: `Help troubleshoot ${app.pinText(selection.id)} (${selection.id}) and its connections.`, placeholder: 'What are you seeing?' });
     }
   } });
-  const selectedWire = h('p.scene-inspect-wire', { hidden: true });
+  const selectedWire = h('div.scene-inspect-wire', { hidden: true });
   const wireList = h('ul.scene-inspect-connections', { 'aria-label': 'Connected wires', hidden: true });
   const issues = h('ul.scene-inspect-issues', { 'aria-label': 'Checker messages for this selection', hidden: true });
   const mapTitle = h('summary', null, 'Pin list');
@@ -83,7 +89,10 @@ export function createInspector(view) {
   }
 
   function selectPart(id) {
-    if (id) app.select({ type: 'part', id }, { sheet: false });
+    if (id) {
+      app.select({ type: 'part', id }, { sheet: false });
+      view.focusPart?.(id);
+    }
     else app.clearSelection();
   }
 
@@ -130,6 +139,14 @@ export function createInspector(view) {
     if (changed || !choosePart.options.length) choosePart.replaceChildren(
       h('option', { value: '' }, parts.length ? 'Choose a component' : 'No components'),
       ...parts.map((entry) => h('option', { value: entry.id }, entry.label || entry.name || entry.id)));
+    if (changed || !chooseWire.options.length) chooseWire.replaceChildren(
+      h('option', { value: '' }, 'Choose a wire'),
+      ...(model?.wires || []).filter((entry) => entry.valid !== false).map((entry) => {
+        const description = app.describeWire(entry.id);
+        return h('option', { value: entry.id }, description?.title || entry.label || entry.id);
+      }));
+    chooseWire.value = wire ? selection.id : '';
+    chooseWire.disabled = chooseWire.options.length < 2;
     choosePart.value = part?.id || '';
     choosePart.disabled = !parts.length;
     if (changed || part !== listedPart || !choosePin.options.length) {
@@ -149,6 +166,7 @@ export function createInspector(view) {
       listedPin = pinKey;
       showConnections(pinKey);
     }
+    wireList.hidden = Boolean(wire) || !connections.length;
     for (const { id, row, button } of connections) {
       const selected = id === selection?.id && selection.type === 'wire';
       row.classList.toggle('selected', selected);
@@ -169,19 +187,42 @@ export function createInspector(view) {
       const rating = Number.isFinite(voltage) ? `Expected ${fmtV(voltage)}` : Number.isFinite(pin.vmax) ? `Max ${fmtV(pin.vmax)}` : '';
       const count = connections.length;
       const description = [ROLE_LABELS[role || pin.kind] || PIN_KINDS[pin.kind], rating, count ? `${count} connected ${count === 1 ? 'wire' : 'wires'}` : 'No connected wires', mapping];
-      content = [h('strong', null, pin.label || pin.name), h('code.scene-inspect-key', null, pinKey),
+      content = [h('strong', null, app.pinText(pinKey)),
         h('span.scene-inspect-meta', null, description.filter(Boolean).join(' · '))];
     } else if (part) {
       content = [h('strong', null, part.label || part.name || part.id),
-        h('span.scene-inspect-meta', null, [partMapping, part.pins.length ? 'Choose a pin to see its connections.' : 'This component has no pins.'].filter(Boolean).join(' · '))];
+        h('span.scene-inspect-meta', null, [partMapping, part.pins.length ? 'Match these labels to the markings on your board.' : 'This component has no pins.'].filter(Boolean).join(' · '))];
     } else {
-      content = [h('span.scene-inspect-meta', null, 'Choose a component and pin to inspect its connections.')];
+      content = [h('span.scene-inspect-meta', null, 'Choose one wire to see exactly where both ends go, or choose a component for its pin list.')];
     }
+    summary.hidden = Boolean(wire);
     summary.replaceChildren(...content);
     ask.hidden = typeof app.askWithNote !== 'function' || !(wire || (selection?.type === 'pin' && pin));
     ask.textContent = wire ? 'Ask about this wire' : 'Ask about this pin';
-    selectedWire.hidden = !wire || connections.some(({ id }) => id === selection.id);
-    selectedWire.textContent = wire ? `${wire.label} · ${app.pinText(wire.from)} ↔ ${app.pinText(wire.to)}` : '';
+    selectedWire.hidden = !wire;
+    const wireSelection = wire ? selection.id : null;
+    if (changed || wireSelection !== listedWireSelection) {
+      listedWireSelection = wireSelection;
+      selectedWire.replaceChildren();
+      if (wire) {
+        const labels = [wire.from, wire.to].map((key) => {
+          const pin = app.pin(key);
+          const partId = splitKey(key).part;
+          const part = app.part(partId);
+          const name = part?.label || part?.name || partId;
+          return h('button.scene-wire-end', {
+            type: 'button', 'aria-label': `Inspect ${app.pinText(key)}`, title: name,
+            onclick: () => app.select({ type: 'pin', id: key }, { sheet: false }),
+          }, h('span.scene-end-part', null, name),
+          h('span.scene-end-pin', null, h('strong', null, pin?.label || pin?.name || key),
+            pin?.label && pin.label !== pin.name ? h('span', null, pin.name) : null));
+        });
+        const details = wire.facts.filter((fact) => fact[0] === 'Colour' || fact[0] === 'Voltage');
+        selectedWire.append(h('strong', null, wire.label), details.length
+          ? h('span.scene-wire-facts', null, details.map(([name, value]) => `${name} ${value}`).join(' · ')) : null, h('div.scene-wire-path', null,
+          labels[0], h('span', { 'aria-hidden': 'true' }, '↔'), labels[1]));
+      }
+    }
 
     const matches = (check?.issues || []).filter((issue) => (issue.level === 'error' || issue.level === 'warning')
       && (selection?.type === 'pin' ? issue.pins?.includes(selection.id) : selection?.type === 'wire' && issue.wires?.includes(selection.id)));

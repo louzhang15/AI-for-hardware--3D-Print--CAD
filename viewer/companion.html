@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Wiremap Companion</title>
+  <link rel="stylesheet" href="./companion.css">
+</head>
+<body>
+  <main class="companion" aria-labelledby="title">
+    <header class="companion-header">
+      <div class="wordmark">
+        <svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="7" fill="#2454ca"/><path d="M8 22h6l4-12h6M8 13h3m10 6h3" fill="none" stroke="#fff" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><circle cx="8" cy="22" r="2" fill="#fff"/><circle cx="24" cy="10" r="2" fill="#fff"/></svg>
+        <h1 id="title">Wiremap <span>Companion</span></h1>
+      </div>
+      <a href="/" target="_blank" rel="noopener">Open workspace <span aria-hidden="true">↗</span></a>
+    </header>
+    <div class="voice-panel" data-state="idle">
+      <button id="microphone" type="button">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true">
+          <rect x="9" y="3" width="6" height="12" rx="3"/>
+          <path d="M5 11v1a7 7 0 0 0 14 0v-1m-7 8v3m-3 0h6"/>
+        </svg>
+        <span id="mic-label">Talk</span>
+      </button>
+      <p id="status" role="status">Microphone off</p>
+      <div class="voice-level" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div>
+    </div>
+    <form id="question-form">
+      <div class="question-head">
+        <label for="question">Your question</label>
+        <button class="context-button" id="bambu" type="button">Add Bambu settings</button>
+      </div>
+      <div class="composer">
+        <textarea id="question" maxlength="3900" rows="3" placeholder="Ask about a wire, a print, or SolidWorks" required></textarea>
+        <div class="actions">
+          <label class="speech-option"><input id="read-replies" type="checkbox" checked> Speak replies</label>
+          <button id="send" class="primary" type="submit">Ask Codex <span aria-hidden="true">↑</span></button>
+        </div>
+      </div>
+      <details class="attached-context" id="bambu-context" hidden>
+        <summary>Saved Bambu settings attached</summary>
+        <p id="bambu-preview"></p>
+        <button id="remove-bambu" type="button">Remove settings</button>
+      </details>
+      <p class="notice">Your browser may transcribe audio using its speech service. Codex receives the text you submit.</p>
+      <p class="context-status" id="context-status" role="status" hidden></p>
+    </form>
+    <section id="response" class="response" aria-labelledby="response-title" hidden>
+      <div class="response-head">
+        <h2 id="response-title">Reply</h2>
+        <button id="replay" type="button" hidden>Read aloud</button>
+      </div>
+      <div id="reply" aria-live="polite"></div>
+      <details id="handoff" hidden>
+        <summary>Use an open Codex or Claude Code chat</summary>
+        <p>Paste this into your chat to send the reply back here.</p>
+        <textarea id="handoff-text" rows="3" readonly aria-label="Chat handoff prompt"></textarea>
+        <button id="copy" type="button">Copy prompt</button>
+      </details>
+    </section>
+  </main>
+  <script type="module" src="./companion.js"></script>
+</body>
+</html>

@@ -2,10 +2,12 @@
 // Viewer -> AI inbox (.wiremap/inbox.jsonl).
 //   node scripts/inbox.mjs list [--all] [--json] [--dir D]
 //   node scripts/inbox.mjs done <id> [--note text] [--dir D]
+//   node scripts/inbox.mjs reply <id> (--text text | --file path) [--dir D]
 //   node scripts/inbox.mjs add --kind explain --target wire:w5 --text "..." [--project projects/x.json] [--dir D]
+import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { appendInbox, markInbox, readInbox, inboxPath, INBOX_KINDS } from '../lib/node/inbox.js';
+import { appendInbox, markInbox, readInbox, inboxPath, INBOX_KINDS, isCompanionRequest } from '../lib/node/inbox.js';
 
 const HELP = `Usage: node scripts/inbox.mjs <command> [options]
 
@@ -15,6 +17,8 @@ The viewer writes requests ("explain this wire", "fix this") to
 Commands:
   list [--all] [--json]       pending requests (--all: every request)
   done <id> [--note text]     mark a request handled (appends a status line)
+  reply <id> (--text text | --file path)
+                              send a plain-text reply to the desktop companion
   add --kind K --target T --text "..." [--project P]
                               add a request (for testing). K: ${INBOX_KINDS.join(', ')}
                               T: wire:w5 | part:esp | pin:esp.GPIO21 | step:s9 | issue:<id>
@@ -67,6 +71,19 @@ export async function main(argv = process.argv.slice(2)) {
       if (!id) { console.error('Usage: inbox done <id> [--note text]'); return 2; }
       markInbox(dir, id, 'done', opts.note);
       console.log(`Marked ${id} done.`);
+      return 0;
+    }
+    if (cmd === 'reply') {
+      const id = opts._[1];
+      if (!id || (opts.text === undefined) === (opts.file === undefined)) {
+        console.error('Usage: inbox reply <id> (--text text | --file path)');
+        return 2;
+      }
+      if (!isCompanionRequest(readInbox(dir).find((request) => request.id === id))) throw new Error(`No companion request with id "${id}"`);
+      const answer = (opts.file === undefined ? opts.text : readFileSync(opts.file, 'utf8')).trim();
+      if (!answer || answer.length > 4000) throw new Error('Reply must be 1-4000 characters');
+      markInbox(dir, id, 'done', answer);
+      console.log(`Replied to ${id}.`);
       return 0;
     }
     if (cmd === 'add') {

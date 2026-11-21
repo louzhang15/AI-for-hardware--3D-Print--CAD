@@ -24,9 +24,26 @@ node viewer/serve.mjs
 
 Open the printed localhost link and select the reference robot arm or rover.
 Use `node bin/wiremap.mjs new robot-arm my-arm` to start an editable copy.
+In the 3D view, choose a connection to see both component and pin names, or
+choose a component to zoom in and see its pin list. For an estimated position,
+match the pin name to the markings on the actual board.
 Then open Claude Code or Codex in the folder and say:
 
 > Use wiremap: 4-servo robot arm with an ESP32. I have a breadboard and a Bambu A1 mini, and I use build123d.
+
+### Desktop voice companion
+
+On Windows, open the centered desktop companion with `node bin/wiremap.mjs companion`.
+Tap the microphone or type your question, review the text, then select **Ask Codex**.
+Replies can be read aloud. Automatic replies use the installed and signed-in
+Codex CLI. When it is unavailable, the companion offers a prompt for an open
+Codex or Claude Code chat to answer through the Wiremap inbox. Speech input
+depends on your browser and its microphone permissions.
+
+Use **Add Bambu settings** to review the most recently saved Bambu Studio
+project's print settings and any saved slicing results in your question draft.
+For a specific file, run `node bin/wiremap.mjs bambu-session --file path/to/plate.3mf`.
+Save changes in Bambu Studio before reading them here.
 
 ### SolidWorks and Bambu Studio example
 
@@ -115,7 +132,7 @@ node bin/wiremap.mjs --help
 
 `check`, `layout-breadboard`, `calc`, `fit-printer`, `split-part`,
 `export-print`, `part-geometry`, `export`, `import-repo`, `inbox`, `serve`,
-`feedback`, `new`, `install`. Each also runs as `node scripts/<name>.mjs`.
+`feedback`, `solidworks-session`, `bambu-session`, `companion`, `new`, and `install`.
 
 ## Keep AI corrections for future builds
 

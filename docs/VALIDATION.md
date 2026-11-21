@@ -12,6 +12,8 @@ The reference arm includes a SolidWorks electronics deck and an ESP32 I²C bring
 | Export CLI | Generated the pin header, BOM CSV, WireViz YAML, KiCad netlist, HTML guide, and shopping checklist from the reference arm. |
 | Claude Code 2.1.326 | The local plugin and marketplace manifests passed validation with optional catalog metadata warnings. |
 | Claude Code and Codex skill installer | Installed and removed both skill mirrors in a temporary home, with the installed skills pointing to the correct checkout. |
+| 3D connection inspector | Selected the ESP32-to-PCA9685 I²C data wire in Chrome and verified both on-model callouts, the D21 and SDA board markings, and the GPIO21 alias. |
+| Windows voice companion | Verified the centered Chrome app window and a live Codex answer in the companion. Browser speech synthesis entered its speaking state. Microphone transcription and cancellation were exercised with simulated browser events. |
 
 ## Bambu Studio
 
@@ -27,6 +29,8 @@ Bambu Studio 02.09.01.70 sliced the deck using the installed Bambu profiles, a 0
 | H2D | 18m 23s | 12.42 g |
 
 The same Bambu Studio version also sliced a fresh deck export and two diagonally placed split pieces on the A1 mini. On the P1S, it sliced a 240 × 240 × 10 mm test panel in the 240 × 10 × 240 mm orientation selected to clear the reserved corner. All four runs generated G-code and a sliced 3MF with no slicer warnings. These runs verified toolpath generation with Wiremap's placement, including the alternate orientation.
+
+Wiremap's read-only saved-project reader also opened the A1 mini result and recovered its settings, 19m 10s estimate, 12.44 g PLA estimate, and saved timelapse advisory. Tests exercise deflate-compressed metadata, a corrupt entry, a missing recent file, and ABS on the open-frame A1 mini.
 
 ## Reproduce the handoff
 

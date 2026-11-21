@@ -16,17 +16,18 @@ import { randomBytes } from 'node:crypto';
 import { spawn } from 'node:child_process';
 import { createProject, listTemplates, projectSlug } from '../scripts/new-project.mjs';
 import { listFeedback, recordFeedback, reviewFeedback } from '../lib/node/feedback.js';
+import { appendInbox, COMPANION_TARGET, INBOX_KINDS, isCompanionRequest, markInbox, readInbox } from '../lib/node/inbox.js';
 
 const VIEWER_DIR = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(VIEWER_DIR, '..');
 const NAME_RE = /^[A-Za-z0-9._-]+$/;
 const MAX_BODY = 1024 * 1024;
 const PHASES = ['define', 'parts', 'power', 'wire', 'firmware', 'print', 'assemble', 'test'];
-const INBOX_KINDS = ['explain', 'fix', 'swap', 'stuck', 'ask'];
 const TARGET_RE = /^(wire|part|pin|step|issue|project|print):[^\n]{1,200}$/;
 const REQUIREMENT_FIELDS = new Set(['size', 'payload', 'runtime', 'budget', 'power', 'on_hand']);
 const RESERVED_FILENAME = /^(?:con|prn|aux|nul|com[1-9]|lpt[1-9])(?:\.|$)/i;
 const FEEDBACK_ROUTE = /^\/api\/project\/([^/]+)\/feedback(?:\/(f-[0-9a-f-]{36})\/review)?$/i;
+const COMPANION_REPLY_ROUTE = /^\/api\/companion\/(r-[a-z0-9]+-[a-f0-9]{6})$/;
 
 const MIME = {
   '.html': 'text/html; charset=utf-8',
@@ -200,7 +201,7 @@ function inboxPrompt(entry) {
 
 /**
  * Start the viewer server.
- * @param {{port?: number, projectsDir?: string, host?: string, quiet?: boolean, pollMs?: number}} opts
+ * @param {{port?: number, projectsDir?: string, host?: string, quiet?: boolean, pollMs?: number, askCompanionCodex?: (text: string) => Promise<string>}} opts
  * @returns {Promise<{server: http.Server, url: string, port: number, close: () => Promise<void>}>}
  */
 export async function startServer(opts = {}) {
@@ -211,7 +212,8 @@ export async function startServer(opts = {}) {
   if (!fs.existsSync(projectsDir)) fs.mkdirSync(projectsDir, { recursive: true });
 
   const libMod = await tryImport('lib/node/library.js');
-  const inboxMod = await tryImport('lib/node/inbox.js');
+  let companionAnswering = null;
+  const companionFailures = new Set();
 
   let port = 0;
   const clients = new Set();
@@ -389,7 +391,7 @@ export async function startServer(opts = {}) {
     finally { if (pendingWrites.get(file) === write) pendingWrites.delete(file); }
   }
 
-  async function appendInboxEntry(body) {
+  function appendInboxEntry(body) {
     const kind = body.kind;
     const target = typeof body.target === 'string' ? body.target.trim() : '';
     const text = typeof body.text === 'string' ? body.text.trim() : '';
@@ -403,25 +405,62 @@ export async function startServer(opts = {}) {
       if (!pf) throw bad('invalid project name');
       project = pf.name;
     }
-    const req = { kind, target, text, project };
-    let entry = null;
-    if (inboxMod && typeof inboxMod.appendInbox === 'function') {
-      try {
-        entry = await inboxMod.appendInbox(repoDir, req);
-      } catch (e) {
-        throw bad(e && e.message ? e.message : 'invalid request');
-      }
-    } else {
-      const dir = path.join(repoDir, '.wiremap');
-      await fsp.mkdir(dir, { recursive: true });
-      const i = target.indexOf(':');
-      entry = { id: `r-${Date.now().toString(36)}-${randomBytes(3).toString('hex')}`, ts: new Date().toISOString(), kind, project, target: { type: target.slice(0, i), id: target.slice(i + 1) }, text, status: 'pending' };
-      await fsp.appendFile(path.join(dir, 'inbox.jsonl'), `${JSON.stringify(entry)}\n`, 'utf8');
-    }
+    const entry = appendInbox(repoDir, { kind, target, text, project });
     return { id: entry.id, prompt: inboxPrompt(entry), request: entry };
   }
 
+  function companionRequest(id) {
+    const request = readInbox(repoDir).find((entry) => entry.id === id);
+    return isCompanionRequest(request) ? request : null;
+  }
+
+  async function answerCompanion(request) {
+    companionAnswering = request.id;
+    try {
+      const ask = opts.askCompanionCodex ?? (await import('../lib/node/companion-codex.js')).askCompanionCodex;
+      const answer = (await ask(request.text)).trim();
+      if (!answer) throw new Error('Empty assistant reply');
+      if (companionRequest(request.id)?.status === 'pending') {
+        markInbox(repoDir, request.id, 'done', answer);
+      }
+    } catch {
+      if (companionFailures.size === 100) companionFailures.delete(companionFailures.values().next().value);
+      companionFailures.add(request.id);
+    } finally {
+      companionAnswering = null;
+    }
+  }
+
   async function handleApi(req, res, pathname) {
+    if (req.method === 'GET' && pathname === '/api/companion/bambu') {
+      if (!originOk(req)) return fail(res, 403, 'Forbidden origin');
+      const { readBambuSession, describeBambu } = await import('../lib/node/bambu-session.js');
+      const report = readBambuSession();
+      return json(res, 200, { status: report.status, text: describeBambu(report).slice(0, 3000) });
+    }
+    if (pathname === '/api/companion') {
+      if (!originOk(req)) return fail(res, 403, 'Forbidden origin');
+      if (req.method === 'GET') return json(res, 200, { available: true });
+      if (req.method === 'POST') {
+        const body = await readJsonBody(req);
+        if (body.assistant !== undefined && body.assistant !== 'codex') return fail(res, 400, 'Unknown companion assistant');
+        if (body.assistant === 'codex' && companionAnswering) return fail(res, 409, 'Codex is already answering a question. Try again when it finishes.');
+        const entry = appendInboxEntry({ kind: 'ask', target: COMPANION_TARGET, text: body.text });
+        const prompt = `Use Wiremap to read companion request ${entry.id} from the local inbox and answer it. Post the reply with node bin/wiremap.mjs inbox reply ${entry.id} --text "<answer>" (or --file for multiline text).`;
+        if (body.assistant === 'codex') void answerCompanion(entry.request);
+        return json(res, 201, { ...entry, prompt });
+      }
+    }
+    const companionReply = pathname.match(COMPANION_REPLY_ROUTE);
+    if (req.method === 'GET' && companionReply) {
+      if (!originOk(req)) return fail(res, 403, 'Forbidden origin');
+      const entry = companionRequest(companionReply[1]);
+      if (!entry) return fail(res, 404, 'Companion request not found');
+      const status = entry.status === 'pending' && entry.id === companionAnswering ? 'answering' : entry.status;
+      const result = { id: entry.id, status, reply: entry.status === 'done' ? entry.note || null : null };
+      if (status === 'pending' && companionFailures.has(entry.id)) result.error = 'Codex could not answer. Send the request to an open assistant session.';
+      return json(res, 200, result);
+    }
     if (req.method === 'GET' && pathname === '/api/library') {
       let lib = {};
       try {
@@ -521,17 +560,10 @@ export async function startServer(opts = {}) {
     }
     if (pathname === '/api/inbox' && req.method === 'POST') {
       const body = await readJsonBody(req);
-      return json(res, 200, await appendInboxEntry(body));
+      return json(res, 200, appendInboxEntry(body));
     }
     if (pathname === '/api/inbox' && req.method === 'GET') {
-      if (inboxMod && inboxMod.readInbox) {
-        try { return json(res, 200, { requests: await inboxMod.readInbox(repoDir) }); } catch { /* fall through */ }
-      }
-      const f = path.join(repoDir, '.wiremap', 'inbox.jsonl');
-      const lines = fs.existsSync(f) ? fs.readFileSync(f, 'utf8').split('\n').filter(Boolean) : [];
-      const out = [];
-      for (const l of lines) { try { out.push(JSON.parse(l)); } catch { /* skip */ } }
-      return json(res, 200, { requests: out });
+      return json(res, 200, { requests: readInbox(repoDir) });
     }
     return fail(res, 404, 'Unknown API route');
   }

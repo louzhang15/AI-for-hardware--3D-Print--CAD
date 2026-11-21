@@ -7,6 +7,7 @@ import { clear, h, layoutPositions, partColor } from './util.js';
 import { activeFocus, emptyView, tool } from './svg-view.js';
 import { createInspector } from './inspect3d.js';
 import { pinPlacement } from './pin-geometry.js';
+import { createSceneLabels } from './scene-labels.js';
 
 const axis = new THREE.Vector3(0, 1, 0);
 const angle = new THREE.Vector3(.65, 1, .85).normalize();
@@ -81,6 +82,7 @@ export class Scene3DView {
     this.pins = new Map();
     this.geometry = new Map();
     this.wires = new Map();
+    this.hoverTarget = null;
     this.status.hidden = true;
     const generation = ++this.generation;
     const { partList, wires } = this.app.data.check.model;
@@ -106,7 +108,8 @@ export class Scene3DView {
     const { renderer } = this;
     renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
     renderer.domElement.setAttribute('aria-label', this.assembly ? '3D assembly' : '3D circuit');
-    this.canvasHost = h('div.three-host', null, renderer.domElement);
+    this.labels = this.assembly ? null : createSceneLabels();
+    this.canvasHost = h('div.three-host', null, renderer.domElement, this.labels?.layer);
     this.status = h('p.small.scene-status', { role: 'status', hidden: true });
     this.inspector = this.assembly ? null : createInspector(this);
     clear(this.host).append(h('div.scene-workspace', null, this.inspector?.picker, this.canvasHost, this.inspector?.details, this.status));
@@ -359,11 +362,69 @@ export class Scene3DView {
     this.requestDraw();
   }
 
+  drawLabels() {
+    if (!this.labels) return;
+    const entries = [];
+    const added = new Set();
+    const project = (position) => {
+      position.project(this.camera);
+      if (Math.abs(position.x) >= 1 || Math.abs(position.y) >= 1 || Math.abs(position.z) >= 1) return null;
+      return [(position.x + 1) * this.width / 2, (1 - position.y) * this.height / 2];
+    };
+    const addPin = (key, active) => {
+      const pin = this.pins.get(key);
+      const definition = this.app.pin(key);
+      if (!pin?.visible || !definition || added.has(key)) return;
+      const anchor = project(pin.getWorldPosition(new THREE.Vector3()));
+      if (!anchor) return;
+      const center = project(pin.parent.getWorldPosition(new THREE.Vector3()));
+      const direction = center ? [anchor[0] - center[0], anchor[1] - center[1]] : null;
+      entries.push({ text: definition.label || definition.name, anchor, direction, kind: 'pin', active, estimated: !pin.userData.mapped });
+      added.add(key);
+    };
+    const addTarget = (target) => {
+      if (target?.type === 'pin') addPin(target.id, true);
+      if (target?.type === 'wire') {
+        const wire = this.wires.get(target.id)?.wire;
+        if (wire) {
+          addPin(wire.fromKey, true);
+          addPin(wire.toKey, true);
+        }
+      }
+    };
+    const selection = this.app.selection;
+    addTarget(selection);
+    if (selection?.type === 'pin') {
+      for (const { wire } of this.wires.values()) {
+        if (wire.fromKey === selection.id) addPin(wire.toKey, true);
+        if (wire.toKey === selection.id) addPin(wire.fromKey, true);
+      }
+    }
+    addTarget(this.hoverTarget);
+    const selectedPart = selection?.type === 'part' ? selection.id : this.inspectedPart;
+    if (selectedPart) {
+      const pins = this.app.part(selectedPart)?.pins || [];
+      for (const pin of pins) if (this.wiredPins.has(pin.key)) addPin(pin.key, false);
+      if (this.inspectedPart) for (const pin of pins) addPin(pin.key, false);
+    }
+    if (!selection || selection.type === 'part') {
+      for (const [partId, item] of this.parts) {
+        if (selection && selection.id !== partId) continue;
+        const part = this.app.part(partId);
+        const point = item.group.localToWorld(new THREE.Vector3(0, part?.size?.[1] || 0, 0));
+        const anchor = project(point);
+        if (anchor) entries.push({ text: part?.label || this.app.shortName(part), anchor, kind: 'part' });
+      }
+    }
+    this.labels.render(entries, this.width, this.height);
+  }
+
   requestDraw() {
     if (this.frame != null || !this.visible || !this.width) return;
     this.frame = requestAnimationFrame(() => {
       this.frame = null;
       this.renderer.render(this.scene, this.camera);
+      this.drawLabels();
     });
   }
 
@@ -418,6 +479,10 @@ export class Scene3DView {
       } else if (!down) {
         const target = hit(event);
         canvas.style.cursor = target ? 'pointer' : 'grab';
+        if (target?.type !== this.hoverTarget?.type || target?.id !== this.hoverTarget?.id) {
+          this.hoverTarget = target;
+          this.requestDraw();
+        }
       }
     });
     canvas.addEventListener('pointerup', (event) => {
@@ -433,6 +498,7 @@ export class Scene3DView {
       down = null;
     });
     canvas.addEventListener('pointercancel', () => { down = null; drag = null; });
+    canvas.addEventListener('pointerleave', () => { this.hoverTarget = null; this.requestDraw(); });
     canvas.addEventListener('contextmenu', (event) => { const target = hit(event); if (target) this.app.contextMenu(event, target); });
   }
 

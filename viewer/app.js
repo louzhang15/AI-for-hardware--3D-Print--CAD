@@ -647,7 +647,9 @@ async function renderHome() {
   const list = h('section.home-projects', { 'aria-label': 'Saved projects' }, h('p.home-empty', { role: 'status' }, 'Loading projects…'));
   root.append(h('div.home.home-page', null,
     h('header.home-header', null, h('div.home-header-inner', null,
-      h('div.home-wordmark', null, logo(30), 'Wiremap'), themeButtons())),
+      h('div.home-wordmark', null, logo(30), 'Wiremap'),
+      h('div.home-header-actions', null, h('a.btn.ghost.small', { href: '/companion.html', target: '_blank', rel: 'noopener' },
+        icon('spark', 15), 'Voice companion'), themeButtons()))),
     h('main.home-main', null,
       h('div.home-intro', null,
         h('div', null, h('h1', null, 'Build workspace'),

@@ -1,8 +1,10 @@
 import assert from 'node:assert/strict';
-import { copyFile, mkdir, mkdtemp, readFile, rm } from 'node:fs/promises';
+import { copyFile, mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
+import { setTimeout } from 'node:timers/promises';
 import test from 'node:test';
+import { main as inboxMain } from '../scripts/inbox.mjs';
 import { startServer } from '../viewer/serve.mjs';
 
 test('viewer serves its entry graph and preserves edits to the same project', async (t) => {
@@ -113,4 +115,89 @@ test('viewer corrections need review before reuse and restrict reviews to the or
   assert.equal((await post(endpoint('arm', review), { status: 'dismissed', scope: 'workspace' })).status, 200);
   assert.deepEqual(await records('rover'), []);
   assert.equal((await records('arm'))[0].status, 'dismissed');
+});
+
+test('companion queues a local question and retrieves the assistant reply by ID', async (t) => {
+  const workspace = await mkdtemp(join(tmpdir(), 'wiremap-companion-'));
+  const server = await startServer({ port: 0, projectsDir: join(workspace, 'projects') });
+  t.after(async () => {
+    await server.close();
+    await rm(workspace, { recursive: true, force: true });
+  });
+  const request = (path, options) => fetch(new URL(path, server.url), options);
+  const post = (path, body, origin = new URL(server.url).origin) => request(path, {
+    method: 'POST', headers: { 'Content-Type': 'application/json', Origin: origin }, body: JSON.stringify(body),
+  });
+  assert.deepEqual(await (await request('/api/companion')).json(), { available: true });
+  assert.equal((await post('/api/companion', { text: ' ' })).status, 400);
+  assert.equal((await post('/api/companion', { text: 'Hello' }, 'https://example.com')).status, 403);
+  const created = await post('/api/companion', { text: '  Can I connect this sensor to 5 V?  ' });
+  assert.equal(created.status, 201);
+  const { id, prompt, request: question } = await created.json();
+  assert.ok(prompt.includes(`inbox reply ${id}`));
+  assert.equal(question.text, 'Can I connect this sensor to 5 V?');
+  assert.deepEqual(question.target, { type: 'project', id: 'companion' });
+  assert.equal(question.project, null);
+  assert.deepEqual(await (await request(`/api/companion/${id}`)).json(), { id, status: 'pending', reply: null });
+  const unrelated = await (await post('/api/inbox', { kind: 'ask', target: 'part:esp', text: 'What is this?' })).json();
+  assert.equal((await request(`/api/companion/${unrelated.id}`)).status, 404);
+  assert.equal((await request(`/api/companion/${id}`, { headers: { Origin: 'https://example.com' } })).status, 403);
+
+  assert.equal(await inboxMain(['reply', id, '--dir', workspace, '--text', 'Check the sensor’s datasheet first.']), 0);
+  assert.deepEqual(await (await request(`/api/companion/${id}`)).json(), {
+    id, status: 'done', reply: 'Check the sensor’s datasheet first.',
+  });
+  const file = join(workspace, 'reply.txt');
+  await writeFile(file, 'First line.\nSecond line.');
+  assert.equal(await inboxMain(['reply', id, '--dir', workspace, '--file', file]), 0);
+  assert.equal((await (await request(`/api/companion/${id}`)).json()).reply, 'First line.\nSecond line.');
+  assert.equal((await request('/api/companion/unknown')).status, 404);
+});
+
+test('companion sends explicitly requested Codex questions and leaves a manual fallback', async (t) => {
+  const workspace = await mkdtemp(join(tmpdir(), 'wiremap-companion-assistant-'));
+  const inputs = [];
+  let finish;
+  const modelReply = new Promise((resolve) => { finish = resolve; });
+  const server = await startServer({
+    port: 0,
+    projectsDir: join(workspace, 'projects'),
+    askCompanionCodex: async (text) => {
+      inputs.push(text);
+      if (text === 'Failed answer') throw new Error('Provider detail');
+      return modelReply;
+    },
+  });
+  t.after(async () => {
+    finish('');
+    await server.close();
+    await rm(workspace, { recursive: true, force: true });
+  });
+  const endpoint = new URL('/api/companion', server.url);
+  const post = (text, assistant) => fetch(endpoint, {
+    method: 'POST', headers: { 'Content-Type': 'application/json', Origin: endpoint.origin },
+    body: JSON.stringify({ text, assistant }),
+  });
+  const read = async (id) => (await fetch(new URL(`/api/companion/${id}`, server.url))).json();
+  assert.equal((await post('Unknown provider', 'unknown')).status, 400);
+  const manual = await (await post('Manual queue')).json();
+  assert.equal((await read(manual.id)).status, 'pending');
+  assert.deepEqual(inputs, []);
+  const active = await (await post('Explain the selected sketch', 'codex')).json();
+  assert.equal((await read(active.id)).status, 'answering');
+  assert.equal((await post('Busy request', 'codex')).status, 409);
+  assert.deepEqual(inputs, ['Explain the selected sketch']);
+  finish('Try editing the sketch.');
+  let current = await read(active.id);
+  for (let attempts = 0; current.status === 'answering' && attempts < 10; attempts++) {
+    await setTimeout(10);
+    current = await read(active.id);
+  }
+  assert.deepEqual(current, { id: active.id, status: 'done', reply: 'Try editing the sketch.' });
+  const failed = await (await post('Failed answer', 'codex')).json();
+  const fallback = await read(failed.id);
+  assert.equal(fallback.status, 'pending');
+  assert.equal(fallback.reply, null);
+  assert.match(fallback.error, /open assistant session/);
+  assert.doesNotMatch(fallback.error, /Provider detail/);
 });
