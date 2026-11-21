@@ -8,6 +8,7 @@ import { activeFocus, emptyView, tool } from './svg-view.js';
 import { createInspector } from './inspect3d.js';
 import { pinPlacement } from './pin-geometry.js';
 import { createSceneLabels } from './scene-labels.js';
+import { makeComponentPreview } from './scene-parts.js';
 
 const axis = new THREE.Vector3(0, 1, 0);
 const angle = new THREE.Vector3(.65, 1, .85).normalize();
@@ -68,6 +69,7 @@ export class Scene3DView {
     this.exploded = false;
     this.showOtherWires = false;
     this.showUnused = false;
+    this.displayOpen = false;
     this.generation = 0;
     this.frame = null;
     this.visible = false;
@@ -112,7 +114,11 @@ export class Scene3DView {
     this.canvasHost = h('div.three-host', null, renderer.domElement, this.labels?.layer);
     this.status = h('p.small.scene-status', { role: 'status', hidden: true });
     this.inspector = this.assembly ? null : createInspector(this);
-    clear(this.host).append(h('div.scene-workspace', null, this.inspector?.picker, this.canvasHost, this.inspector?.details, this.status));
+    this.canvasPane = h('div.scene-model-pane', null, this.canvasHost, this.status);
+    if (!this.assembly) {
+      this.canvasHost.append(h('p.scene-camera-hint', null, 'Drag to orbit · Scroll to zoom'));
+    }
+    clear(this.host).append(h(`div.scene-workspace${this.assembly ? '' : '.scene-circuit'}`, null, this.canvasPane, this.inspector?.sidebar));
     this.scene = new THREE.Scene();
     this.contents = new THREE.Group();
     this.camera = new THREE.PerspectiveCamera(45, 1, .1, 30000);
@@ -141,7 +147,8 @@ export class Scene3DView {
   addPart(part, position, generation) {
     const target = { type: 'part', id: part.id };
     const size = dims(part.size);
-    const item = this.addBox(target, size, position, part.rotation, partColor(part));
+    const color = partColor(part);
+    const item = this.addBox(target, size, position, part.rotation, color, makeComponentPreview(part, size, color));
     this.parts.set(part.id, item);
     const body = { ...part, size };
     let mapped = true;
@@ -187,13 +194,13 @@ export class Scene3DView {
     if (pieces.length || file) this.showAsset(item, pieces.length ? pieces : [file], color, generation);
   }
 
-  addBox(target, size, position, rotation, color) {
+  addBox(target, size, position, rotation, color, preview) {
     const group = new THREE.Group();
     group.userData.target = target;
     group.position.fromArray(coordinates(position, [0, 0, 0]));
     group.rotation.set(...coordinates(rotation, [0, 0, 0]).map(THREE.MathUtils.degToRad));
-    const placeholder = new THREE.Mesh(new THREE.BoxGeometry(...size), new THREE.MeshStandardMaterial({ color, roughness: .7 }));
-    placeholder.position.y = size[1] / 2;
+    const placeholder = preview || new THREE.Mesh(new THREE.BoxGeometry(...size), new THREE.MeshStandardMaterial({ color, roughness: .7 }));
+    if (!preview) placeholder.position.y = size[1] / 2;
     group.add(placeholder);
     this.contents.add(group);
     return { group, position: group.position.clone(), placeholder };
@@ -265,7 +272,10 @@ export class Scene3DView {
       if (ignorePins && child.userData.target?.type === 'pin') return;
       for (const material of [child.material].flat().filter(Boolean)) setShade(material, lit);
     });
-    for (const [id, item] of this.parts) shade(item.group, !dim || focus.parts.has(id), true);
+    for (const [id, item] of this.parts) {
+      item.group.visible = this.assembly || selection?.type !== 'wire' || this.showOtherWires || focus.parts.has(id);
+      shade(item.group, !dim || focus.parts.has(id), true);
+    }
     for (const [id, item] of this.prints) shade(item.group, !dim || focus.prints.has(id));
     for (const [key, pin] of this.pins) {
       const selected = selection?.type === 'pin' && selection.id === key;
@@ -325,12 +335,18 @@ export class Scene3DView {
 
   focusWire(id) {
     const item = this.wires?.get(id);
-    if (item) this.fit(new THREE.Box3().setFromObject(item.mesh), overhead);
+    if (!item) return;
+    const box = new THREE.Box3().setFromObject(item.mesh);
+    for (const key of [item.wire.fromKey, item.wire.toKey]) {
+      const part = this.parts.get(key.split('.')[0]);
+      if (part) box.expandByObject(part.group);
+    }
+    this.fit(box.expandByScalar(7), overhead);
   }
 
   onTheme() {
     if (!this.scene) return;
-    const surface = getComputedStyle(document.documentElement).getPropertyValue('--stage').trim();
+    const surface = getComputedStyle(document.documentElement).getPropertyValue(this.assembly ? '--stage' : '--scene-surface').trim();
     this.scene.background = new THREE.Color(surface || '#f3f6fa');
     this.requestDraw();
   }
@@ -352,6 +368,7 @@ export class Scene3DView {
     const width = this.canvasHost.clientWidth;
     const height = this.canvasHost.clientHeight;
     if (!width || !height) return;
+    if (width === this.width && height === this.height) return;
     const previouslyUnsized = !this.width;
     this.width = width;
     this.height = height;
@@ -359,6 +376,7 @@ export class Scene3DView {
     this.camera.aspect = width / height;
     this.camera.updateProjectionMatrix();
     if (previouslyUnsized) this.fit();
+    else if (!this.assembly && this.app.selection?.type === 'wire') this.focusWire(this.app.selection.id);
     this.requestDraw();
   }
 
@@ -407,13 +425,16 @@ export class Scene3DView {
       for (const pin of pins) if (this.wiredPins.has(pin.key)) addPin(pin.key, false);
       if (this.inspectedPart) for (const pin of pins) addPin(pin.key, false);
     }
+    const hoveredPart = this.hoverTarget?.type === 'part' ? this.hoverTarget.id : null;
     if (!selection || selection.type === 'part') {
       for (const [partId, item] of this.parts) {
         if (selection && selection.id !== partId) continue;
         const part = this.app.part(partId);
+        const driver = part?.libraryId === 'pca9685-breakout';
+        if (!selection && hoveredPart !== partId && part?.category !== 'controller' && !driver) continue;
         const point = item.group.localToWorld(new THREE.Vector3(0, part?.size?.[1] || 0, 0));
         const anchor = project(point);
-        if (anchor) entries.push({ text: part?.label || this.app.shortName(part), anchor, kind: 'part' });
+        if (anchor) entries.push({ text: driver ? 'PCA9685' : this.app.shortName(part), anchor, kind: 'part' });
       }
     }
     this.labels.render(entries, this.width, this.height);
@@ -441,11 +462,12 @@ export class Scene3DView {
       let closest = null;
       for (const intersection of this.ray.intersectObjects(this.contents.children, true)) {
         if (closest && intersection.distance > closest.distance + 3) break;
-        let object = intersection.object;
-        if (!object.visible) continue;
-        while (object?.visible && !object.userData.target) object = object.parent;
-        if (!object?.visible || !object.userData.target) continue;
-        const { target } = object.userData;
+        let target;
+        for (let object = intersection.object; object && object !== this.contents; object = object.parent) {
+          if (!object.visible) { target = null; break; }
+          target ||= object.userData.target;
+        }
+        if (!target) continue;
         if (target.type === 'pin') return target;
         if (!closest) closest = { target, distance: intersection.distance };
       }
@@ -492,8 +514,14 @@ export class Scene3DView {
         drag = null;
       } else if (down && Math.hypot(event.clientX - down[0], event.clientY - down[1]) < 5) {
         const target = hit(event);
-        if (target) this.app.select(target, { sheet: this.assembly });
-        else this.app.clearSelection();
+        if (target) {
+          this.app.select(target, { sheet: this.assembly });
+          if (!this.assembly && target.type === 'wire') this.focusWire(target.id);
+        }
+        else if (this.app.selection) {
+          this.app.clearSelection();
+          this.fit();
+        }
       }
       down = null;
     });
@@ -512,12 +540,17 @@ export class Scene3DView {
     filter.value = this.filter;
     const toggle = (label, enabled, change, title) => h('label.scene-toggle', { title },
       h('input.tick', { type: 'checkbox', checked: enabled, onchange: (event) => change(event.target.checked) }), label);
-    return [filter, tool('Fit', 'fit', () => this.fit()), tool('Top view', 'panel', () => this.fit(undefined, overhead), 'Top'),
+    const grid = toggle('Grid', this.grid.visible, (on) => { this.grid.visible = on; this.requestDraw(); }, 'Reference grid with 20 mm spacing');
+    const angles = [tool('Fit', 'fit', () => this.fit()), tool('Top view', 'panel', () => this.fit(undefined, overhead), 'Top'),
       tool('Angled view', 'explode', () => this.fit(undefined, angle), 'Angle'),
-      toggle('Grid', this.grid.visible, (on) => { this.grid.visible = on; this.requestDraw(); }, 'Reference grid with 20 mm spacing'),
-      this.assembly ? tool(this.exploded ? 'Assemble' : 'Explode', 'explode', () => this.setExploded()) :
+    ];
+    if (this.assembly) return [filter, ...angles, grid, tool(this.exploded ? 'Assemble' : 'Explode', 'explode', () => this.setExploded())];
+    const display = h('details.scene-display', { open: this.displayOpen, ontoggle: (event) => { this.displayOpen = event.target.open; } },
+      h('summary.btn.ghost.small', null, 'Display'),
+      h('div.scene-display-options', null, filter, grid,
         toggle('All pins', this.showUnused, (on) => { this.showUnused = on; this.applyFocus(this.app.focus); }),
-      !this.assembly && toggle('Keep other wires', this.showOtherWires, (on) => { this.showOtherWires = on; this.applyFocus(this.app.focus); })];
+        toggle('Keep other wires', this.showOtherWires, (on) => { this.showOtherWires = on; this.applyFocus(this.app.focus); })));
+    return [h('div.scene-camera-actions', { 'aria-label': 'Camera' }, angles), display];
   }
 
   onShow() { this.visible = true; this.resize(); }

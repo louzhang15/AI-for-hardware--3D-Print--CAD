@@ -789,6 +789,7 @@ function renderTop() {
   const restorePhaseFocus = app.els.top.contains(document.activeElement) && document.activeElement.matches('.phase');
   const phaseScroll = app.els.top.querySelector('.stepper')?.scrollLeft || 0;
   const top = clear(app.els.top);
+  top.dataset.view = app.ui.view || '';
   const meta = d.project.meta || {};
   const c = d.check;
   const steps = d.project.steps || [];
@@ -814,9 +815,16 @@ function renderTop() {
       h('div.sub', null, `${plural(c.model.partList.length, 'part')} · ${plural((d.project.wires || []).length, 'connection')}`)),
     h(`button.check-status.${pillCls}`, { title: c.summary || 'Open the issues list', onclick: () => {
       app.setLeftPanel('issues');
-      setNarrowPanel('left');
+      setWorkspacePanel('left');
       app.els.left.querySelector('[aria-selected="true"]')?.focus();
     } }, icon(c.errors || c.warnings ? 'alert' : 'check', 15), pillText),
+    h('div.project-panel-actions', { 'aria-label': 'Project panels' },
+      ...[['left', 'panel', 'Project'], ['right', 'steps', 'Build guide']].map(([panel, glyph, text]) =>
+        h('button.btn.ghost.small', { type: 'button', 'data-panel': panel, 'aria-controls': `workspace-${panel}`,
+          'aria-pressed': String(app.els.ws.dataset.panel === panel), onclick: () => {
+            const next = app.els.ws.dataset.panel === panel ? 'center' : panel;
+            setWorkspacePanel(next);
+          } }, icon(glyph, 15), text))),
     themeButtons()), stepper);
   stepper.scrollLeft = phaseScroll;
   const active = stepper.querySelector('[aria-current="step"]');
@@ -826,11 +834,12 @@ function renderTop() {
   if (restorePhaseFocus) active?.focus({ preventScroll: true });
 }
 
-function setNarrowPanel(panel) {
+function setWorkspacePanel(panel) {
   const ws = app.els.ws;
-  if (!ws || !matchMedia('(max-width: 1050px)').matches) return;
+  if (!ws || (app.ui.view !== '3d' && !matchMedia('(max-width: 1050px)').matches)) return;
   ws.dataset.panel = panel;
-  for (const button of app.els.dock.querySelectorAll('button')) {
+  app.els.center.inert = app.ui.view === '3d' && panel !== 'center';
+  for (const button of [...app.els.dock.querySelectorAll('button'), ...app.els.top.querySelectorAll('.project-panel-actions button')]) {
     button.setAttribute('aria-pressed', String(button.dataset.panel === panel));
   }
 }
@@ -852,6 +861,9 @@ app.setLeftPanel = (panel) => {
 };
 
 function renderCenterBar() {
+  app.els.top.dataset.view = app.ui.view;
+  app.els.ws.dataset.view = app.ui.view;
+  app.els.center.inert = app.ui.view === '3d' && app.els.ws.dataset.panel !== 'center';
   const focused = app.els.centerBar.contains(document.activeElement) && document.activeElement.matches('[role="tab"]');
   const scrollLeft = app.els.centerBar.querySelector('.view-tabs')?.scrollLeft || 0;
   const bar = clear(app.els.centerBar);
@@ -890,6 +902,7 @@ function switchView(id) {
   if (id === app.ui.view) return;
   if (id === '3d') closeSheet();
   app.ui.view = id;
+  if (id === '3d') setWorkspacePanel('center');
   saveUi();
   const mounted = mountView();
   renderCenterBar();
@@ -903,6 +916,7 @@ app.inspectPins = async (partId) => {
   app.select({ type: 'part', id: partId }, { sheet: false });
   await switchView('3d');
   if (app.ui.view === '3d' && app.selection?.type === 'part' && app.selection.id === partId) {
+    setWorkspacePanel('center');
     app.views['3d']?.focusPart?.(partId);
   }
 };
@@ -965,15 +979,17 @@ function renderProjectShell() {
   if (!app.els.ws) {
     const root = clear(app.root);
     app.els.top = h('header.topbar');
-    app.els.left = h('aside.side.left', { 'aria-label': 'Project panels' });
-    app.els.right = h('aside.side.right', { 'aria-label': 'Build step' });
+    app.els.left = h('aside.side.left#workspace-left', { 'aria-label': 'Project panels' });
+    app.els.right = h('aside.side.right#workspace-right', { 'aria-label': 'Build step' });
     app.els.centerBar = h('div.center-bar');
     app.els.stage = h('div.stage.grid-bg');
     app.els.center = h('section.center', { 'aria-label': 'Diagram workspace' }, app.els.centerBar, app.els.stage);
-    app.els.ws = h('main.workspace', { 'data-panel': 'center' }, app.els.left, app.els.center, app.els.right);
+    const scrim = h('button.project-panel-scrim', { type: 'button', tabindex: -1, 'aria-label': 'Close panel',
+      onclick: () => setWorkspacePanel('center') });
+    app.els.ws = h('main.workspace', { 'data-panel': 'center' }, app.els.left, app.els.center, app.els.right, scrim);
     app.els.dock = h('nav.workspace-dock', { 'aria-label': 'Workspace panels' },
       ...[['left', 'panel', 'Project'], ['center', 'chip', 'Diagram'], ['right', 'steps', 'Build guide']].map(([panel, symbol, label]) =>
-        h('button', { type: 'button', 'data-panel': panel, 'aria-pressed': String(panel === 'center'), onclick: () => setNarrowPanel(panel) }, icon(symbol, 17), label)));
+        h('button', { type: 'button', 'data-panel': panel, 'aria-pressed': String(panel === 'center'), onclick: () => setWorkspacePanel(panel) }, icon(symbol, 17), label)));
     root.append(app.els.top, app.els.ws, app.els.dock);
   }
   if (app.ui.view === 'assembly' && !hasAssembly()) app.ui.view = '3d';
@@ -1041,13 +1057,15 @@ async function reloadCurrent() {
 // ------------------------------------------------------------------ keyboard
 
 document.addEventListener('keydown', (e) => {
-  if (e.target.closest && e.target.closest('input, textarea, select, [contenteditable]')) return;
   if (e.key === 'Escape') {
     if (modalEl) return closeModal();
     if (menuEl) return closeMenu();
+    if (app.ui.view === '3d' && app.els.ws && app.els.ws.dataset.panel !== 'center') return setWorkspacePanel('center');
+    if (e.target.closest?.('input, textarea, select, [contenteditable]')) return;
     if (app.data) app.clearSelection();
     return;
   }
+  if (e.target.closest?.('input, textarea, select, [contenteditable]')) return;
   if (!app.data || modalEl || e.metaKey || e.ctrlKey || e.altKey) return;
   if (e.target.closest?.('button, a, [role="button"], [role="tab"]')) return;
   const view = app.views[app.ui.view];

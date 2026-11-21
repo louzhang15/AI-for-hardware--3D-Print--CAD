@@ -15,31 +15,42 @@ export function createInspector(view) {
   let listedPin;
   let listedMapPart;
   let listedWireSelection;
+  let mode = 'wires';
+  let routes = [];
   let mapEntries = [];
   let connections = [];
   let activePin = '';
 
+  function selectWire(id) {
+    app.select({ type: 'wire', id }, { sheet: false });
+    view.focusWire?.(id);
+  }
+
+  const modes = [['wires', 'Connections'], ['pins', 'Pins']].map(([id, title]) => h('button', {
+    type: 'button', 'data-mode': id, 'aria-pressed': String(id === mode), onclick: () => {
+      if (mode === id) return;
+      mode = id;
+      app.clearSelection();
+      view.fit();
+    },
+  }, title));
+  const controls = h('div.scene-inspect-mode', { 'aria-label': 'Show in inspector' }, modes);
+  const routeSearch = h('input.input', { type: 'search', 'aria-label': 'Find a connection', placeholder: 'Find a connection',
+    oninput: () => filterRoutes() });
+  const routeList = h('ul.scene-route-list', { 'aria-label': 'Project connections' });
+  const noRoutes = h('p.scene-no-routes', { hidden: true }, 'No connections match.');
+  const routesPanel = h('div.scene-routes', null, routeSearch, routeList, noRoutes);
+
   const choosePart = h('select.input', { 'aria-label': 'Component', onchange: () => selectPart(choosePart.value) });
-  const chooseWire = h('select.input', { 'aria-label': 'Connection', onchange: () => {
-    if (chooseWire.value) app.select({ type: 'wire', id: chooseWire.value }, { sheet: false });
-    else app.clearSelection();
-  } });
   const choosePin = h('select.input', { 'aria-label': 'Pin', onchange: () => {
     if (choosePin.value) app.select({ type: 'pin', id: choosePin.value }, { sheet: false });
     else selectPart(choosePart.value);
   } });
-  const focus = h('button.btn.small.scene-inspect-focus', { type: 'button', onclick: () => {
-    const selection = app.selection;
-    if (selection?.type === 'wire' && typeof view.focusWire === 'function') view.focusWire(selection.id);
-    else if (choosePart.value && typeof view.focusPart === 'function') view.focusPart(choosePart.value);
-  } }, 'Inspect pins');
-  const clear = h('button.btn.ghost.small.scene-inspect-clear', { type: 'button', 'aria-label': 'Clear connection selection',
-    onclick: () => { app.clearSelection(); choosePart.focus(); } }, 'Clear');
+  const clear = h('button.btn.ghost.small.scene-inspect-clear', { type: 'button', 'aria-label': 'Clear selection',
+    onclick: () => { app.clearSelection(); view.fit(); (mode === 'pins' ? choosePart : routeSearch).focus(); } }, 'Clear');
   const picker = h('div.scene-inspect-picker', null,
-    h('label.scene-inspect-field.scene-connection-field', null, 'Connection', chooseWire),
     h('label.scene-inspect-field', null, 'Component', choosePart),
-    h('label.scene-inspect-field', null, 'Pin', choosePin),
-    typeof view.focusPart === 'function' || typeof view.focusWire === 'function' ? focus : null, clear);
+    h('label.scene-inspect-field', null, 'Pin', choosePin));
 
   const summary = h('div.scene-inspect-summary', { 'aria-live': 'polite' });
   const ask = h('button.btn.ghost.small.scene-inspect-ask', { type: 'button', hidden: true, onclick: () => {
@@ -61,8 +72,38 @@ export function createInspector(view) {
   const search = h('input.input', { type: 'search', placeholder: 'Find a pin', 'aria-label': 'Find a pin', oninput: filterPins });
   const pinList = h('div.scene-pin-list');
   const pinMap = h('details.scene-pin-map', { hidden: true }, mapTitle, search, pinList);
-  const details = h('section.scene-inspect-details', { 'aria-label': '3D connection inspector' },
+  const details = h('div.scene-inspect-details', null,
     summary, selectedWire, wireList, issues, ask, pinMap);
+  const sidebar = h('aside.scene-inspector', { 'aria-label': 'Wiring inspector' },
+    h('header.scene-inspector-head', null, h('h2', null, 'Wiring'), clear),
+    controls, picker, details, routesPanel);
+
+  function filterRoutes() {
+    const term = routeSearch.value.trim().toLowerCase();
+    let any = false;
+    for (const route of routes) {
+      route.row.hidden = !route.search.includes(term);
+      if (!route.row.hidden) any = true;
+    }
+    noRoutes.hidden = any;
+    noRoutes.textContent = term ? 'No connections match.' : 'This project has no connections.';
+  }
+
+  function updateRoutes(wires) {
+    routes = wires.filter((wire) => wire.valid !== false).flatMap((wire) => {
+      const detail = app.describeWire(wire.id);
+      if (!detail) return [];
+      const path = `${app.pinText(detail.from, false)} ↔ ${app.pinText(detail.to, false)}`;
+      const button = h('button.scene-route', { type: 'button', onclick: () => selectWire(wire.id),
+        'aria-label': `${detail.label}: ${detail.title}`, 'aria-pressed': 'false' },
+        h('span.scene-route-color', { style: { background: detail.color } }),
+        h('span.scene-route-text', null, h('strong', null, detail.label), h('span', null, path)),
+        h('span.scene-route-arrow', { 'aria-hidden': 'true' }, '›'));
+      return [{ id: wire.id, button, search: `${detail.label} ${detail.title}`.toLowerCase(), row: h('li', null, button) }];
+    });
+    routeList.replaceChildren(...routes.map(({ row }) => row));
+    filterRoutes();
+  }
 
   function filterPins() {
     const term = search.value.trim().toLowerCase();
@@ -109,7 +150,7 @@ export function createInspector(view) {
         const label = wire.label || description?.label || wire.id;
         const otherLabel = app.pinText(other);
         const button = h('button.btn.small.scene-inspect-wire-button', { type: 'button', 'aria-label': `Inspect wire ${label}`,
-          onclick: () => app.select({ type: 'wire', id: wire.id }, { sheet: false }) }, label);
+          onclick: () => selectWire(wire.id) }, label);
         const farButton = h('button.btn.ghost.small.scene-inspect-endpoint', { type: 'button', 'aria-label': `Inspect ${otherLabel}`,
           onclick: () => { app.select({ type: 'pin', id: other }, { sheet: false }); choosePin.focus(); } }, otherLabel);
         connections.push({ id: wire.id, button, row: h('li.scene-inspect-row', null, button, h('span', { 'aria-hidden': 'true' }, '↔'), farButton) });
@@ -127,6 +168,13 @@ export function createInspector(view) {
     const parts = model?.partList || [];
     const selection = app.selection;
     const wire = selection?.type === 'wire' ? app.describeWire(selection.id) : null;
+    if (wire) mode = 'wires';
+    else if (selection?.type === 'part' || selection?.type === 'pin') mode = 'pins';
+    for (const button of modes) button.setAttribute('aria-pressed', String(button.dataset.mode === mode));
+    routesPanel.hidden = mode !== 'wires';
+    picker.hidden = mode !== 'pins';
+    if (changed) updateRoutes(model?.wires || []);
+    for (const row of routes) row.button.setAttribute('aria-pressed', String(Boolean(wire) && row.id === selection.id));
     let pinKey = selection?.type === 'pin' && app.pin(selection.id) ? selection.id : '';
     if (wire) {
       const pins = [wire.from, wire.to].filter((key) => key && app.pin(key));
@@ -139,14 +187,6 @@ export function createInspector(view) {
     if (changed || !choosePart.options.length) choosePart.replaceChildren(
       h('option', { value: '' }, parts.length ? 'Choose a component' : 'No components'),
       ...parts.map((entry) => h('option', { value: entry.id }, entry.label || entry.name || entry.id)));
-    if (changed || !chooseWire.options.length) chooseWire.replaceChildren(
-      h('option', { value: '' }, 'Choose a wire'),
-      ...(model?.wires || []).filter((entry) => entry.valid !== false).map((entry) => {
-        const description = app.describeWire(entry.id);
-        return h('option', { value: entry.id }, description?.title || entry.label || entry.id);
-      }));
-    chooseWire.value = wire ? selection.id : '';
-    chooseWire.disabled = chooseWire.options.length < 2;
     choosePart.value = part?.id || '';
     choosePart.disabled = !parts.length;
     if (changed || part !== listedPart || !choosePin.options.length) {
@@ -157,10 +197,7 @@ export function createInspector(view) {
     }
     choosePin.value = pinKey;
     choosePin.disabled = !part?.pins.length;
-    const canFocusWire = wire && typeof view.focusWire === 'function';
-    focus.textContent = canFocusWire ? 'Focus connection' : 'Inspect pins';
-    focus.disabled = !canFocusWire && !(part && typeof view.focusPart === 'function');
-    clear.disabled = !selection;
+    clear.hidden = !selection;
 
     if (changed || pinKey !== listedPin) {
       listedPin = pinKey;
@@ -193,7 +230,8 @@ export function createInspector(view) {
       content = [h('strong', null, part.label || part.name || part.id),
         h('span.scene-inspect-meta', null, [partMapping, part.pins.length ? 'Match these labels to the markings on your board.' : 'This component has no pins.'].filter(Boolean).join(' · '))];
     } else {
-      content = [h('span.scene-inspect-meta', null, 'Choose one wire to see exactly where both ends go, or choose a component for its pin list.')];
+      content = [h('span.scene-inspect-meta', null, mode === 'wires'
+        ? 'Select a wire to see both pins.' : 'Choose a component to see the labels on its board.')];
     }
     summary.hidden = Boolean(wire);
     summary.replaceChildren(...content);
@@ -230,8 +268,9 @@ export function createInspector(view) {
       h('strong', null, issue.level === 'error' ? 'Error' : 'Warning'), h('span', null, issue.message || issue.rule))));
     issues.hidden = !matches.length;
     updatePinMap(part, pinKey, changed);
+    if (mode === 'wires') pinMap.hidden = true;
   }
 
   update();
-  return { picker, details, update, showPinList: () => { pinMap.open = true; } };
+  return { sidebar, update, showPinList: () => { pinMap.open = true; } };
 }
