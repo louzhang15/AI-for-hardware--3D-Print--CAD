@@ -13,37 +13,78 @@
         <svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="7" fill="#2454ca"/><path d="M8 22h6l4-12h6M8 13h3m10 6h3" fill="none" stroke="#fff" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><circle cx="8" cy="22" r="2" fill="#fff"/><circle cx="24" cy="10" r="2" fill="#fff"/></svg>
         <h1 id="title">Wiremap <span>Companion</span></h1>
       </div>
-      <a href="/" target="_blank" rel="noopener">Open workspace <span aria-hidden="true">↗</span></a>
+      <a id="workspace-link" href="/">Workspace <span aria-hidden="true">↗</span></a>
     </header>
-    <div class="voice-panel" data-state="idle">
-      <button id="microphone" type="button">
+    <div class="companion-layout">
+    <section class="conversation" aria-labelledby="conversation-title">
+      <div class="conversation-head">
+        <h2 id="conversation-title">Troubleshoot a build</h2>
+        <p id="conversation-lead">Ask about a connection, a device log, or your print settings.</p>
+      </div>
+      <section id="response" class="response" aria-labelledby="response-title" hidden>
+        <div id="sent-question" class="sent-question" hidden>
+          <h3>Your question</h3><p id="sent-text"></p>
+        </div>
+        <div class="response-head">
+          <h3 id="response-title">Reply</h3>
+          <div class="reply-actions">
+            <button id="copy-reply" type="button" hidden>Copy reply</button>
+            <button id="replay" type="button" hidden>Read aloud</button>
+          </div>
+        </div>
+        <div id="reply" role="status"></div>
+        <details id="handoff" hidden>
+          <summary>Continue in Codex or Claude Code</summary>
+          <p>Paste the prompt into your coding session to use the same evidence.</p>
+          <textarea id="handoff-text" rows="3" readonly aria-label="Chat handoff prompt"></textarea>
+          <button id="copy" type="button">Copy prompt</button>
+        </details>
+      </section>
+      <form id="question-form">
+        <label for="question">Your question</label>
+        <div class="composer">
+          <textarea id="question" maxlength="3900" rows="3" placeholder="What are you seeing?" aria-describedby="send-notice" required></textarea>
+          <div class="actions">
+            <div class="voice-panel" data-state="idle">
+              <button id="microphone" type="button" aria-describedby="mic-notice status">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true">
           <rect x="9" y="3" width="6" height="12" rx="3"/>
           <path d="M5 11v1a7 7 0 0 0 14 0v-1m-7 8v3m-3 0h6"/>
         </svg>
         <span id="mic-label">Talk</span>
-      </button>
-      <p id="status" role="status">Microphone off</p>
-      <div class="voice-level" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div>
-    </div>
-    <form id="question-form">
-      <div class="question-head">
-        <label for="question">Your question</label>
-        <div class="context-actions">
-          <button class="context-button" id="attach-log" type="button">Attach log</button>
-          <button class="context-button" id="attach-project" type="button">Project context</button>
-          <button class="context-button" id="solidworks" type="button">SolidWorks</button>
-          <button class="context-button" id="bambu" type="button">Add Bambu settings</button>
+              </button>
+              <p id="status" role="status">Mic off</p>
+            </div>
+            <button id="send" class="primary" type="submit" aria-keyshortcuts="Control+Enter Meta+Enter" disabled>Ask Codex <span aria-hidden="true">↑</span></button>
+          </div>
         </div>
-      </div>
-      <input id="log-file" type="file" accept=".log,.txt,.json,.jsonl,.ndjson,.csv,.tsv,.yaml,.yml,.out,.err,.trace,text/plain,application/json" hidden>
-      <div class="composer">
-        <textarea id="question" maxlength="3900" rows="3" placeholder="Ask about a wire, a print, or SolidWorks" required></textarea>
-        <div class="actions">
+        <div class="composer-settings">
           <label class="speech-option"><input id="read-replies" type="checkbox" checked> Speak replies</label>
-          <button id="send" class="primary" type="submit">Ask Codex <span aria-hidden="true">↑</span></button>
+          <a class="evidence-jump" href="#evidence-title">Evidence</a>
+          <span class="shortcut"><kbd>Ctrl</kbd> + <kbd>Enter</kbd></span>
         </div>
+        <p class="notice" id="send-notice">Codex receives the question and evidence you submit.</p>
+        <p class="notice" id="mic-notice">Your browser may use its speech service to transcribe audio.</p>
+        <p class="form-error" id="send-error" role="alert" hidden></p>
+      </form>
+    </section>
+    <aside class="evidence" aria-labelledby="evidence-title">
+      <div class="evidence-header">
+        <h2 id="evidence-title" tabindex="-1">Evidence <span id="evidence-count" hidden></span></h2>
+        <button id="open-evidence" type="button" aria-haspopup="dialog"><span aria-hidden="true">+</span> Add evidence</button>
       </div>
+      <p id="evidence-empty">Add a project, a hardware log, or a CAD or slicer snapshot to give your question context.</p>
+      <input id="log-file" type="file" accept=".log,.txt,.json,.jsonl,.ndjson,.csv,.tsv,.yaml,.yml,.out,.err,.trace,text/plain,application/json" hidden>
+      <p class="context-status" id="context-status" role="status" hidden></p>
+      <p class="context-status" id="log-status" role="status" hidden></p>
+      <div class="evidence-list">
+      <details class="attached-context" id="project-context" hidden>
+        <summary id="project-summary">Project context</summary>
+        <label for="project-picker">Project</label>
+        <select id="project-picker"><option value="">Choose a project</option></select>
+        <div id="project-preview"></div>
+        <button id="remove-project" type="button">Remove project context</button>
+      </details>
       <details class="attached-context" id="bambu-context" hidden>
         <summary>Saved Bambu settings attached</summary>
         <p id="bambu-preview"></p>
@@ -51,39 +92,30 @@
       </details>
       <details class="attached-context" id="log-context" hidden>
         <summary id="log-label"></summary>
-        <pre id="log-preview"></pre>
+        <pre id="log-preview" tabindex="0" aria-label="Log excerpt"></pre>
         <p class="notice">Common secrets are masked. Review this excerpt for sensitive data before sending.</p>
         <button id="remove-log" type="button">Remove log</button>
       </details>
-      <details class="attached-context" id="project-context" hidden>
-        <summary>Saved project context</summary>
-        <label for="project-picker">Project</label>
-        <select id="project-picker"><option value="">Choose a project</option></select>
-        <pre id="project-preview"></pre>
-        <button id="remove-project" type="button">Remove project context</button>
-      </details>
       <details class="attached-context" id="solidworks-context" hidden>
-        <summary>SolidWorks session attached</summary>
-        <pre id="solidworks-preview"></pre>
+        <summary id="solidworks-summary">SolidWorks session</summary>
+        <div id="solidworks-preview"></div>
         <button id="remove-solidworks" type="button">Remove SolidWorks context</button>
       </details>
-      <p class="notice">Your browser may use its speech service to transcribe audio. Codex receives the question and attachments you submit.</p>
-      <p class="context-status" id="context-status" role="status" hidden></p>
-      <p class="context-status" id="log-status" role="status" hidden></p>
-    </form>
-    <section id="response" class="response" aria-labelledby="response-title" hidden>
-      <div class="response-head">
-        <h2 id="response-title">Reply</h2>
-        <button id="replay" type="button" hidden>Read aloud</button>
       </div>
-      <div id="reply" aria-live="polite"></div>
-      <details id="handoff" hidden>
-        <summary>Use an open Codex or Claude Code chat</summary>
-        <p>Paste this into your chat to send the reply back here.</p>
-        <textarea id="handoff-text" rows="3" readonly aria-label="Chat handoff prompt"></textarea>
-        <button id="copy" type="button">Copy prompt</button>
-      </details>
-    </section>
+    </aside>
+    </div>
+    <dialog id="evidence-dialog" aria-labelledby="dialog-title">
+      <div class="dialog-head">
+        <h2 id="dialog-title">Add evidence</h2>
+        <form method="dialog"><button type="submit" aria-label="Close add evidence">Close</button></form>
+      </div>
+      <div class="evidence-options">
+        <button id="attach-project" type="button" autofocus><strong>Project context</strong><span>Selected pins, checker findings, and approved corrections</span></button>
+        <button id="attach-log" type="button"><strong>Device or ROS log</strong><span>Preview a text or JSON excerpt</span></button>
+        <button id="solidworks" type="button"><strong>SolidWorks session</strong><span>Active document, sketch status, and selection</span></button>
+        <button id="bambu" type="button"><strong>Bambu Studio settings</strong><span>Saved plate settings, estimates, and warnings</span></button>
+      </div>
+    </dialog>
   </main>
   <script type="module" src="./companion.js"></script>
 </body>
