@@ -53,18 +53,7 @@ export function createInspector(view) {
     h('label.scene-inspect-field', null, 'Pin', choosePin));
 
   const summary = h('div.scene-inspect-summary', { 'aria-live': 'polite' });
-  const ask = h('button.btn.ghost.small.scene-inspect-ask', { type: 'button', hidden: true, onclick: () => {
-    const selection = app.selection;
-    if (selection?.type === 'wire') {
-      const wire = app.describeWire(selection.id);
-      if (wire) app.askWithNote({ kind: 'ask', target: `wire:${selection.id}`, title: 'Ask about this wire',
-        context: `Help troubleshoot wire ${selection.id} (${wire.label}) from ${app.pinText(wire.from)} (${wire.from}) to ${app.pinText(wire.to)} (${wire.to}).`,
-        placeholder: 'What are you seeing?' });
-    } else if (selection?.type === 'pin') {
-      app.askWithNote({ kind: 'ask', target: `pin:${selection.id}`, title: 'Ask about this pin',
-        context: `Help troubleshoot ${app.pinText(selection.id)} (${selection.id}) and its connections.`, placeholder: 'What are you seeing?' });
-    }
-  } });
+  const ask = h('a.btn.ghost.small.scene-inspect-ask', { target: '_blank', rel: 'noopener', hidden: true });
   const selectedWire = h('div.scene-inspect-wire', { hidden: true });
   const wireList = h('ul.scene-inspect-connections', { 'aria-label': 'Connected wires', hidden: true });
   const issues = h('ul.scene-inspect-issues', { 'aria-label': 'Checker messages for this selection', hidden: true });
@@ -235,7 +224,8 @@ export function createInspector(view) {
     }
     summary.hidden = Boolean(wire);
     summary.replaceChildren(...content);
-    ask.hidden = typeof app.askWithNote !== 'function' || !(wire || (selection?.type === 'pin' && pin));
+    ask.hidden = !(wire || (selection?.type === 'pin' && pin));
+    if (!ask.hidden) ask.href = app.companionHref(selection);
     ask.textContent = wire ? 'Ask about this wire' : 'Ask about this pin';
     selectedWire.hidden = !wire;
     const wireSelection = wire ? selection.id : null;

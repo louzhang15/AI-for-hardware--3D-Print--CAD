@@ -45,6 +45,35 @@ project's print settings and any saved slicing results in your question draft.
 For a specific file, run `node bin/wiremap.mjs bambu-session --file path/to/plate.3mf`.
 Save changes in Bambu Studio before reading them here.
 
+### Troubleshoot a build with logs
+
+Open **Ask Companion** from a project or **Ask about this wire** in the 3D
+inspector. The companion can include the selected pins, checker findings,
+and approved corrections. **Attach log** previews a bounded excerpt before
+sending. Common secrets are masked. Review the excerpt before you send.
+Use **SolidWorks** to review a snapshot of the active document and selection.
+
+```powershell
+node bin/wiremap.mjs serial-log --list
+node bin/wiremap.mjs serial-log --port COM3 --baud 115200 --seconds 8 > hardware.log
+```
+
+Replace COM3 and baud rate with the port and rate for your board, then attach
+`hardware.log`. Close another serial monitor before capturing. Opening a
+serial port can reset some boards. For ROS 2, run the live commands on the
+machine with ROS in a sourced ROS 2 shell.
+
+```bash
+node bin/wiremap.mjs ros-status --topic /imu/data --json > ros-graph.json
+node bin/wiremap.mjs ros-status --topic /imu/data --sample --json > ros-sample.json
+node bin/wiremap.mjs ros-status --file bringup.log --json
+```
+
+Replace `/imu/data` with your topic. `--sample` reads one message by request.
+You can also attach ROS launch text, exported `/rosout` JSON, or a saved
+graph report. **Use an open Codex or Claude Code chat** carries the question
+and evidence into the coding workflow for a patch and tests.
+
 ### SolidWorks and Bambu Studio example
 
 For standalone SolidWorks help, ask Codex or Claude Code a question like “Why

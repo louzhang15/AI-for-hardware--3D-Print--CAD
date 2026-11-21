@@ -110,6 +110,11 @@ app.pinText = (key, withPart = true) => {
   return withPart ? `${shortName(def)} ${label}` : label;
 };
 app.wire = (id) => app.data && app.data.check.model.wires.find((w) => w.id === id);
+app.companionHref = (target) => {
+  const params = new URLSearchParams({ project: app.data.name });
+  if (target) params.set('target', `${target.type}:${target.id}`);
+  return `/companion.html?${params}`;
+};
 app.wireInfo = (id) => (app.data && app.data.check.wireInfo[id]) || {};
 app.roleColor = (role) => (ROLE_COLORS[role] || ROLE_COLORS.digital).hex;
 app.roleLabel = (role) => ROLE_LABELS[role] || role || 'Signal';
@@ -818,6 +823,8 @@ function renderTop() {
       setWorkspacePanel('left');
       app.els.left.querySelector('[aria-selected="true"]')?.focus();
     } }, icon(c.errors || c.warnings ? 'alert' : 'check', 15), pillText),
+    h('a.btn.ghost.small.project-companion', { href: app.companionHref(), target: '_blank', rel: 'noopener',
+      'aria-label': 'Ask Companion about this project' }, icon('spark', 15), h('span', null, 'Ask Companion')),
     h('div.project-panel-actions', { 'aria-label': 'Project panels' },
       ...[['left', 'panel', 'Project'], ['right', 'steps', 'Build guide']].map(([panel, glyph, text]) =>
         h('button.btn.ghost.small', { type: 'button', 'data-panel': panel, 'aria-controls': `workspace-${panel}`,

@@ -1,4 +1,6 @@
 import { createCompanionVoice } from './companion-voice.js';
+import { readDiagnosticLog } from './companion-log.js';
+import { setupCompanionContext } from './companion-context.js';
 
 const id = (name) => document.getElementById(name);
 const question = id('question');
@@ -17,12 +19,20 @@ const bambu = id('bambu');
 const bambuContext = id('bambu-context');
 const bambuPreview = id('bambu-preview');
 const contextStatus = id('context-status');
+const attachLog = id('attach-log');
+const logFile = id('log-file');
+const logContext = id('log-context');
+const logLabel = id('log-label');
+const logPreview = id('log-preview');
+const logStatus = id('log-status');
 let mode = 'idle';
 let busy = false;
 let timer;
 let activeRequest;
 let spokenReply = '';
 let bambuText = '';
+let diagnosticLog;
+let readingLog = false;
 
 const voice = createCompanionVoice({
   onTranscript(text) {
@@ -52,7 +62,8 @@ replay.addEventListener('click', () => voice.speak(spokenReply));
 
 function setBusy(value) {
   busy = value;
-  send.disabled = value;
+  send.disabled = value || readingLog;
+  attachLog.disabled = value || readingLog;
   mic.disabled = value || !voice.canListen;
   panel.dataset.state = value ? 'thinking' : mode;
 }
@@ -63,6 +74,7 @@ async function request(url, options) {
   if (!result.ok) throw new Error(data.error || 'Wiremap could not complete the request.');
   return data;
 }
+const diagnosticContext = setupCompanionContext(request);
 
 bambu.addEventListener('click', async () => {
   bambu.disabled = true;
@@ -97,6 +109,42 @@ id('remove-bambu').addEventListener('click', () => {
   bambu.focus();
 });
 
+function removeLog() {
+  diagnosticLog = undefined;
+  logContext.hidden = true;
+  logPreview.textContent = '';
+  logStatus.hidden = true;
+}
+
+attachLog.addEventListener('click', () => logFile.click());
+logFile.addEventListener('change', async () => {
+  const file = logFile.files[0];
+  logFile.value = '';
+  if (!file || busy || readingLog) return;
+  removeLog();
+  readingLog = true;
+  send.disabled = true;
+  attachLog.disabled = true;
+  try {
+    diagnosticLog = await readDiagnosticLog(file);
+    logLabel.textContent = diagnosticLog.truncated ? `${diagnosticLog.name} (tail only)` : diagnosticLog.name;
+    logPreview.textContent = diagnosticLog.text;
+    logContext.hidden = false;
+    logContext.open = true;
+  } catch (error) {
+    logStatus.textContent = error.message;
+    logStatus.hidden = false;
+  } finally {
+    readingLog = false;
+    send.disabled = busy;
+    attachLog.disabled = busy;
+  }
+});
+id('remove-log').addEventListener('click', () => {
+  removeLog();
+  attachLog.focus();
+});
+
 async function poll(id) {
   if (activeRequest !== id) return;
   try {
@@ -108,7 +156,7 @@ async function poll(id) {
       spokenReply = data.reply;
       reply.textContent = spokenReply;
       replay.hidden = !voice.canSpeak;
-      handoff.hidden = true;
+      handoff.hidden = false;
       if (readReplies.checked) voice.speak(spokenReply);
       return;
     }
@@ -133,12 +181,16 @@ async function poll(id) {
 
 id('question-form').addEventListener('submit', async (event) => {
   event.preventDefault();
-  const draft = question.value.trim();
-  if (!draft || busy) return;
-  const text = [draft, bambuText].filter(Boolean).join('\n\n');
+  const text = question.value.trim();
+  if (!text || busy || readingLog) return;
+  if (diagnosticContext.isLoading()) {
+    contextStatus.hidden = false;
+    contextStatus.textContent = 'Wait for the project context to finish loading.';
+    return;
+  }
   if (text.length > question.maxLength) {
     contextStatus.hidden = false;
-    contextStatus.textContent = 'Shorten your question or remove the Bambu settings.';
+    contextStatus.textContent = 'Shorten your question before sending.';
     return;
   }
   voice.cancelListening();
@@ -155,11 +207,12 @@ id('question-form').addEventListener('submit', async (event) => {
     const data = await request('/api/companion', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ text, assistant: 'codex' }),
+      body: JSON.stringify({ text, assistant: 'codex', bambu: bambuText || undefined, log: diagnosticLog, ...diagnosticContext.payload() }),
     });
     handoffText.value = data.prompt;
     question.value = '';
     removeBambu();
+    removeLog();
     activeRequest = data.id;
     poll(activeRequest);
   } catch (error) {

@@ -29,8 +29,14 @@
     <form id="question-form">
       <div class="question-head">
         <label for="question">Your question</label>
-        <button class="context-button" id="bambu" type="button">Add Bambu settings</button>
+        <div class="context-actions">
+          <button class="context-button" id="attach-log" type="button">Attach log</button>
+          <button class="context-button" id="attach-project" type="button">Project context</button>
+          <button class="context-button" id="solidworks" type="button">SolidWorks</button>
+          <button class="context-button" id="bambu" type="button">Add Bambu settings</button>
+        </div>
       </div>
+      <input id="log-file" type="file" accept=".log,.txt,.json,.jsonl,.ndjson,.csv,.tsv,.yaml,.yml,.out,.err,.trace,text/plain,application/json" hidden>
       <div class="composer">
         <textarea id="question" maxlength="3900" rows="3" placeholder="Ask about a wire, a print, or SolidWorks" required></textarea>
         <div class="actions">
@@ -43,8 +49,27 @@
         <p id="bambu-preview"></p>
         <button id="remove-bambu" type="button">Remove settings</button>
       </details>
-      <p class="notice">Your browser may transcribe audio using its speech service. Codex receives the text you submit.</p>
+      <details class="attached-context" id="log-context" hidden>
+        <summary id="log-label"></summary>
+        <pre id="log-preview"></pre>
+        <p class="notice">Common secrets are masked. Review this excerpt for sensitive data before sending.</p>
+        <button id="remove-log" type="button">Remove log</button>
+      </details>
+      <details class="attached-context" id="project-context" hidden>
+        <summary>Saved project context</summary>
+        <label for="project-picker">Project</label>
+        <select id="project-picker"><option value="">Choose a project</option></select>
+        <pre id="project-preview"></pre>
+        <button id="remove-project" type="button">Remove project context</button>
+      </details>
+      <details class="attached-context" id="solidworks-context" hidden>
+        <summary>SolidWorks session attached</summary>
+        <pre id="solidworks-preview"></pre>
+        <button id="remove-solidworks" type="button">Remove SolidWorks context</button>
+      </details>
+      <p class="notice">Your browser may use its speech service to transcribe audio. Codex receives the question and attachments you submit.</p>
       <p class="context-status" id="context-status" role="status" hidden></p>
+      <p class="context-status" id="log-status" role="status" hidden></p>
     </form>
     <section id="response" class="response" aria-labelledby="response-title" hidden>
       <div class="response-head">

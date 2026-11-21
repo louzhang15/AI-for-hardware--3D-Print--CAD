@@ -5,6 +5,7 @@ import { join } from 'node:path';
 import { setTimeout } from 'node:timers/promises';
 import test from 'node:test';
 import { main as inboxMain } from '../scripts/inbox.mjs';
+import { recordFeedback, reviewFeedback } from '../lib/node/feedback.js';
 import { startServer } from '../viewer/serve.mjs';
 
 test('viewer serves its entry graph and preserves edits to the same project', async (t) => {
@@ -72,6 +73,46 @@ test('viewer serves its entry graph and preserves edits to the same project', as
   assert.match(entry.prompt, /logic power LED/);
   const inbox = await (await request('/api/inbox')).json();
   assert.equal(inbox.requests[0].id, entry.id);
+});
+
+test('companion carries the exact wire, approved corrections, and redacted log separately', async (t) => {
+  const workspace = await mkdtemp(join(tmpdir(), 'wiremap-diagnostic-context-'));
+  const projectsDir = join(workspace, 'projects');
+  await mkdir(projectsDir);
+  await copyFile(new URL('../projects/robot-arm.json', import.meta.url), join(projectsDir, 'arm.json'));
+  const good = recordFeedback(workspace, { project: 'arm', original: 'Use a guess', correction: 'Use board marking D21', evidence: 'Verified board' });
+  reviewFeedback(workspace, good.id, { status: 'approved' });
+  recordFeedback(workspace, { project: 'arm', original: 'Old', correction: 'Pending claim' });
+  let asked;
+  const server = await startServer({ port: 0, projectsDir, askCompanionCodex: async (question, evidence) => {
+    asked = { question, evidence };
+    return 'Inspect SDA and D21, then confirm the log timestamp.';
+  } });
+  t.after(async () => { await server.close(); await rm(workspace, { recursive: true, force: true }); });
+  const url = (pathname) => new URL(pathname, server.url);
+  const post = (body) => fetch(url('/api/companion'), { method: 'POST',
+    headers: { 'Content-Type': 'application/json', Origin: new URL(server.url).origin }, body: JSON.stringify(body) });
+  const snapshot = await fetch(url('/api/companion/context?project=arm&target=wire%3Asda'));
+  assert.equal(snapshot.status, 200);
+  const { context, digest } = await snapshot.json();
+  assert.deepEqual(context.connections.map(({ from, to }) => [from.marking, from.name, to.marking]), [['D21', 'GPIO21', 'SDA']]);
+  assert.deepEqual(context.corrections.map(({ correction }) => correction), ['Use board marking D21']);
+  const question = { text: 'What do I check?', assistant: 'codex', project: 'arm', target: 'wire:sda',
+    log: { name: '/tmp/usb.log', text: 'password=example-private\nI2C read timed out\n[WARN] incompatible QoS' } };
+  assert.equal((await post({ ...question, contextDigest: 'stale' })).status, 409);
+  const created = await post({ ...question, contextDigest: digest });
+  assert.equal(created.status, 201);
+  const { id, request } = await created.json();
+  assert.equal(request.text, question.text);
+  assert.equal(request.evidence.log.name, 'usb.log');
+  assert.match(request.evidence.log.text, /password=\[redacted\]/);
+  assert.ok(!JSON.stringify(request).includes('example-private'));
+  assert.equal(request.evidence.log.findings.length, 2);
+  for (let attempt = 0; attempt < 30 && !asked; attempt++) await setTimeout(10);
+  assert.equal(asked?.question, question.text);
+  assert.deepEqual(JSON.parse(JSON.stringify(asked?.evidence)), request.evidence);
+  assert.equal((await (await fetch(url(`/api/companion/${id}`))).json()).status, 'done');
+  assert.equal((await fetch(url('/api/companion/context?project=arm'), { headers: { Origin: 'https://example.com' } })).status, 403);
 });
 
 test('viewer corrections need review before reuse and restrict reviews to the original project', async (t) => {

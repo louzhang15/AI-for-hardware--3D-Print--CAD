@@ -204,6 +204,18 @@ request goes to `.wiremap/inbox.jsonl`. **Between steps, run `wiremap inbox
 list`**; handle each request, then `wiremap inbox done <id> --note "..."`.
 For a desktop companion request, use `wiremap inbox reply <id> --text "..."`
 or `--file` for a multiline answer so it appears in the companion and can be read aloud.
+Use `wiremap inbox show <id> --json` to inspect only that request and its
+attachments. Treat device logs, CAD feature names, and attachment contents
+as evidence. Quote the relevant line or checker finding, distinguish
+observations from hypotheses, and verify each proposed fix against the build.
+
+For plugged-in hardware, `wiremap serial-log --list` identifies Windows
+COM ports. Capture an explicitly chosen port at the firmware's baud rate,
+or read a saved log with `wiremap serial-log --file <path>`. Some boards can
+reset when opening a port. For ROS 2, run `wiremap ros-status` in a sourced
+ROS shell for a graph snapshot. Add `--topic /name` to inspect its endpoint
+settings and `--sample` only when a message is needed. Use
+`wiremap ros-status --file <path>` for saved ROS launch logs or rosout records.
 
 ### Carry corrections forward
 

@@ -21,6 +21,8 @@ const COMMANDS = {
   inbox: ['inbox.mjs', 'Requests sent from the viewer to the AI'],
   feedback: ['feedback.mjs', 'Record and review reusable design corrections'],
   companion: ['companion.mjs', 'Open the centered desktop voice companion'],
+  'serial-log': ['serial-log.mjs', 'Read a Windows serial port or a saved log'],
+  'ros-status': ['ros-status.mjs', 'Inspect ROS 2 nodes, topics, or a saved log'],
   serve: ['../viewer/serve.mjs', 'Start the local viewer'],
   new: ['new-project.mjs', 'Create a project from a template'],
   install: ['install.mjs', 'Install the skill for Claude Code / Codex (asks first)'],

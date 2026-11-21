@@ -706,6 +706,7 @@ svg .lit .sk-wire { filter: drop-shadow(0 0 3px rgba(255,255,255,.25)); }
   .stepper { padding-inline: 6px; }
   .view-tools { margin-left: 0; }
   .center-bar { padding-inline: 10px; gap: 4px 12px; }
+  .project-companion > span:last-child { display: none; }
 }
 @media (max-width: 420px) {
   .project-bar { display: grid; grid-template-columns: auto 1fr auto; gap: 4px 8px; }
@@ -713,6 +714,7 @@ svg .lit .sk-wire { filter: drop-shadow(0 0 3px rgba(255,255,255,.25)); }
   .project-back { grid-column: 1; grid-row: 1; }
   .check-status { grid-column: 2; grid-row: 2; justify-self: start; }
   .project-bar .top-actions { grid-column: 3; grid-row: 2; justify-self: end; }
+  .project-bar .project-companion { grid-column: 1; grid-row: 2; justify-self: center; }
   .view-tab { padding-inline: 8px; }
   .hint { display: none; }
 }

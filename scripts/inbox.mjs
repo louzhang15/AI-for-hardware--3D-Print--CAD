@@ -16,6 +16,7 @@ The viewer writes requests ("explain this wire", "fix this") to
 
 Commands:
   list [--all] [--json]       pending requests (--all: every request)
+  show <id> --json             show one request and its diagnostic evidence
   done <id> [--note text]     mark a request handled (appends a status line)
   reply <id> (--text text | --file path)
                               send a plain-text reply to the desktop companion
@@ -71,6 +72,13 @@ export async function main(argv = process.argv.slice(2)) {
       if (!id) { console.error('Usage: inbox done <id> [--note text]'); return 2; }
       markInbox(dir, id, 'done', opts.note);
       console.log(`Marked ${id} done.`);
+      return 0;
+    }
+    if (cmd === 'show') {
+      const id = opts._[1];
+      const request = readInbox(dir).find((entry) => entry.id === id);
+      if (!request) throw new Error('No request with that ID');
+      console.log(JSON.stringify(request, null, 2));
       return 0;
     }
     if (cmd === 'reply') {
