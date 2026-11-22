@@ -113,6 +113,7 @@
 }
 
 .home-page .home-card {
+  position: relative;
   display: flex;
   min-width: 0;
   flex-direction: column;
@@ -126,7 +127,7 @@
 }
 
 .home-page .home-card:hover,
-.home-page .home-card:focus-visible {
+.home-page .home-card:focus-within {
   border-color: var(--home-primary);
   box-shadow: 0 6px 18px rgb(21 37 60 / .09);
   outline-color: var(--home-primary);
@@ -246,11 +247,30 @@
   font-weight: 450;
 }
 
+.home-page .home-card-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0 14px;
+}
+
 .home-page .home-card-open {
   display: inline-flex;
   align-items: center;
   gap: 3px;
+  min-height: 34px;
   color: var(--home-primary);
+}
+
+.home-page .home-card-open:not(.home-guide-link)::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+}
+
+.home-page .home-guide-link {
+  position: relative;
+  font-weight: 720;
 }
 
 .home-page .home-empty {

@@ -422,10 +422,36 @@ select.input { height: 30px; padding: 0 8px; }
 .step-kicker > span { color: var(--muted); font-weight: 500; border-left: 1px solid var(--line-2); padding-left: 9px; }
 .progress { height: 5px; border-radius: 4px; background: var(--line); overflow: hidden; margin-top: 10px; }
 .progress > div { height: 100%; background: var(--accent); border-radius: 4px; transition: width var(--dur) var(--ease); }
-.step-dots { display: flex; gap: 6px; margin: 12px 0; flex-wrap: wrap; }
-.step-dot { display: grid; place-items: center; min-width: 30px; min-height: 30px; border-radius: 5px; background: transparent; border: 1px solid var(--line); color: var(--muted); padding: 0; cursor: pointer; font: 12px var(--mono); }
-.step-dot.done { color: var(--ok); }
-.step-dot.active { background: var(--accent-soft); border-color: var(--accent); color: var(--accent); }
+.build-checklist { margin-bottom: 18px; border: 1px solid var(--line); border-radius: 8px; }
+.build-checklist summary {
+  display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: 40px;
+  padding: 8px 11px; cursor: pointer; font-size: 13px; font-weight: 650; border-radius: 7px;
+}
+.build-checklist summary::-webkit-details-marker { display: none; }
+.build-checklist summary:hover { background: var(--hover); }
+.build-checklist[open] summary .icon { transform: rotate(90deg); }
+.build-checklist-list { border-top: 1px solid var(--line); padding: 3px 7px 8px; }
+.build-checklist-phase + .build-checklist-phase { border-top: 1px solid var(--line); margin-top: 5px; }
+.build-checklist-phase h3 {
+  display: flex; flex-wrap: wrap; justify-content: space-between; gap: 2px 7px;
+  margin: 0; padding: 9px 5px 4px; color: var(--text); font-size: 12px; font-weight: 680;
+}
+.build-checklist-phase h3 span { color: var(--muted); font-size: 11px; font-weight: 520; }
+.build-checklist-phase ol { list-style: none; padding: 0; margin: 0; }
+.build-checklist-step {
+  display: flex; align-items: flex-start; gap: 8px; width: 100%; min-height: 40px;
+  padding: 7px 5px; background: none; color: var(--text-2); border: 0; border-radius: 5px;
+  font: inherit; font-size: 13px; text-align: left; cursor: pointer;
+}
+.build-checklist-step:hover:not(:disabled) { background: var(--hover); }
+.build-checklist-step:disabled { color: var(--muted); cursor: not-allowed; }
+.build-checklist-step[aria-current="step"] { background: var(--accent-soft); color: var(--accent); font-weight: 650; }
+.build-checklist-mark { display: grid; place-items: center; flex: 0 0 16px; height: 18px; }
+.build-checklist-mark:empty::after { content: ''; width: 7px; height: 7px; border-radius: 50%; border: 1px solid var(--muted); }
+.build-checklist-title { min-width: 0; overflow-wrap: anywhere; }
+.build-checklist-state { display: block; color: var(--ok); font-size: 11px; font-weight: 550; }
+.step-support { display: flex; flex-wrap: wrap; gap: 0 6px; }
+.step-support .btn { height: auto; min-height: 34px; white-space: normal; text-align: left; }
 .step-body { flex: 1; overflow: auto; padding: 19px; }
 .step-body .step-title { margin: 0 0 10px; font-size: 21px; line-height: 1.18; letter-spacing: -.025em; }
 .step-text { font-size: 14px; line-height: 1.6; color: var(--text-2); margin: 0 0 12px; }
@@ -439,7 +465,7 @@ select.input { height: 30px; padding: 0 8px; }
 .callout.error .icon { color: var(--error); }
 .callout b { font-weight: 650; }
 .step-list { list-style: none; padding: 0; margin: 6px 0 12px; display: flex; flex-direction: column; gap: 5px; }
-.step-list li { display: flex; align-items: center; gap: 8px; font-size: 13px; padding: 6px 8px; border-radius: 7px; background: var(--panel-2); border: 1px solid var(--line); cursor: pointer; }
+.step-list li { font-size: 13px; border-radius: 7px; background: var(--panel-2); border: 1px solid var(--line); }
 .step-list li:hover { border-color: var(--faint); }
 .step-list li .grow { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
 .tags { display: flex; flex-wrap: wrap; gap: 5px; margin: 4px 0 12px; }
@@ -503,7 +529,12 @@ svg .lit .sk-wire { filter: drop-shadow(0 0 3px rgba(255,255,255,.25)); }
 .diagram-scroll { overflow: auto; }
 .diagram-svg { display: block; max-width: none; height: auto; font-family: var(--sans, system-ui); }
 .diagram-svg [role="button"]:focus-visible { outline: 2px dashed var(--accent); }
-.step-list .step-reference { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; justify-content: start; }
+.step-list .step-reference {
+  align-items: flex-start; flex-direction: column; justify-content: center; gap: 2px; width: 100%;
+  height: auto; min-height: 36px; padding: 7px 9px; border: 0; text-align: left; white-space: normal; overflow-wrap: anywhere;
+  line-height: 1.35; font-size: 13px; font-weight: 650; color: var(--text);
+}
+.step-reference-detail { color: var(--text-2); font-size: 12px; font-weight: 500; }
 
 /* ------------------------------------------------------------------ breadboard view */
 .bb-wrap { position: absolute; inset: 0; display: flex; flex-direction: column; }

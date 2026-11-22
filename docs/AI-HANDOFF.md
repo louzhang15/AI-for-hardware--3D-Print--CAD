@@ -12,6 +12,6 @@ Windows can start a client through a running OmniRoute gateway with `pwsh -File 
 
 ## Current checkpoint
 
-- The local `codex/wiremap-working-release` branch includes the viewer redesign, enhanced 3D pin inspection, and the arm and rover motion previews. The full suite passed 183 tests, and the main viewer flows were verified in Chrome.
+- The `codex/wiremap-working-release` branch includes the viewer redesign, 3D pin inspection, arm and rover motion previews, Companion diagnostics, and guided build navigation. The full suite passed 211 tests. The browser checks covered resuming a build, selecting a named step, tracing a wire, and routing to Issues when a checker error blocks the next step.
 - The cloud `claude/focused-keller-cwv8nf` branch contains the first plugin and sync setup through `66802c2`. Review both branches before reconciling them. Neither contains the other's application changes merely because both clients are configured.
 - When handing off work, update this section with the branch, last verified test, and open blocker. Keep credentials and private conversation logs out of the handoff.

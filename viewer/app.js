@@ -259,7 +259,7 @@ function computeFocus() {
 }
 
 app.select = (sel, opts = {}) => {
-  if (sel && opts.sheet !== false) setNarrowPanel('center');
+  if (sel && opts.sheet !== false) setWorkspacePanel('center');
   app.selection = sel && sel.type ? sel : null;
   app.focus = computeFocus();
   applyFocusEverywhere();
@@ -296,26 +296,35 @@ function currentStep() {
 }
 app.currentStep = currentStep;
 
-app.gotoStep = (idx, phase = app.ui.phase) => {
+app.gotoStep = (idx, phase = app.ui.phase, { keepView = true, showGuide = false } = {}) => {
   const list = stepsForPhase(phase);
-  if (phase !== app.ui.phase) app.setPhase(phase, { keepView: true });
+  if (!list.length) return;
+  if (isLocked(phase)) {
+    toast(lockReason(phase), 'error');
+    return;
+  }
   app.ui.stepIdx[phase] = Math.max(0, Math.min(idx, list.length - 1));
-  saveUi();
-  app.selection = null;
-  closeSheet();
-  app.focus = computeFocus();
-  applyFocusEverywhere();
-  renderInfoCard();
-  renderRight();
+  if (phase !== app.ui.phase) {
+    app.setPhase(phase, { keepView });
+  } else {
+    saveUi();
+    app.selection = null;
+    closeSheet();
+    app.focus = computeFocus();
+    applyFocusEverywhere();
+    renderInfoCard();
+    renderRight();
+  }
+  if (showGuide) setWorkspacePanel('right');
   const step = currentStep();
   for (const v of Object.values(app.views)) { try { v.onStep && v.onStep(step); } catch (e) { console.warn(e); } }
 };
 
-app.nextStep = (dir = 1) => {
+app.nextStep = (dir = 1, { showGuide = false } = {}) => {
   const list = stepsForPhase(app.ui.phase);
   const i = app.ui.stepIdx[app.ui.phase] || 0;
   const j = i + dir;
-  if (j >= 0 && j < list.length) return app.gotoStep(j);
+  if (j >= 0 && j < list.length) return app.gotoStep(j, app.ui.phase, { showGuide });
   // move across phases
   let pi = PHASES.indexOf(app.ui.phase) + dir;
   while (pi >= 0 && pi < PHASES.length) {
@@ -323,7 +332,7 @@ app.nextStep = (dir = 1) => {
     const l = stepsForPhase(ph);
     if (l.length) {
       if (isLocked(ph)) { toast(lockReason(ph), 'error'); return; }
-      return app.gotoStep(dir > 0 ? 0 : l.length - 1, ph);
+      return app.gotoStep(dir > 0 ? 0 : l.length - 1, ph, { keepView: !showGuide, showGuide });
     }
     pi += dir;
   }
@@ -411,6 +420,29 @@ export function lockReason(phase) {
   return `${PHASE_TITLES[phase]} is locked: fix ${plural(n, 'error')} in ${PHASE_TITLES[fe]} first. Building on top of an open error can damage parts.`;
 }
 app.isLocked = isLocked;
+
+app.nextUnfinishedStep = () => {
+  for (const phase of PHASES) {
+    const step = stepsForPhase(phase).find((item) => !item.done);
+    if (step) return step;
+  }
+  return null;
+};
+
+app.resumeBuild = () => {
+  const step = app.nextUnfinishedStep();
+  if (!step) return;
+  const phase = step.phase || 'wire';
+  if (isLocked(phase)) {
+    app.setPhase(firstErrorPhase());
+    app.setLeftPanel('issues');
+    setWorkspacePanel('left');
+    app.els.left.querySelector('[aria-selected="true"]')?.focus();
+    return;
+  }
+  app.gotoStep(stepsForPhase(phase).indexOf(step), phase, { keepView: false, showGuide: true });
+  app.els.right.querySelector('.step-title')?.focus();
+};
 app.lockReason = lockReason;
 
 app.setPhase = (phase, opts = {}) => {
@@ -723,7 +755,10 @@ function projectCard(p) {
   const preview = h('span.home-preview-empty', null, icon('chip', 24), previewText);
   thumb.append(preview);
   const status = h(`span.home-check.${p.error ? 'error' : 'neutral'}`, null, p.error ? 'Invalid JSON' : 'Checking…');
-  const card = h('a.home-card', { href: `#/p/${encodeURIComponent(p.name)}`, 'aria-label': `Open ${title}` },
+  const projectHref = `#/p/${encodeURIComponent(p.name)}`;
+  const hasUnfinishedSteps = p.counts?.stepsDone < p.counts?.steps;
+  const guideLabel = p.counts?.stepsDone ? 'Continue build' : 'Start build';
+  const card = h('article.home-card', null,
     thumb,
     h('div.home-card-body', null,
       h('div.home-card-head', null, h('h2', null, title), status),
@@ -732,7 +767,10 @@ function projectCard(p) {
         p.counts.steps ? h('span', null, `${p.counts.stepsDone}/${p.counts.steps} steps done`) : null) : null,
       h('div.home-card-footer', null,
         h('span.home-card-phase', null, phase, h('span.home-card-date', null, ` · ${fmtAgo(p.mtime)}`)),
-        h('span.home-card-open', { 'aria-hidden': 'true' }, 'Open project', icon('right', 16)))));
+        h('div.home-card-actions', null,
+          h('a.home-card-open', { href: projectHref, 'aria-label': `Open ${title}` }, 'Open project'),
+          hasUnfinishedSteps && h('a.home-card-open.home-guide-link', { href: `${projectHref}?guide=1`,
+            'aria-label': `${guideLabel} for ${title}` }, guideLabel, icon('right', 16))))));
   if (!p.error) {
     loadProjectData(p.name).then((d) => {
       const c = d.check;
@@ -1074,7 +1112,7 @@ document.addEventListener('keydown', (e) => {
   }
   if (e.target.closest?.('input, textarea, select, [contenteditable]')) return;
   if (!app.data || modalEl || e.metaKey || e.ctrlKey || e.altKey) return;
-  if (e.target.closest?.('button, a, [role="button"], [role="tab"]')) return;
+  if (e.target.closest?.('button, a, summary, [role="button"], [role="tab"]')) return;
   const view = app.views[app.ui.view];
   if (view && view.key && view.key(e)) { e.preventDefault(); return; }
   if (e.key === 'ArrowRight' || e.key === 'ArrowDown') { e.preventDefault(); app.nextStep(1); }
@@ -1093,7 +1131,8 @@ function parseRoute() {
   if (m) {
     let name = m[1];
     try { name = decodeURIComponent(name); } catch { /* keep raw */ }
-    return { page: 'project', name };
+    const search = location.hash.split('?')[1];
+    return { page: 'project', name, guide: new URLSearchParams(search).get('guide') === '1' };
   }
   return { page: 'home' };
 }
@@ -1103,8 +1142,11 @@ async function route() {
   closeMenu();
   closeModal();
   app.tooltip.hide();
-  if (app.route.page === 'project') await openProject(app.route.name);
-  else await renderHome();
+  const current = app.route;
+  if (current.page === 'project') {
+    await openProject(current.name);
+    if (app.route === current && current.guide && app.data?.name === current.name) app.resumeBuild();
+  } else await renderHome();
 }
 
 function connectEvents() {
