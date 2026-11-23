@@ -42,7 +42,7 @@ Next
 Dim docPath, material, size, mass, tree
 docPath = PathOf(doc)
 material = MaterialOf(doc, kind)
-size = BoxOf(doc, kind)
+size = BoxOf(kind)
 mass = MassOf(doc)
 tree = FeatureTree(doc)
 
@@ -70,20 +70,28 @@ Function MaterialOf(model, docKind)
 End Function
 
 ' Bounding box in mm: [x, y, z] sizes, or null.
-Function BoxOf(model, docKind)
+' GetPartBox and GetBox return a typed Double() array that VBScript cannot index
+' ("Type mismatch"), so PowerShell reads the box from the active document.
+Function BoxOf(docKind)
   On Error Resume Next
-  Dim b
+  Dim boxCall, exec, text
   BoxOf = "null"
   If docKind = "part" Then
-    b = model.GetPartBox(True)
+    boxCall = "'GetPartBox',$m,$null,$d,@($true)"
   ElseIf docKind = "assembly" Then
-    b = model.GetBox(0)
+    boxCall = "'GetBox',$m,$null,$d,@(0)"
   Else
     Exit Function
   End If
-  If Err.Number <> 0 Or Not IsArray(b) Then Exit Function
-  If UBound(b) < 5 Then Exit Function
-  BoxOf = "[" & Num(Abs(b(3) - b(0)) * 1000) & "," & Num(Abs(b(4) - b(1)) * 1000) & "," & Num(Abs(b(5) - b(2)) * 1000) & "]"
+  Set exec = CreateObject("WScript.Shell").Exec("powershell.exe -NoProfile -NonInteractive -Command " & _
+    """$ErrorActionPreference='Stop'; $t=[System.__ComObject]; $m=[Reflection.BindingFlags]::InvokeMethod; " & _
+    "$sw=[Runtime.InteropServices.Marshal]::GetActiveObject('SldWorks.Application'); " & _
+    "$d=$t.InvokeMember('ActiveDoc',[Reflection.BindingFlags]::GetProperty,$null,$sw,$null); " & _
+    "$b=$t.InvokeMember(" & boxCall & "); " & _
+    "'['+((0..2|%{[math]::Round([math]::Abs($b[$_+3]-$b[$_])*1000,3).ToString([cultureinfo]::InvariantCulture)}) -join ',')+']'""")
+  If Err.Number <> 0 Then Exit Function
+  text = Trim(Replace(Replace(exec.StdOut.ReadAll, vbCr, ""), vbLf, ""))
+  If Left(text, 1) = "[" And Right(text, 1) = "]" And UBound(Split(text, ",")) = 2 Then BoxOf = text
 End Function
 
 ' Mass in grams and volume in cm3, or null.
