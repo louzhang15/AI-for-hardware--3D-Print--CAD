@@ -1,6 +1,6 @@
 ---
 name: wiremap
-description: Hardware build and CAD companion. Use for SOLIDWORKS help (sketches, features, mates, drawings, macros, SLDPRT/SLDASM/SLDDRW, STEP/STL exports), CAD modeling in build123d, CadQuery, OpenSCAD, FreeCAD or Fusion, and 3D print fit, splitting, slicers, Bambu Lab, tolerances and inserts. Also use for hardware builds and troubleshooting involving Arduino, ESP32, Raspberry Pi, wiring, GPIO and pinouts, breadboards, sensors, motors, servos, batteries, power supplies, brownouts and firmware. Checks wiring and printer fit and shows build steps in a local 3D viewer.
+description: Hardware build and CAD companion. Use for SOLIDWORKS help (sketches, features, mates, drawings, macros, SLDPRT/SLDASM/SLDDRW, STEP/STL exports), CAD modeling in build123d, CadQuery, OpenSCAD, FreeCAD or Fusion, and 3D print fit, splitting, slicers, Bambu Lab, tolerances and inserts. Also use for mechanical and robotics design (servo and motor torque, robot arm reach and kinematics, gears, bolts, tolerances and ISO fits, stack-ups, drone thrust and rover drive sizing), and for hardware builds and troubleshooting involving Arduino, ESP32, Raspberry Pi, wiring, GPIO and pinouts, breadboards, sensors, motors, servos, batteries, power supplies, brownouts and firmware. Opens an always-on-top overlay next to Bambu Studio, slicers and CAD. Checks wiring and printer fit and shows build steps in a local 3D viewer.
 ---
 
 # Wiremap
@@ -80,7 +80,11 @@ before it has open checker errors. Set `meta.phase` as you go.
 
 1. **Define** – Ask 3 to 5 short questions (size, payload, budget, power
    source wall or battery, parts already owned, breadboard?, printer?, CAD
-   tool?). Write `meta.requirements`. For an existing repo, run
+   tool?). Write `meta.requirements`. For an arm, rover, RC car or drone, also
+   write the numbers that size everything: payload and reach (arm), mass,
+   slope and top speed (rover/RC), all-up weight, flight time and prop size
+   (drone). Start a mass budget in `mechanics` before choosing parts: motors
+   and servos are sized from mass, and mass grows with every part. For an existing repo, run
    `wiremap import-repo <dir>` first and mark everything it finds
    `"inferred": true` until the user confirms.
 2. **Parts** – Build the BOM from `library/` first (`ls $WIREMAP_ROOT/library`).
@@ -93,6 +97,11 @@ before it has open checker errors. Set `meta.phase` as you go.
    flag likely clones and inflated specs (cheap "MG996R" servos); include
    spares (jumpers, a spare driver, screw/insert packs) and a starter tool
    kit for first-timers (multimeter, strippers, soldering iron, insert tip).
+   **Explain every choice against its alternatives** with `wiremap compare
+   projects/<name>.json --part <id>`: it swaps each candidate in, re-runs the
+   torque, supply-current and heat checks (a heavier servo at the elbow lowers
+   the shoulder margin and raises the supply peak), and says why each one is
+   picked or rejected. Quote those numbers to the user; never pick by feel.
 3. **Power** – Design the power tree BEFORE any signal wire: source →
    fuse → switch → regulators → loads. Use `wiremap calc` for every
    regulator, fuse and wire size. Batteries: lithium packs always get a fuse
@@ -173,6 +182,17 @@ format: `$WIREMAP_ROOT/docs/FORMAT.md`. Essentials:
   Never put a 5 V signal into a 3.3 V pin (use a divider or level shifter).
   Lithium: fuse, switch, BMS/LVC, balance charger, never charge unattended.
   Tell the user to unplug power before moving any wire.
+- **Mechanics get checked too.** For anything that moves or carries load,
+  add a `mechanics` section to the project (format in `docs/FORMAT.md`) and
+  let `wiremap check` test it: servo/motor torque over the whole joint
+  range (gravity + acceleration, safety factor 2), reach and targets with
+  inverse kinematics, singular poses, gripper force, printed fits against
+  the printer profile, ISO 286 fits against the process, stack-ups (worst
+  case and RSS), bolts including bearing on the printed plate, printed link
+  stress and deflection, gear tooth stress, rover torque and traction, drone
+  thrust-to-weight, prop clearance, battery C rating and ESC headroom. Never
+  pick a servo or motor without a torque margin from the checker. Record
+  measured link lengths and masses; mark guesses in `note`.
 - **Library first.** Use library parts and their pin names; never invent a
   pinout for a library part. If the user's board differs, override the pin in
   the project (`"pins": {"GPIO21": {...}}`) and set `verify: true`.
@@ -183,7 +203,9 @@ format: `$WIREMAP_ROOT/docs/FORMAT.md`. Essentials:
 | --- | --- |
 | `wiremap check <project> [--json]` | Electrical rules. Exit 1 on errors. |
 | `wiremap layout-breadboard <project> [--model full-830\|half-400] [--write]` | Exact holes, rails and jumpers. |
-| `wiremap calc <divider\|led\|ohm\|wire\|fuse\|runtime\|regulator\|insert\|screw\|fit> ...` | Calculators (`--help`). |
+| `wiremap calc <divider\|led\|ohm\|wire\|fuse\|runtime\|regulator\|insert\|screw\|fit> ...` | Electrical and print calculators (`--help`). |
+| `wiremap calc <iso-fit\|stackup\|bolt\|beam\|gear\|lead\|drone\|rover\|kgcm> ...` | Mechanical and robotics calculators. |
+| `wiremap overlay [--install]` | Auto-open the overlay beside Bambu Studio, slicers, CAD, KiCad, Arduino IDE. |
 | `wiremap part-geometry <library-id>` | Board size, holes, keep-outs, connectors for CAD. |
 | `wiremap fit-printer --project <project>` / `--printer <id> --stl f.stl` | Build-volume and material check. |
 | `wiremap split-part --stl f.stl --printer <id> [--joint pins\|dovetail\|flange]` | Split too-big parts; joint plan + CAD snippet. |
@@ -221,6 +243,21 @@ panel's SOLIDWORKS switch (on by default) adds a live snapshot of the open
 model to every chatbot question. Give every step `parts` and `wires` and every part a `description`
 so its answers stay good.
 
+**The overlay.** `wiremap overlay` watches for Bambu Studio, OrcaSlicer,
+PrusaSlicer, Cura, SOLIDWORKS, Fusion, FreeCAD, Onshape, OpenSCAD, Blender,
+KiCad, Fritzing and the Arduino IDE. When one opens, it opens a small Wiremap
+window beside it and keeps it on top (Windows; Edge or Chrome app window). In
+a slicer it checks the selected printer and filament presets against the
+project, every print's bed fit, material and settings, and lists the
+printer's notes; in CAD it shows sizes to model, the usable build volume,
+board outlines and the live SOLIDWORKS snapshot; in KiCad and the Arduino
+IDE it shows wiring problems and connections. Every app gets a Tolerances
+tab (this printer's clearances for common screws, inserts, pins, bearings
+and servo pockets, plus a calculator), Mechanics and Ask. When the user says
+"there is no overlay" or works in Bambu Studio or CAD, offer
+`node bin/wiremap.mjs overlay --install` (login item, asks first) and start
+`node bin/wiremap.mjs overlay` for this session.
+
 When the user clicks "Explain", "Fix this", "Swap part" or "I'm stuck", the
 request goes to `.wiremap/inbox.jsonl`. **Between steps, run `wiremap inbox
 list`**; handle each request, then `wiremap inbox done <id> --note "..."`.
@@ -247,6 +284,41 @@ list`**; handle each request, then `wiremap inbox done <id> --note "..."`.
 
 ## 6. CAD and printing
 
+### CAD playbook (what separates a working part from AI slop)
+
+1. **Measure first, model second.** Every interface size comes from
+   `wiremap part-geometry`, a datasheet drawing, or a caliper reading the
+   user gives you. Write each one into the CAD script as a named parameter
+   with its source in a comment. Never invent a mounting pattern.
+2. **Design intent.** Build from datums the parts mount to (motor shaft
+   axis, board holes), not from the part's outer box. Parametric, fully
+   constrained sketches; one script per part plus the master assembly.
+3. **Load path first.** Before modelling, say where the load enters, where it
+   leaves, and which way the layers run. Bending must run along layers;
+   screws go in shear through bosses; no thin features in the load path.
+4. **Printed-part rules.** Walls ≥ 3 lines (1.2 mm at 0.4); bosses for
+   inserts = insert hole + 2 × min wall; fillets of 1 to 2 mm at inside corners
+   that carry load; 45° max overhang or chamfer it; teardrop or flat-top
+   horizontal holes; 0.4 mm chamfer on bed edges (elephant foot); split
+   parts so each prints flat without supports where possible.
+5. **Every fit from the calculator** (`calc fit`, `calc iso-fit`, `calc
+   insert`, `calc screw`), every stack from `calc stackup`.
+6. **Verify the exported files, not the script.** Run `wiremap cad-check
+   --project projects/<name>.json` after every export: size versus intent,
+   watertight mesh, overhangs and supports for the chosen orientation, bed
+   contact, interference in the assembly, screwdriver access and assembly
+   order. Fix and re-export until it passes.
+7. **Assemblies.** Give every print and part a `position` and size so the
+   assembly check can see collisions; set `mechanics.assembly.rests_on` so
+   build steps go in an order a person can actually do.
+8. **Export rules.** STLs in print orientation, Z up, scale 1 (mm); set
+   `prints[].size` to the CAD bounding box so a wrong-scale export is caught.
+9. **Stability and balance.** Arms: weigh the base and set
+   `arm.base.footprint_mm` (tip-over check). Rovers and RC cars: set CG height
+   and track. Drones: put the battery at the frame centre and give every part
+   `mass_g` so `mech-cg` can check motor balance. RC cars: check the steering
+   servo with `mechanics.rc.steering` before buying it.
+
 - Use the user's `cad.tool`: `build123d` / `cadquery` (write and run a
   Python script), `openscad` / `freecad` (write the file, run headless),
   `fusion` (write a Fusion API script the user runs from Scripts and
@@ -255,6 +327,13 @@ list`**; handle each request, then `wiremap inbox done <id> --note "..."`.
   editable source next to the STL/3MF/STEP files.
 - Get real dimensions from `wiremap part-geometry <id>`: board size,
   mounting holes, connectors, keep-outs. Leave openings where wires route.
+- For bought parts on machined shafts or bores (bearings, dowels, motor
+  shafts) give the ISO fit: `wiremap calc iso-fit --nominal 8 --fit H7/g6`.
+  FDM holds about IT13 (±0.1-0.2 mm): never put an IT7 fit on a printed hole;
+  print it undersize and ream, or use the printed fit.
+- Load paths: printed parts are weakest across layers. Orient so bending
+  stress runs along the layers, put bolts in shear through a boss, check
+  links with `wiremap calc beam` and bolts with `wiremap calc bolt`.
 - Never model at nominal size: `wiremap calc fit --nominal 3 --fit sliding
   --printer <id>` for every hole, slot and peg. Heat-set inserts use
   `wiremap calc insert --size M3` (hole and minimum wall from the insert
@@ -285,7 +364,7 @@ the project file, the library and these rules, not your reasoning:
 | --- | --- |
 | Electrical | every voltage, current, logic level vs datasheets and calculators; fuses, flyback, reverse polarity |
 | Breadboard and wiring | every hole and jumper, strip conflicts, rail voltages, pin labels vs silkscreen |
-| Mechanical and fit | clearances, insert holes, walls, printer volume, split joints, orientation, supports |
+| Mechanical and fit | `wiremap cad-check` output, CG and tip-over, joint torque margins, reach, clearances and ISO fits, stack-ups, bolts, link stress, insert holes, walls, printer volume, split joints, orientation, supports |
 | Assembly | build order, fastener lengths, tool access, steps physically possible with parts already installed |
 | BOM and sourcing | real parts, in stock, compatible, quantities with spares |
 

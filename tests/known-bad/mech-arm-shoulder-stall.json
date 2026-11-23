@@ -1,0 +1,66 @@
+{
+  "meta": {
+    "name": "SG90 shoulder lifting a 150 g payload on 150 mm links",
+    "description": "Deliberately incorrect mechanical checker fixture. Never use as a build guide."
+  },
+  "parts": [
+    {
+      "id": "s-base",
+      "library": "servo-sg90"
+    },
+    {
+      "id": "s-sh",
+      "library": "servo-sg90"
+    },
+    {
+      "id": "s-el",
+      "library": "servo-sg90"
+    },
+    {
+      "id": "s-gr",
+      "library": "servo-sg90"
+    }
+  ],
+  "wires": [],
+  "mechanics": {
+    "arm": {
+      "payload_g": 150,
+      "joints": [
+        {
+          "id": "base",
+          "part": "s-base",
+          "type": "yaw",
+          "link_mm": 45,
+          "bearing": true
+        },
+        {
+          "id": "shoulder",
+          "part": "s-sh",
+          "type": "pitch",
+          "link_mm": 150,
+          "link_mass_g": 25
+        },
+        {
+          "id": "elbow",
+          "part": "s-el",
+          "type": "pitch",
+          "link_mm": 150,
+          "link_mass_g": 20
+        },
+        {
+          "id": "gripper",
+          "part": "s-gr",
+          "type": "gripper",
+          "link_mm": 50,
+          "link_mass_g": 20
+        }
+      ]
+    }
+  },
+  "expect": [
+    {
+      "rule": "mech-joint-torque",
+      "level": "error"
+    }
+  ]
+}

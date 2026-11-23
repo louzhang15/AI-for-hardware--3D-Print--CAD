@@ -1,0 +1,71 @@
+{
+  "meta": {
+    "name": "Lid installed before the base it sits on",
+    "description": "Deliberately incorrect mechanical checker fixture. Never use as a build guide."
+  },
+  "parts": [],
+  "wires": [],
+  "mechanics": {
+    "assembly": {
+      "rests_on": {
+        "lid": [
+          "base"
+        ]
+      }
+    }
+  },
+  "expect": [
+    {
+      "rule": "mech-assembly-order",
+      "level": "error"
+    }
+  ],
+  "prints": [
+    {
+      "id": "base",
+      "name": "Base",
+      "size": [
+        100,
+        80,
+        20
+      ],
+      "position": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "id": "lid",
+      "name": "Lid",
+      "size": [
+        100,
+        80,
+        3
+      ],
+      "position": [
+        0,
+        20,
+        0
+      ]
+    }
+  ],
+  "steps": [
+    {
+      "id": "s1",
+      "phase": "assemble",
+      "title": "Close the lid",
+      "prints": [
+        "lid"
+      ]
+    },
+    {
+      "id": "s2",
+      "phase": "assemble",
+      "title": "Place the base",
+      "prints": [
+        "base"
+      ]
+    }
+  ]
+}

@@ -26,6 +26,7 @@ const INBOX_KINDS = ['explain', 'fix', 'swap', 'stuck', 'ask'];
 const TARGET_RE = /^(wire|part|pin|step|issue|project|print):[^\n]{1,200}$/;
 const REQUIREMENT_FIELDS = new Set(['size', 'payload', 'runtime', 'budget', 'power', 'on_hand']);
 const RESERVED_FILENAME = /^(?:con|prn|aux|nul|com[1-9]|lpt[1-9])(?:\.|$)/i;
+let appsCache = null;
 const FEEDBACK_ROUTE = /^\/api\/project\/([^/]+)\/feedback(?:\/(f-[0-9a-f-]{36})\/review)?$/i;
 
 const MIME = {
@@ -389,6 +390,44 @@ export async function startServer(opts = {}) {
     finally { if (pendingWrites.get(file) === write) pendingWrites.delete(file); }
   }
 
+  /**
+   * Wire edits from the viewer (move an end, add, delete, recolour). The file
+   * before each edit goes on a per-project undo stack in .wiremap/history/.
+   */
+  async function editWires(file, name, op) {
+    const previous = pendingWrites.get(file);
+    const write = (previous || Promise.resolve()).catch(() => {}).then(async () => {
+      const histDir = path.join(repoDir, '.wiremap', 'history');
+      const hist = path.join(histDir, `${name}.jsonl`);
+      const text = await fsp.readFile(file, 'utf8');
+      if (op.op === 'undo') {
+        let lines = [];
+        try { lines = (await fsp.readFile(hist, 'utf8')).split('\n').filter(Boolean); } catch { /* none */ }
+        if (!lines.length) throw Object.assign(new Error('Nothing to undo'), { status: 409 });
+        const last = JSON.parse(lines.pop());
+        await writeAtomic(file, last.text);
+        await fsp.writeFile(hist, lines.length ? `${lines.join('\n')}\n` : '');
+        return { undone: last.op, remaining: lines.length };
+      }
+      let project;
+      try { project = JSON.parse(text); }
+      catch (error) { throw Object.assign(new Error(`Project file is not valid JSON, not writing: ${error.message}`), { status: 409 }); }
+      const lib = libMod && libMod.loadLibrary ? libMod.loadLibrary(path.join(ROOT, 'library'), path.join(repoDir, 'library')) : loadJsonDir(path.join(ROOT, 'library'));
+      const { applyWireEdit } = await import('../lib/edit.js');
+      const out = applyWireEdit(project, lib, op);
+      await fsp.mkdir(histDir, { recursive: true });
+      let lines = [];
+      try { lines = (await fsp.readFile(hist, 'utf8')).split('\n').filter(Boolean); } catch { /* none */ }
+      lines.push(JSON.stringify({ ts: new Date().toISOString(), op: `${op.op} ${op.id || ''}`.trim(), text }));
+      await fsp.writeFile(hist, `${lines.slice(-30).join('\n')}\n`);
+      await writeAtomic(file, `${JSON.stringify(out.project, null, 2)}\n`);
+      return { wire: out.wire, changed: out.changed };
+    });
+    pendingWrites.set(file, write);
+    try { return await write; }
+    finally { if (pendingWrites.get(file) === write) pendingWrites.delete(file); }
+  }
+
   async function appendInboxEntry(body) {
     const kind = body.kind;
     const target = typeof body.target === 'string' ? body.target.trim() : '';
@@ -508,6 +547,23 @@ export async function startServer(opts = {}) {
       const text = await fsp.readFile(real, 'utf8');
       return send(res, 200, text, MIME['.json']);
     }
+    m = /^\/api\/project\/([^/]+)\/wire(\/undo)?$/.exec(pathname);
+    if (m && req.method === 'POST') {
+      let raw;
+      try { raw = decodeURIComponent(m[1]); } catch { return fail(res, 400, 'Bad project name'); }
+      const pf = projectFile(raw);
+      if (!pf) return fail(res, 400, 'Bad project name');
+      const real = await safeResolve(projectsDir, `${pf.name}.json`);
+      if (!real) return fail(res, 404, `No project "${pf.name}"`);
+      const body = m[2] ? {} : await readJsonBody(req);
+      try {
+        const out = await editWires(real, pf.name, m[2] ? { op: 'undo' } : body);
+        return json(res, 200, { ok: true, ...out });
+      } catch (e) {
+        if (e && e.status) return fail(res, e.status, e.message);
+        throw e;
+      }
+    }
     m = /^\/api\/project\/([^/]+)\/state$/.exec(pathname);
     if (m && req.method === 'POST') {
       let raw;
@@ -519,6 +575,20 @@ export async function startServer(opts = {}) {
       if (!real) return fail(res, 404, `No project "${pf.name}"`);
       const changed = await updateState(real, body);
       return json(res, 200, { ok: true, changed });
+    }
+    if (pathname === '/api/apps' && req.method === 'GET') {
+      // Desktop apps the overlay follows (slicers, CAD, electronics), with the
+      // open file from the window title and the slicer's selected presets.
+      const now = Date.now();
+      if (!appsCache || now - appsCache.at > 2000) {
+        const desk = await import('../lib/node/desktop.js');
+        let apps = [], primary = null;
+        try { ({ apps, primary } = await desk.detectWithFocus()); } catch { apps = []; }
+        const slicers = {};
+        for (const a of apps) if (a.kind === 'slicer') slicers[a.id] = desk.readSlicerSettings(a.id);
+        appsCache = { at: now, body: { apps, primary, slicers } };
+      }
+      return json(res, 200, appsCache.body);
     }
     if (pathname === '/api/solidworks' && req.method === 'GET') {
       const sw = await import('../scripts/solidworks-session.mjs');

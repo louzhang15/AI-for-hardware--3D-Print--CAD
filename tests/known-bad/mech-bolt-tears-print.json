@@ -1,0 +1,26 @@
+{
+  "meta": {
+    "name": "One M2 screw in a 1.2 mm printed tab holding 200 N",
+    "description": "Deliberately incorrect mechanical checker fixture. Never use as a build guide."
+  },
+  "parts": [],
+  "wires": [],
+  "mechanics": {
+    "bolts": [
+      {
+        "id": "tab screw",
+        "size": "M2",
+        "count": 1,
+        "load_n": 200,
+        "mode": "shear",
+        "plate_mm": 1.2
+      }
+    ]
+  },
+  "expect": [
+    {
+      "rule": "mech-bolt",
+      "level": "error"
+    }
+  ]
+}

@@ -24,5 +24,23 @@
     "connectors": [],
     "shaft": { "d": 5.4, "flats": 3.7, "note": "double-D output shaft both sides" },
     "confidence": "confirm"
+  },
+  "mechanical": {
+    "kind": "gearmotor",
+    "mass_g": 30,
+    "torque": [
+      {
+        "v": 3,
+        "stall_nm": 0.04
+      },
+      {
+        "v": 6,
+        "stall_nm": 0.08
+      }
+    ],
+    "no_load_rpm": 200,
+    "gear_ratio_internal": 48,
+    "confidence": "estimate",
+    "source": "Typical 1:48 TT motor figures (about 0.8 kgf·cm stall and 200 rpm at 6 V). Varies a lot between makers: measure or use your seller's numbers."
   }
 }

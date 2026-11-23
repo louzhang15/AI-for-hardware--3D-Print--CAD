@@ -1,3 +1,5 @@
+# Wiremap code graph: keep source code, drop copies, data and binaries so
+# every `graphify query` returns fewer, more relevant nodes (fewer tokens).
 .git/
 .wiremap/
 .codex/
@@ -9,3 +11,23 @@ exports/
 graphify-out/
 *.env
 .env*
+# generated mirrors of skills/wiremap/SKILL.md
+AGENTS.md
+# test data and fixtures (read the test file itself when needed)
+tests/known-bad/
+tests/fixtures/
+# part, printer and project data: open the JSON directly, it is the source of truth
+library/
+printers/
+projects/
+templates/
+# CAD outputs and binaries
+cad/
+*.stl
+*.step
+*.3mf
+*.sldprt
+*.SLDPRT
+*.woff2
+.github/
+package-lock.json

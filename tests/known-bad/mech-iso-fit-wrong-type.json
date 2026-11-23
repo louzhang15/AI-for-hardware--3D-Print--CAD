@@ -1,0 +1,25 @@
+{
+  "meta": {
+    "name": "Press-fit tolerance on a bore that must slide",
+    "description": "Deliberately incorrect mechanical checker fixture. Never use as a build guide."
+  },
+  "parts": [],
+  "wires": [],
+  "mechanics": {
+    "fits": [
+      {
+        "id": "sliding shaft",
+        "nominal": 8,
+        "iso": "H7/p6",
+        "want": "clearance",
+        "process": "reamed"
+      }
+    ]
+  },
+  "expect": [
+    {
+      "rule": "mech-fit-type",
+      "level": "error"
+    }
+  ]
+}

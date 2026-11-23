@@ -1,0 +1,43 @@
+/* Pin and wire editing: info card actions, the pin picker, the undo toast. */
+
+.pe-actions { display: grid; gap: 6px; margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--line); }
+.pe-ends { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+.pe-color-l { display: inline-flex; align-items: center; gap: 6px; }
+.pe-color { padding: 4px 6px; border-radius: 7px; border: 1px solid var(--line-2); background: var(--raised); color: var(--text); font: 12px var(--font); }
+.pe-del { margin-left: auto; color: var(--error); }
+.pe-del.armed { background: var(--error-soft); border-color: var(--error); }
+.pe-sw { flex: none; width: 12px; height: 12px; border-radius: 3px; border: 1px solid var(--line-2); }
+
+.modal.pe-modal { width: min(620px, 100%); display: flex; flex-direction: column; }
+.pe-sub { margin: 2px 0 10px; }
+.pe-controls { display: grid; grid-template-columns: 1fr 1.3fr; gap: 10px; }
+.pe-controls label { display: grid; gap: 4px; font-size: 12px; color: var(--muted); }
+.pe-part, .pe-filter { width: 100%; box-sizing: border-box; padding: 7px 9px; border-radius: 8px; border: 1px solid var(--line-2); background: var(--raised); color: var(--text); font: 13px var(--font); }
+.pe-part:focus-visible, .pe-filter:focus-visible, .pe-row:focus-visible, .pe-color:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+.pe-status { margin: 10px 0 6px; font-size: 12px; color: var(--muted); min-height: 1.4em; }
+
+.pe-list { display: grid; gap: 2px; max-height: min(52vh, 440px); overflow: auto; border: 1px solid var(--line); border-radius: 10px; padding: 4px; background: var(--panel-2); }
+.pe-row { display: grid; grid-template-columns: 12px minmax(0, 1fr); gap: 4px 10px; align-items: center; text-align: left; width: 100%; border: 1px solid transparent; background: none; color: var(--text); padding: 8px 10px; border-radius: 7px; cursor: pointer; font: 13px var(--font); }
+.pe-row:hover { background: var(--hover); }
+.pe-row.has-error { opacity: .78; }
+.pe-row.armed { opacity: 1; border-color: var(--error); background: var(--error-soft); }
+.pe-name { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 8px; min-width: 0; }
+.pe-name b { font-weight: 600; }
+.pe-pin, .pe-kind { font-size: 11.5px; color: var(--muted); }
+.pe-used { font-size: 11px; padding: 0 6px; border-radius: 5px; background: var(--warn-soft); color: var(--warn); }
+.pe-ok, .pe-bad { grid-column: 2; display: flex; gap: 5px; align-items: flex-start; font-size: 12px; line-height: 1.4; }
+.pe-ok { color: var(--ok); }
+.pe-bad.error { color: var(--error); }
+.pe-bad.warn { color: var(--warn); }
+.pe-ok svg, .pe-bad svg { flex: none; margin-top: 2px; }
+.pe-empty { margin: 10px; color: var(--muted); }
+.pe-loading { display: flex; gap: 8px; align-items: center; padding: 14px 10px; color: var(--muted); font-size: 13px; }
+.pe-spin { width: 14px; height: 14px; border-radius: 50%; border: 2px solid var(--line-2); border-top-color: var(--accent); animation: pe-spin .8s linear infinite; }
+@keyframes pe-spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .pe-spin { animation: none; } }
+
+.pe-toast { position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%); z-index: 80; display: flex; align-items: center; gap: 12px; padding: 9px 10px 9px 14px; border-radius: 10px; background: var(--raised); color: var(--text); border: 1px solid var(--line-2); box-shadow: var(--shadow); font-size: 13px; max-width: min(560px, calc(100vw - 32px)); }
+
+@media (max-width: 700px) {
+  .pe-controls { grid-template-columns: 1fr; }
+}

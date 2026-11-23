@@ -1,0 +1,34 @@
+{
+  "meta": {
+    "name": "SG90 steering a 4 kg RC truck on 60 mm tyres",
+    "description": "Deliberately incorrect mechanical checker fixture. Never use as a build guide."
+  },
+  "parts": [
+    {
+      "id": "steer",
+      "library": "servo-sg90"
+    }
+  ],
+  "wires": [],
+  "mechanics": {
+    "rc": {
+      "mass_g": 4000,
+      "wheelbase_mm": 320,
+      "track_mm": 250,
+      "wheel_d_mm": 120,
+      "steering": {
+        "servo": "steer",
+        "horn_mm": 15,
+        "arm_mm": 15,
+        "tire_width_mm": 60,
+        "friction": 0.9
+      }
+    }
+  },
+  "expect": [
+    {
+      "rule": "mech-steering",
+      "level": "error"
+    }
+  ]
+}

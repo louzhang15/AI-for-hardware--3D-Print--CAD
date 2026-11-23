@@ -1,0 +1,21 @@
+{
+  "meta": {
+    "name": "Quad with 1.2:1 thrust-to-weight",
+    "description": "Deliberately incorrect mechanical checker fixture. Never use as a build guide."
+  },
+  "parts": [],
+  "wires": [],
+  "mechanics": {
+    "drone": {
+      "auw_g": 1000,
+      "motors": 4,
+      "thrust_g": 300
+    }
+  },
+  "expect": [
+    {
+      "rule": "mech-drone",
+      "level": "error"
+    }
+  ]
+}

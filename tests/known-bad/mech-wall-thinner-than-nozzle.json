@@ -1,0 +1,23 @@
+{
+  "meta": {
+    "name": "0.3 mm walls on a 0.4 mm nozzle",
+    "description": "Deliberately incorrect mechanical checker fixture. Never use as a build guide."
+  },
+  "parts": [],
+  "wires": [],
+  "mechanics": {},
+  "expect": [
+    {
+      "rule": "mech-wall",
+      "level": "error"
+    }
+  ],
+  "prints": [
+    {
+      "id": "case",
+      "name": "Thin case",
+      "min_wall_mm": 0.3,
+      "material": "PLA"
+    }
+  ]
+}

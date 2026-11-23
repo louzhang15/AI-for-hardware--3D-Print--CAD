@@ -1,0 +1,110 @@
+/* Wiremap overlay: a narrow companion window beside Bambu Studio, a slicer or CAD. */
+
+body.overlay-mode { background: var(--bg); overflow: hidden; }
+body.overlay-mode #app, body.overlay-mode #banner:not([hidden]) ~ #app { display: none !important; }
+
+.ov { position: fixed; inset: 0; display: flex; flex-direction: column; font-size: 13px; color: var(--text); background: var(--bg); font-variant-numeric: tabular-nums; }
+.ov-head { display: flex; align-items: center; gap: 10px; padding: 12px 12px 8px 14px; }
+.ov-glyph { flex: none; width: 34px; height: 34px; border-radius: 9px; display: grid; place-items: center; background: var(--accent); color: var(--accent-ink); }
+.ov-glyph[data-kind="none"] { background: var(--raised); color: var(--text-2); border: 1px solid var(--line-2); }
+.ov-id { flex: 1; min-width: 0; display: grid; }
+.ov-app { font-size: 15px; letter-spacing: -0.01em; }
+.ov-file { color: var(--muted); font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ov-icon { border: 0; background: none; color: var(--muted); padding: 6px; border-radius: 7px; cursor: pointer; display: grid; place-items: center; }
+.ov-icon:hover { background: var(--hover); color: var(--text); }
+.ov-icon:focus-visible, .ov-tab:focus-visible, .ov-proj:focus-visible, .ov-in:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+
+.ov-projrow { display: flex; align-items: center; gap: 8px; padding: 0 14px 10px; }
+.ov-projrow label { color: var(--muted); font-size: 12px; }
+.ov-proj { flex: 1; min-width: 0; padding: 6px 8px; border-radius: 8px; border: 1px solid var(--line-2); background: var(--raised); color: var(--text); font: 600 13px var(--font); }
+
+.ov-tabs { display: flex; gap: 2px; margin: 0 12px; padding: 3px; border-radius: 10px; background: var(--panel-2); border: 1px solid var(--line); }
+.ov-tab { flex: 1; border: 0; background: none; color: var(--text-2); font: 600 12.5px var(--font); padding: 7px 4px; border-radius: 7px; cursor: pointer; white-space: nowrap; }
+.ov-tab:hover { color: var(--text); }
+.ov-tab.on { background: var(--raised); color: var(--text); box-shadow: var(--shadow-sm); }
+
+.ov-body { flex: 1; overflow: auto; padding: 6px 14px 18px; }
+.ov-body[hidden], .ov-ask[hidden] { display: none; }
+.ov-ask { flex: 1; min-height: 0; padding: 10px 10px 6px; display: flex; }
+.ov-ask .companion { position: static; flex: 1; display: flex; align-items: stretch; }
+.ov-ask .cmp-panel { width: auto; max-height: none; flex: 1; box-shadow: none; }
+.ov-ask .cmp-launch { display: none; }
+
+.ov-sec { padding: 14px 0 4px; }
+.ov-sec + .ov-sec { border-top: 1px solid var(--line); }
+.ov-sec h3 { margin: 0 0 8px; font-size: 13.5px; letter-spacing: -0.005em; }
+.ov-muted { color: var(--muted); margin: 6px 0 0; font-size: 12px; line-height: 1.45; }
+.ov-big { margin: 0; font-size: 22px; font-weight: 600; letter-spacing: -0.01em; }
+
+.ov-rows { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+.ov-row { display: grid; grid-template-columns: 10px 1fr; gap: 10px; align-items: start; }
+.ov-row b { font-weight: 600; line-height: 1.35; display: block; }
+.ov-row p { margin: 2px 0 0; color: var(--text-2); line-height: 1.45; }
+.ov-dot { width: 10px; height: 10px; border-radius: 50%; margin-top: 4px; background: var(--faint); box-shadow: 0 0 0 3px var(--panel-2); }
+.ov-row.ok .ov-dot { background: var(--ok); }
+.ov-row.warn .ov-dot { background: var(--warn); }
+.ov-row.bad .ov-dot { background: var(--error); }
+.ov-row.bad > div > b { color: var(--error); }
+.ov-note { font-size: 12px; }
+.ov-chips { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 6px; }
+.ov-chips span { font-size: 11.5px; padding: 2px 7px; border-radius: 5px; background: var(--panel-2); border: 1px solid var(--line); color: var(--text-2); }
+
+.ov-cmd { margin-top: 12px; display: flex; align-items: center; gap: 4px; padding: 6px 6px 6px 10px; border-radius: 8px; background: var(--panel-2); border: 1px solid var(--line); }
+.ov-cmd code { flex: 1; min-width: 0; overflow-x: auto; white-space: nowrap; font: 11.5px var(--mono); color: var(--text-2); }
+
+.ov-tol { width: 100%; border-collapse: collapse; }
+.ov-tol th { text-align: left; font-size: 12px; color: var(--muted); font-weight: 600; padding: 0 0 6px; }
+.ov-tol th:last-child, .ov-tol td:last-child { text-align: right; white-space: nowrap; }
+.ov-tol td { padding: 7px 0; border-top: 1px solid var(--line); vertical-align: baseline; }
+.ov-tol td b { font-size: 15px; color: var(--accent); }
+.ov-tol td span { color: var(--muted); font-size: 11.5px; }
+
+.ov-calc { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+.ov-calc label { display: grid; gap: 4px; font-size: 11.5px; color: var(--muted); }
+.ov-in { width: 100%; box-sizing: border-box; padding: 7px 8px; border-radius: 8px; border: 1px solid var(--line-2); background: var(--raised); color: var(--text); font: 600 13px var(--font); }
+.ov-calc-out { margin-top: 12px; display: flex; align-items: baseline; gap: 10px; padding: 10px 12px; border: 1.5px solid var(--accent); border-radius: 4px; }
+.ov-calc-v { font-size: 24px; font-weight: 600; color: var(--accent); letter-spacing: -0.01em; }
+.ov-calc-out .ov-muted { margin: 0; }
+
+.ov-wires { list-style: none; margin: 0; padding: 0; display: grid; gap: 5px; font-size: 12px; }
+.ov-wires li { display: flex; align-items: baseline; gap: 6px; }
+.ov-wires i { flex: none; width: 14px; height: 3px; border-radius: 2px; transform: translateY(-3px); }
+.ov-to { color: var(--faint); }
+
+.ov-body .mx { gap: 16px; }
+.ov-body .mx-sec { padding-top: 12px; }
+.ov-body .mx-issues li { grid-template-columns: 1fr; }
+.ov-body .mx-fix { grid-column: 1; }
+.ov-body .mx-fit, .mx-fits.compact .mx-fit { grid-template-columns: 1fr; gap: 6px; }
+.ov-body .mx-fit-dim { font-size: 18px; }
+
+.ov-foot { padding: 8px 14px 10px; border-top: 1px solid var(--line); color: var(--muted); font-size: 11.5px; }
+.ov-foot span { display: inline-flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+.ov-foot code { font: 11px var(--mono); color: var(--text-2); }
+.ov-row.tip p { margin: 0; }
+.ov-ask .companion { flex-direction: column; min-width: 0; width: 100%; }
+.ov-ask .cmp-panel { min-width: 0; width: 100%; box-sizing: border-box; }
+.ov-ask .cmp-close { display: none; }
+
+/* Now designing: the item open in CAD or the slicer */
+.ov-focus { margin: 12px 0 4px; padding: 12px 12px 12px 14px; border-radius: 10px; border: 1px solid var(--line-2); border-left: 4px solid var(--accent); background: var(--raised); box-shadow: var(--shadow-sm); }
+.ov-focus h3 { margin: 2px 0 6px; font-size: 17px; font-weight: 700; letter-spacing: -0.01em; }
+.ov-focus-kicker { margin: 0; font-size: 12px; font-weight: 600; color: var(--accent); }
+.ov-focus p { margin: 6px 0 0; line-height: 1.45; color: var(--text-2); }
+.ov-focus b, .ov-focus strong { color: var(--text); font-weight: 700; }
+.ov-focus-facts { font-size: 13px; }
+.ov-focus-sel { padding: 6px 8px; border-radius: 7px; background: var(--accent-soft); color: var(--text) !important; }
+.ov-focus-ok { color: var(--ok) !important; font-weight: 600; }
+.ov-focus .mx-fits { margin-top: 8px; gap: 6px; }
+.ov-focus .mx-fit { padding: 6px 0; }
+.ov-focus-issues { list-style: none; margin: 8px 0 0; padding: 0; display: grid; gap: 6px; }
+.ov-focus-issues li { padding: 6px 8px; border-radius: 7px; font-size: 12.5px; line-height: 1.45; background: var(--warn-soft); border-left: 3px solid var(--warn); }
+.ov-focus-issues li.error { background: var(--error-soft); border-left-color: var(--error); }
+.ov-focus-issues li.error strong { color: var(--error); }
+.ov-focus-issues li.warning strong { color: var(--warn); }
+.ov-nomatch { margin: 12px 0 4px; padding: 10px 12px; border-radius: 10px; border: 1px dashed var(--line-2); display: grid; gap: 2px; font-size: 13px; }
+.ov-nomatch .ov-muted { margin: 0; }
+.ov-row.ov-hit > div > b { font-weight: 700; color: var(--text); }
+.ov-row.ov-hit { margin-left: -10px; padding-left: 7px; border-left: 3px solid var(--accent); }
+.ov-row.ov-dim > div { opacity: .72; }
+.ov-row.ov-dim > div > b { font-weight: 500; }

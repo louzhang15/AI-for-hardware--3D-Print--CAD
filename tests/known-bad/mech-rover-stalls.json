@@ -1,0 +1,30 @@
+{
+  "meta": {
+    "name": "2 kg rover on TT motors with 100 mm wheels up a 20 degree ramp",
+    "description": "Deliberately incorrect mechanical checker fixture. Never use as a build guide."
+  },
+  "parts": [
+    {
+      "id": "m1",
+      "library": "dc-motor-tt"
+    }
+  ],
+  "wires": [],
+  "mechanics": {
+    "rover": {
+      "mass_g": 2000,
+      "wheel_d_mm": 100,
+      "driven_wheels": 2,
+      "wheels": 4,
+      "slope_deg": 20,
+      "motor": "m1",
+      "supply_v": 5
+    }
+  },
+  "expect": [
+    {
+      "rule": "mech-rover",
+      "level": "error"
+    }
+  ]
+}

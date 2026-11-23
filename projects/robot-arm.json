@@ -694,5 +694,146 @@
       ],
       "done": false
     }
-  ]
+  ],
+  "mechanics": {
+    "material": "PLA",
+    "safety_factor": 2,
+    "arm": {
+      "note": "Link lengths and masses are the reference starting point (MeArm-sized). Measure yours and update them.",
+      "payload_g": 10,
+      "accel_rad_s2": 3,
+      "supply_v": 5,
+      "joints": [
+        {
+          "id": "base",
+          "part": "servo-base",
+          "type": "yaw",
+          "link_mm": 45,
+          "bearing": false
+        },
+        {
+          "id": "shoulder",
+          "part": "servo-shoulder",
+          "type": "pitch",
+          "link_mm": 80,
+          "link_mass_g": 12
+        },
+        {
+          "id": "elbow",
+          "part": "servo-elbow",
+          "type": "pitch",
+          "link_mm": 80,
+          "link_mass_g": 10
+        },
+        {
+          "id": "gripper",
+          "part": "servo-gripper",
+          "type": "gripper",
+          "link_mm": 45,
+          "link_mass_g": 15
+        }
+      ],
+      "gripper": {
+        "jaw_mm": 30,
+        "friction": 0.4
+      },
+      "targets": [
+        {
+          "name": "pick spot in front",
+          "x": 170,
+          "y": 0,
+          "z": 20
+        },
+        {
+          "name": "drop cup on the left",
+          "x": 120,
+          "y": 110,
+          "z": 40
+        }
+      ],
+      "base": {
+        "note": "Printed base with the base servo and electronics deck on four rubber feet. Weigh yours.",
+        "mass_g": 200,
+        "footprint_mm": 60,
+        "clamped": false
+      }
+    },
+    "beams": [
+      {
+        "id": "upper arm link",
+        "from_joint": "shoulder",
+        "length_mm": 80,
+        "section": {
+          "type": "rect",
+          "w": 18,
+          "h": 6
+        },
+        "layer": "xy",
+        "fill": 0.6,
+        "max_deflection_mm": 1.0
+      }
+    ],
+    "fits": [
+      {
+        "id": "SG90 body pocket",
+        "nominal": 12.2,
+        "fit": "snug",
+        "feature": "slot",
+        "designed": 12.4,
+        "parts": [
+          "servo-shoulder",
+          "servo-elbow"
+        ]
+      },
+      {
+        "id": "M3 clearance hole",
+        "nominal": 3,
+        "fit": "free",
+        "feature": "hole",
+        "designed": 3.6
+      },
+      {
+        "id": "Shoulder pivot pin (3 mm steel)",
+        "nominal": 3,
+        "fit": "sliding",
+        "feature": "hole",
+        "designed": 3.4
+      }
+    ],
+    "bolts": [
+      {
+        "id": "electronics deck screws",
+        "size": "M3",
+        "class": "A2-70",
+        "count": 4,
+        "load_n": 20,
+        "mode": "shear",
+        "plate_mm": 3.2
+      }
+    ],
+    "stackups": [
+      {
+        "id": "servo tab under deck lid",
+        "dims": [
+          {
+            "name": "pocket depth",
+            "nominal": 12.6,
+            "tol": 0.15
+          },
+          {
+            "name": "SG90 body height to tab",
+            "nominal": 12.2,
+            "tol": 0.2,
+            "sign": -1
+          }
+        ],
+        "min_gap": 0
+      }
+    ],
+    "assembly": {
+      "note": "Opt-in assembly checks: overlaps, screwdriver access and order.",
+      "allow_overlap": [],
+      "rests_on": {}
+    }
+  }
 }

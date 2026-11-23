@@ -25,7 +25,10 @@ test('Ask Wiremap answers beginner requests and zooms to the pins', { skip: !chr
   const ask = async (q) => {
     await page.locator('input.cmp-input').fill(q);
     await page.keyboard.press('Enter');
-    await page.waitForTimeout(900);
+    await page.waitForTimeout(300);
+    // Wait for a chatbot round trip to finish so its late answer never lands on the next question.
+    await page.waitForFunction(() => document.querySelector('.companion')?.dataset.state !== 'thinking', null, { timeout: 70000 });
+    await page.waitForTimeout(600);
     return (await page.locator('.cmp-msg.bot p').allInnerTexts()).at(-1);
   };
   if (await page.locator('.cmp-panel').isHidden()) await page.locator('.cmp-orb').click();

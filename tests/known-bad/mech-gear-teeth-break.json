@@ -1,0 +1,26 @@
+{
+  "meta": {
+    "name": "Module 0.5 PLA gears carrying 1 N·m",
+    "description": "Deliberately incorrect mechanical checker fixture. Never use as a build guide."
+  },
+  "parts": [],
+  "wires": [],
+  "mechanics": {
+    "gears": [
+      {
+        "id": "drive gear",
+        "module": 0.5,
+        "z1": 12,
+        "z2": 48,
+        "torque_nm": 1,
+        "face_mm": 4
+      }
+    ]
+  },
+  "expect": [
+    {
+      "rule": "mech-gear",
+      "level": "error"
+    }
+  ]
+}

@@ -1,0 +1,47 @@
+{
+  "meta": {
+    "name": "Lid modelled through the base",
+    "description": "Deliberately incorrect mechanical checker fixture. Never use as a build guide."
+  },
+  "parts": [],
+  "wires": [],
+  "mechanics": {
+    "assembly": {}
+  },
+  "expect": [
+    {
+      "rule": "mech-interference",
+      "level": "error"
+    }
+  ],
+  "prints": [
+    {
+      "id": "base",
+      "name": "Base",
+      "size": [
+        100,
+        80,
+        20
+      ],
+      "position": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "id": "lid",
+      "name": "Lid",
+      "size": [
+        100,
+        80,
+        5
+      ],
+      "position": [
+        0,
+        15,
+        0
+      ]
+    }
+  ]
+}
