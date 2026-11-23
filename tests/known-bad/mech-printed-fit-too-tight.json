@@ -1,0 +1,25 @@
+{
+  "meta": {
+    "name": "3 mm pin in a 3.0 mm printed hole",
+    "description": "Deliberately incorrect mechanical checker fixture. Never use as a build guide."
+  },
+  "parts": [],
+  "wires": [],
+  "mechanics": {
+    "fits": [
+      {
+        "id": "pin hole",
+        "nominal": 3,
+        "fit": "sliding",
+        "feature": "hole",
+        "designed": 3.0
+      }
+    ]
+  },
+  "expect": [
+    {
+      "rule": "mech-printed-fit",
+      "level": "error"
+    }
+  ]
+}

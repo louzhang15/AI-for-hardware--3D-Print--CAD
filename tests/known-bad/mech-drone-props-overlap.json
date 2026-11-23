@@ -1,0 +1,23 @@
+{
+  "meta": {
+    "name": "7 inch props on a 220 mm frame",
+    "description": "Deliberately incorrect mechanical checker fixture. Never use as a build guide."
+  },
+  "parts": [],
+  "wires": [],
+  "mechanics": {
+    "drone": {
+      "auw_g": 600,
+      "motors": 4,
+      "thrust_g": 800,
+      "frame_mm": 220,
+      "prop_in": 7
+    }
+  },
+  "expect": [
+    {
+      "rule": "mech-drone",
+      "level": "error"
+    }
+  ]
+}

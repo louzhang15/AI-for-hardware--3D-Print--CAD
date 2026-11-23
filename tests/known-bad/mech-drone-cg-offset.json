@@ -1,0 +1,64 @@
+{
+  "meta": {
+    "name": "Battery strapped 60 mm off centre on a 700 g quad",
+    "description": "Deliberately incorrect mechanical checker fixture. Never use as a build guide."
+  },
+  "parts": [
+    {
+      "id": "frame",
+      "name": "Frame and electronics",
+      "category": "structure",
+      "mass_g": 520,
+      "position": [
+        0,
+        0,
+        0
+      ],
+      "pins": []
+    },
+    {
+      "id": "pack",
+      "name": "3S pack",
+      "category": "structure",
+      "mass_g": 180,
+      "position": [
+        60,
+        0,
+        180
+      ],
+      "pins": []
+    }
+  ],
+  "wires": [],
+  "mechanics": {
+    "drone": {
+      "auw_g": 700,
+      "motors": 4,
+      "thrust_g": 300,
+      "motor_positions": [
+        [
+          78,
+          78
+        ],
+        [
+          -78,
+          78
+        ],
+        [
+          -78,
+          -78
+        ],
+        [
+          78,
+          -78
+        ]
+      ]
+    }
+  },
+  "expect": [
+    {
+      "rule": "mech-cg",
+      "level": "error"
+    }
+  ]
+}

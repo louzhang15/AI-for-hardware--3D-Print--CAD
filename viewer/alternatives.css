@@ -1,0 +1,23 @@
+/* Part alternatives: verdict dot, name, facts, then the reasons with numbers. */
+.alt { display: grid; gap: 10px; }
+.alt-top h3 { margin: 0; font-size: 15px; letter-spacing: -0.01em; }
+.alt-top p { margin: 2px 0 0; color: var(--muted); font-size: 12.5px; line-height: 1.45; }
+.alt-none { margin: 0; color: var(--muted); font-size: 12.5px; }
+.alt-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; }
+.alt-row { display: grid; grid-template-columns: 10px 1fr; gap: 10px; align-items: start; }
+.alt-dot { width: 10px; height: 10px; border-radius: 50%; margin-top: 5px; background: var(--faint); }
+.alt-row.pick .alt-dot { background: var(--ok); box-shadow: 0 0 0 3px var(--ok-soft); }
+.alt-row.works .alt-dot { background: var(--warn); }
+.alt-row.rejected .alt-dot { background: var(--error); }
+.alt-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 8px; }
+.alt-head b { font-size: 13.5px; }
+.alt-tag { font-size: 11.5px; padding: 1px 6px; border-radius: 5px; background: var(--accent-soft); color: var(--accent); }
+.alt-verdict { margin-left: auto; font-size: 12px; font-weight: 600; color: var(--muted); }
+.alt-row.pick .alt-verdict { color: var(--ok); }
+.alt-row.works .alt-verdict { color: var(--warn); }
+.alt-row.rejected .alt-verdict { color: var(--error); }
+.alt-row.rejected .alt-head b { color: var(--text-2); }
+.alt-facts { margin: 2px 0 0; font-size: 12.5px; color: var(--text-2); font-variant-numeric: tabular-nums; }
+.alt-why { margin: 4px 0 0; padding-left: 16px; font-size: 12.5px; line-height: 1.45; color: var(--text-2); }
+.alt-why li + li { margin-top: 2px; }
+.alt-need { color: var(--text); }

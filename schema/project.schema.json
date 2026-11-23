@@ -877,6 +877,43 @@
     },
     "bom": {
       "type": "object"
+    },
+    "mechanics": {
+      "type": "object",
+      "description": "Optional mechanical and robotics data checked by lib/mech.js (see docs/FORMAT.md): arm, fits, stackups, bolts, beams, gears, rover, drone.",
+      "properties": {
+        "material": { "type": "string" },
+        "safety_factor": { "type": "number", "minimum": 1 },
+        "arm": {
+          "type": "object",
+          "properties": {
+            "payload_g": { "type": "number", "minimum": 0 },
+            "joints": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": ["id", "type"],
+                "properties": {
+                  "id": { "type": "string" },
+                  "part": { "type": "string" },
+                  "type": { "enum": ["yaw", "pitch", "gripper"] },
+                  "link_mm": { "type": "number", "minimum": 0 },
+                  "link_mass_g": { "type": "number", "minimum": 0 },
+                  "range": { "type": "array", "items": { "type": "number" }, "minItems": 2, "maxItems": 2 },
+                  "bearing": { "type": "boolean" }
+                }
+              }
+            }
+          }
+        },
+        "fits": { "type": "array" },
+        "stackups": { "type": "array" },
+        "bolts": { "type": "array" },
+        "beams": { "type": "array" },
+        "gears": { "type": "array" },
+        "rover": { "type": "object" },
+        "drone": { "type": "object" }
+      }
     }
   }
 }

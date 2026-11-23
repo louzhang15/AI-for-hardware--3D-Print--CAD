@@ -1,0 +1,28 @@
+{
+  "meta": {
+    "name": "Thin PLA bracket carrying 40 N at 100 mm",
+    "description": "Deliberately incorrect mechanical checker fixture. Never use as a build guide."
+  },
+  "parts": [],
+  "wires": [],
+  "mechanics": {
+    "beams": [
+      {
+        "id": "bracket",
+        "length_mm": 100,
+        "section": {
+          "type": "rect",
+          "w": 10,
+          "h": 4
+        },
+        "tip_load_n": 40
+      }
+    ]
+  },
+  "expect": [
+    {
+      "rule": "mech-beam",
+      "level": "error"
+    }
+  ]
+}

@@ -101,6 +101,7 @@ export function sessionStatus(report) {
   const d = report.document || {};
   const problems = report.features?.problems?.length || 0;
   return { active: true, title: d.title, type: d.type, selected: report.selectionCount || 0, problems,
+    selectionNames: (report.selection || []).map((x) => x && x.name).filter(Boolean).slice(0, 8),
     text: `${d.title} · ${d.type} · ${report.selectionCount || 0} selected${problems ? ` · ${problems} rebuild problem${problems === 1 ? '' : 's'}` : ''}` };
 }
 

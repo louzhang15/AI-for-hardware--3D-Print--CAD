@@ -1,0 +1,76 @@
+{
+  "meta": {
+    "name": "Servo signal from input-only GPIO34",
+    "description": "Deliberately incorrect checker fixture. Never use as a build guide."
+  },
+  "parts": [
+    {
+      "id": "usb",
+      "library": "usb-5v"
+    },
+    {
+      "id": "esp",
+      "library": "esp32-devkit-v1"
+    },
+    {
+      "id": "servo",
+      "library": "servo-sg90"
+    },
+    {
+      "id": "sup",
+      "library": "dc-adapter-5v-3a"
+    }
+  ],
+  "wires": [
+    {
+      "id": "p1",
+      "from": "usb.5V",
+      "to": "esp.VIN",
+      "color": "red",
+      "gauge": 24
+    },
+    {
+      "id": "p2",
+      "from": "usb.GND",
+      "to": "esp.GND",
+      "color": "black",
+      "gauge": 24
+    },
+    {
+      "id": "s1",
+      "from": "esp.GPIO34",
+      "to": "servo.SIG",
+      "color": "orange"
+    },
+    {
+      "id": "v1",
+      "from": "sup.V+",
+      "to": "servo.V+",
+      "color": "red",
+      "gauge": 22
+    },
+    {
+      "id": "g1",
+      "from": "sup.GND",
+      "to": "servo.GND",
+      "color": "black",
+      "gauge": 22
+    },
+    {
+      "id": "g2",
+      "from": "sup.GND",
+      "to": "esp.GND_2",
+      "color": "black",
+      "gauge": 22
+    }
+  ],
+  "expect": [
+    {
+      "rule": "special-pin",
+      "level": "error",
+      "pins": [
+        "esp.GPIO34"
+      ]
+    }
+  ]
+}

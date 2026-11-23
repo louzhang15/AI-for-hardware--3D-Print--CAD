@@ -1,0 +1,70 @@
+{
+  "meta": {
+    "name": "Long MG996R arm on a light 40 mm base",
+    "description": "Deliberately incorrect mechanical checker fixture. Never use as a build guide."
+  },
+  "parts": [
+    {
+      "id": "s-base",
+      "library": "servo-mg996r"
+    },
+    {
+      "id": "s-sh",
+      "library": "servo-mg996r"
+    },
+    {
+      "id": "s-el",
+      "library": "servo-mg996r"
+    },
+    {
+      "id": "s-gr",
+      "library": "servo-sg90"
+    }
+  ],
+  "wires": [],
+  "mechanics": {
+    "arm": {
+      "payload_g": 100,
+      "joints": [
+        {
+          "id": "base",
+          "part": "s-base",
+          "type": "yaw",
+          "link_mm": 60,
+          "bearing": true
+        },
+        {
+          "id": "shoulder",
+          "part": "s-sh",
+          "type": "pitch",
+          "link_mm": 150,
+          "link_mass_g": 40
+        },
+        {
+          "id": "elbow",
+          "part": "s-el",
+          "type": "pitch",
+          "link_mm": 150,
+          "link_mass_g": 30
+        },
+        {
+          "id": "gripper",
+          "part": "s-gr",
+          "type": "gripper",
+          "link_mm": 60,
+          "link_mass_g": 25
+        }
+      ],
+      "base": {
+        "mass_g": 100,
+        "footprint_mm": 40
+      }
+    }
+  },
+  "expect": [
+    {
+      "rule": "mech-tipping",
+      "level": "error"
+    }
+  ]
+}

@@ -1,0 +1,70 @@
+{
+  "meta": {
+    "name": "LED on strapping pin GPIO12",
+    "description": "Deliberately incorrect checker fixture. Never use as a build guide."
+  },
+  "parts": [
+    {
+      "id": "usb",
+      "library": "usb-5v"
+    },
+    {
+      "id": "esp",
+      "library": "esp32-devkit-v1"
+    },
+    {
+      "id": "led",
+      "library": "led-5mm"
+    },
+    {
+      "id": "r",
+      "library": "resistor",
+      "params": {
+        "ohms": 330
+      }
+    }
+  ],
+  "wires": [
+    {
+      "id": "p1",
+      "from": "usb.5V",
+      "to": "esp.VIN",
+      "color": "red",
+      "gauge": 24
+    },
+    {
+      "id": "p2",
+      "from": "usb.GND",
+      "to": "esp.GND",
+      "color": "black",
+      "gauge": 24
+    },
+    {
+      "id": "s1",
+      "from": "esp.GPIO12",
+      "to": "led.A",
+      "color": "white"
+    },
+    {
+      "id": "s2",
+      "from": "led.K",
+      "to": "r.1",
+      "color": "white"
+    },
+    {
+      "id": "s3",
+      "from": "r.2",
+      "to": "esp.GND_2",
+      "color": "black"
+    }
+  ],
+  "expect": [
+    {
+      "rule": "special-pin",
+      "level": "warning",
+      "pins": [
+        "esp.GPIO12"
+      ]
+    }
+  ]
+}

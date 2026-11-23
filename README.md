@@ -58,6 +58,84 @@ For your own project, list split STLs under `prints[].pieces[].file` or individu
 
 Use `wiremap split-part --stl part.stl --printer bambu-a1-mini --out exports/split` for an oversized mesh. The command keeps the original CAD coordinates in the split STLs and places the validated 3MFs on the bed. Use the 3MF paths listed in the current joint plan. Apply the joint features in CAD and re-export the final parts if your assembly needs pins, bolts, or a dovetail.
 
+### Overlay next to Bambu Studio and CAD
+
+```bash
+node bin/wiremap.mjs overlay             # watch now (Ctrl+C to stop)
+node bin/wiremap.mjs overlay --install   # start it at every login (asks first; --uninstall removes it)
+```
+
+When Bambu Studio, OrcaSlicer, PrusaSlicer, Cura, SOLIDWORKS, Fusion, FreeCAD,
+Onshape, OpenSCAD, Blender, KiCad, Fritzing or the Arduino IDE opens, a small
+Wiremap window opens beside it. On Windows it stays on top (Edge or Chrome app
+window, pinned with the Win32 API); it closes when the app closes.
+
+| App | What the overlay shows |
+| --- | --- |
+| Slicers | Selected printer and filament presets against the project, bed fit, material and settings for every print, the export command, printer notes |
+| CAD | Live SOLIDWORKS document and rebuild errors, sizes to model, usable build volume, board outlines |
+| KiCad, Arduino IDE | Wiring problems and every connection |
+| All | Tolerances for this printer (screws, inserts, pins, bearings, servo pockets, plus a calculator), Mechanics, Ask |
+
+`node bin/wiremap.mjs overlay --once` shows what it detects. Slicer presets
+are read from `BambuStudio.conf`, `OrcaSlicer.conf` or `PrusaSlicer.ini`.
+
+### Mechanics and robotics checks
+
+Add a `mechanics` section to a project ([format](docs/FORMAT.md)) and
+`wiremap check` also tests the mechanical side. The Mechanics tab draws the
+arm at its hardest pose with each joint's load against its servo.
+
+| Check | Example | Level |
+| --- | --- | --- |
+| Joint torque over the whole range (gravity + acceleration) | SG90 shoulder lifting 150 g on 150 mm links | Error / warning below 2× margin |
+| Continuous-rotation servo on a positional joint | FS90R as a shoulder | Error |
+| Reach and singular poses (inverse kinematics) | Target 500 mm from a 210 mm arm | Error / warning |
+| Base servo carrying the arm's bending moment | No turntable bearing | Warning |
+| Gripper force vs payload friction | | Error / warning |
+| Printed fits vs the printer profile | 3 mm pin in a 3.0 mm printed hole | Error / warning |
+| ISO 286 fits vs process and intent | H7/p6 where a sliding fit is wanted; IT7 on an FDM hole | Error / warning |
+| Tolerance stack-ups, worst case and RSS | Three spacers longer than the slot | Error / warning |
+| Bolts, including bearing on the printed plate | One M2 in a 1.2 mm tab at 200 N | Error / warning |
+| Printed link stress and deflection | Thin PLA bracket at 40 N | Error / warning |
+| Gear tooth stress (Lewis), undercut, printable module | Module 0.5 PLA gears at 1 N·m | Error / warning |
+| Rover torque and traction | TT motors up a 20° ramp | Error / warning |
+| Drone thrust-to-weight, prop overlap, battery C rating, ESC headroom | 7" props on a 220 mm frame | Error / warning |
+| Walls thinner than the nozzle, low-temperature plastic near heat | | Error / warning |
+
+One-off numbers: `wiremap calc iso-fit --nominal 22 --fit H7/p6`, `calc
+stackup`, `calc bolt`, `calc beam`, `calc gear`, `calc lead`, `calc drone`,
+`calc rover`, `calc kgcm`. All values are estimates from published formulas
+and typical material data: print a test part and load it.
+
+### Change pins in the viewer
+
+Select a wire and choose **Change pin** on either end. Every pin on the part
+is listed with what the checker would say if the wire moved there, best
+first; pins that cause an error need a second click. **Connect to…** on a pin
+adds a wire. Edits are written to the project file with an undo stack in
+`.wiremap/history/`, and `wiremap export pins-h` regenerates the firmware pins.
+
+### Why this part and not that one
+
+```bash
+node bin/wiremap.mjs compare projects/robot-arm.json --part servo-shoulder
+```
+
+Swaps every candidate into that spot, re-runs the torque, supply current and
+heat checks (a heavier elbow servo lowers the shoulder's margin), and gives a
+reason for each pick or rejection.
+
+### Check CAD output before printing
+
+```bash
+node bin/wiremap.mjs cad-check --project projects/robot-arm.json
+node bin/wiremap.mjs cad-check --stl part.stl --printer bambu-a1-mini
+```
+
+Size versus intent, watertight mesh, overhangs for the chosen orientation,
+bed contact, assembly interference, screwdriver access and assembly order.
+
 ### Use it in every project
 
 | Tool | How |
@@ -102,6 +180,8 @@ Codex reads `AGENTS.md`. All three are generated from `skills/wiremap/SKILL.md`
 | Under-voltage, regulator dropout, linear regulator heat | | Warning |
 | Required pin floating, no ground, unpowered part | TB6612 STBY floating | Warning |
 | Missing protection | Lithium pack with no fuse or no BMS/cutoff on a load path, no switch, motor with no flyback path | Error / warning |
+| Special pins | LED on ESP32 GPIO12 (boot strapping), servo signal from input-only GPIO34, a signal on EN or the USB serial TX/RX | Warning / error |
+| Supply into a signal pin | USB 5 V wired to an ESP32 GPIO | Error |
 | Mains or > 60 V DC | | Error (out of scope) |
 
 "0 errors" means **no rule violations found**, not "safe": heat, EMI,
@@ -142,6 +222,8 @@ auto-activation prompt set (≥ 95 % of 40 hardware prompts trigger the skill,
 
 ## Limits
 
+- Mechanical checks are static and quasi-static estimates (no fatigue, creep, vibration or control tuning). Printed strengths are typical values; servo torque data is from datasheets marked "confirm".
+- The overlay stays on top on Windows only; on macOS and Linux it opens as a normal app window.
 - Rule-based checks, not circuit simulation. No PCB layout (export a KiCad netlist instead). No mains projects.
 - Wiremap provides part geometry, fit checks, and mesh export for external CAD tools. `split-part` cuts STL meshes with closed caps. Add joint features in CAD using the generated plan.
 - Part geometry (board outlines, hole positions) is approximate unless marked verified; electrical data cites its sources. Parts that vary between sellers are marked "Confirm on your board".
@@ -154,7 +236,7 @@ auto-activation prompt set (≥ 95 % of 40 hardware prompts trigger the skill,
 
 MIT. three.js (vendored in `viewer/vendor/three/`) is MIT, © three.js authors.
 
-## Ask Wiremap: assistant, chatbot and overlay
+## Ask Wiremap: assistant and chatbot
 
 The orb at the bottom right of the viewer (press V to talk) answers plain
 requests: "how do I connect the motor to the ESP32" zooms the 3D view to the
@@ -169,9 +251,9 @@ key; **AI: Auto** switches to the other one when one runs out of tokens.
 | Can edit project | adds Edit and Write | `--sandbox workspace-write` |
 | Full access (asks to confirm) | `--dangerously-skip-permissions` | `--dangerously-bypass-approvals-and-sandbox` |
 
-The pop-out button keeps the panel on top of SOLIDWORKS or Bambu Studio
-(Document Picture-in-Picture, Chrome or Edge). Other browsers open a small
-popup window at `?overlay=1`.
+The pop-out button floats the panel over other apps (Document
+Picture-in-Picture, Chrome or Edge). For an overlay that opens by itself,
+use `wiremap overlay` (above).
 
 On Windows with SOLIDWORKS open, the panel shows the active document and a
 **SOLIDWORKS** switch. When it is on, every chatbot question includes a live

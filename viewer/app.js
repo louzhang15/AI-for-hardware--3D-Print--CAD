@@ -50,6 +50,10 @@ const RULE_PHASE = {
   'over-voltage': 'power', 'under-voltage': 'power', overload: 'power', 'missing-bms': 'power', 'missing-fuse': 'power',
   'missing-switch': 'power', 'fuse-rating': 'power', 'regulator-dropout': 'power', 'regulator-heat': 'power',
   'supplies-fighting': 'power', 'power-to-ground': 'power', short: 'power', unpowered: 'power',
+  'mech-joint-torque': 'parts', 'mech-continuous-servo': 'parts', 'mech-yaw-bearing': 'parts', 'mech-reach': 'define', 'mech-singularity': 'define',
+  'mech-accuracy': 'define', 'mech-grip': 'parts', 'mech-drone': 'parts', 'mech-rover': 'parts', 'mech-data': 'parts', 'mech-input': 'define',
+  'mech-printed-fit': 'print', 'mech-fit-process': 'print', 'mech-fit-type': 'print', 'mech-stackup': 'print', 'mech-wall': 'print', 'mech-heat': 'print',
+  'mech-bolt': 'assemble', 'mech-beam': 'print', 'mech-deflection': 'print', 'mech-gear': 'print',
 };
 export const phaseOfIssue = (i) => (PHASES.includes(i.phase) ? i.phase : RULE_PHASE[i.rule] || 'wire');
 
@@ -61,6 +65,7 @@ export const VIEWS = [
   { id: 'power', label: 'Power tree', icon: 'bolt' },
   { id: 'assembly', label: 'Assembly', icon: 'print' },
   { id: 'preview', label: 'Motion preview', icon: 'motion' },
+  { id: 'mechanics', label: 'Mechanics', icon: 'gauge' },
 ];
 const PHASE_VIEW = { define: 'sketch', parts: '3d', power: 'power', wire: 'pinout', firmware: 'pinout', print: 'assembly', assemble: 'assembly', test: 'sketch' };
 const PHASE_LEFT = { define: 'requirements', parts: 'parts', power: 'power' };
@@ -147,7 +152,7 @@ app.describeWire = (id) => {
 function runCheck(project) {
   if (checkProjectFn) {
     try {
-      return checkProjectFn(project, app.library);
+      return checkProjectFn(project, app.library, { printers: app.printers });
     } catch (e) {
       console.warn('checkProject failed', e);
       showBanner(`The checker crashed on this project: ${e.message}. Showing a structural check only.`, e.stack, 'warn');
@@ -594,6 +599,10 @@ app.openPart = (id) => {
   app.els.stage.append(sheet);
 };
 
+// Pin and wire editing (lazy: needs lib/check.js, which may fail to load).
+let pinEdit = null;
+import('./pin-edit.js').then((m) => { pinEdit = m; renderInfoCard(); }).catch((e) => console.warn('pin editing unavailable:', e.message));
+
 function renderInfoCard() {
   if (app.els.info) { app.els.info.remove(); app.els.info = null; }
   if (app.ui.view === '3d') return;
@@ -612,7 +621,8 @@ function renderInfoCard() {
       wireIssues(sel.id),
       h('div.actions', null,
         h('button.btn.small', { onclick: () => app.inbox({ kind: 'explain', target: `wire:${sel.id}`, text: `Explain wire ${sel.id}: ${dw.title} (${dw.label}). ${dw.plain}`, title: dw.title }) }, icon('help', 14), 'Explain'),
-        h('button.btn.small', { onclick: () => app.askWithNote({ kind: 'fix', target: `wire:${sel.id}`, context: `Please fix wire ${sel.id}: ${dw.title} (${dw.label}).`, title: `Fix ${dw.label}` }) }, icon('spark', 14), 'Fix this')));
+        h('button.btn.small', { onclick: () => app.askWithNote({ kind: 'fix', target: `wire:${sel.id}`, context: `Please fix wire ${sel.id}: ${dw.title} (${dw.label}).`, title: `Fix ${dw.label}` }) }, icon('spark', 14), 'Fix this')),
+      pinEdit ? pinEdit.wireEditActions(app, sel.id) : null);
   } else {
     const pin = app.pin(sel.id);
     if (!pin) return;
@@ -629,7 +639,8 @@ function renderInfoCard() {
       h('h3', null, h('span.swatch', { style: { background: app.roleColor(role) } }), app.pinText(sel.id)),
       h('p.lead', null, net && net.wires.length ? `Connected to ${plural(others.length, 'other pin')} on the ${app.data.check.netInfo?.[net.id]?.name || net.name} net.` : 'Not connected to anything.'),
       h('dl.kv', null, facts.map(([k, v]) => [h('dt', null, k), h('dd', null, v)])),
-      others.length ? h('div.tags', { style: { marginTop: '8px' } }, others.slice(0, 12).map((k) => h('button.chip', { onclick: () => app.select({ type: 'pin', id: k }) }, app.pinText(k)))) : null);
+      others.length ? h('div.tags', { style: { marginTop: '8px' } }, others.slice(0, 12).map((k) => h('button.chip', { onclick: () => app.select({ type: 'pin', id: k }) }, app.pinText(k)))) : null,
+      pinEdit ? pinEdit.pinEditActions(app, sel.id) : null);
   }
   app.els.info = card;
   app.els.stage.append(card);
@@ -917,6 +928,10 @@ async function ensureView(id) {
   else if (id === 'sketch') view = new SketchView(app, host);
   else if (id === 'breadboard') view = new BreadboardView(app, host);
   else if (id === 'power') view = new PowerTreeView(app, host);
+  else if (id === 'mechanics') {
+    const { MechanicsView } = await import('./mechanics.js');
+    view = new MechanicsView(app, host);
+  }
   else if (id === 'preview') {
     const { MotionPreview } = await import('./motion-preview.js');
     view = new MotionPreview(app, host);
@@ -989,6 +1004,7 @@ function renderProjectShell() {
   for (const v of Object.values(app.views)) v.dirty = true;
   mountView();
   renderInfoCard();
+  app.onProjectRendered?.();
 }
 
 async function openProject(name) {
@@ -1110,8 +1126,13 @@ async function boot() {
     showBanner(`Could not load the part library: ${e.message}`, '', 'warn');
     app.library = {};
   }
+  try { app.printers = JSON.parse(await api('/api/printers')); } catch { app.printers = {}; }
   for (const [id, def] of Object.entries(app.library)) if (def && def.$error) { console.warn(`library/${id}.json: ${def.$error}`); delete app.library[id]; }
   if (checkLoadError) console.warn('lib/check.js failed to load:', checkLoadError);
+  if (new URLSearchParams(location.search).get('overlay') === '1') {
+    try { const { mountOverlay } = await import('./overlay.js'); app.overlay = mountOverlay(app); }
+    catch (e) { console.error(e); showBanner(`The overlay failed to start: ${e.message}`, e.stack); }
+  }
   window.addEventListener('hashchange', route);
   connectEvents();
   await route();

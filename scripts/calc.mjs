@@ -4,6 +4,7 @@
 import { resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import * as calc from '../lib/calc.js';
+import * as mech from '../lib/mech.js';
 import { loadPrinters } from '../lib/node/library.js';
 
 const HELP = `Usage: wiremap calc <calculator> [options] [--json]
@@ -22,6 +23,17 @@ const HELP = `Usage: wiremap calc <calculator> [options] [--json]
   insert     --size M3 [--maker ruthex]
   screw      --stack 6 --size M3 --engagement insert|thread-plastic|nut [--depth 10] [--washer 0.5]
   eseries    --value 4300 [--series E12|E24]
+
+Mechanical and robotics (lib/mech.js):
+  iso-fit    --nominal 22 --fit H7/p6           ISO 286 limits, clearance or interference
+  stackup    --dim "housing:20:0.1" --dim "-shaft:19.8:0.05" [--min-gap 0.05]   (name:nominal:tol, leading - subtracts)
+  bolt       --size M3 --count 4 --load 400 [--mode shear|tension] [--class 8.8] [--plate 3 --material PLA]
+  beam       --len 80 --width 18 --height 6 [--wall 2 | --od 10 --id 6] (--force 2 | --moment 900) [--material PLA] [--fill 0.6] [--layer xy|z] [--sf 2]
+  gear       --module 1 --z1 12 --z2 36 [--torque 0.5 --face 6] [--material PLA]
+  lead       --torque 0.4 --lead 8 [--eff 0.35]    lead-screw or belt linear force
+  drone      --auw 650 --thrust 600 [--motors 4] [--current 18] [--frame 220 --prop 5] [--mah 1500 --c 75] [--esc 30]
+  rover      --mass 1200 --wheel 65 [--driven 2 --wheels 4] [--slope 10] [--stall 0.08] [--rpm 200]
+  kgcm       --value 1.8                          servo kg·cm to N·m
 
 Every result is labelled "calculated" and shows its inputs and formula.`;
 
@@ -76,6 +88,35 @@ function run(name, o) {
       const v = n(o.value), s = o.series || 'E12';
       return { value: { nextUp: calc.nextUp(v, s), nearest: calc.nearest(v, s), nextDown: calc.nextDown(v, s) }, unit: 'ohm', inputs: { value: v, series: s }, formula: `${s} standard values`, steps: [], warnings: [], label: 'calculated' };
     }
+    case 'iso-fit': {
+      const r = mech.isoFit({ nominal: n(o.nominal), fit: o.fit });
+      return { ...r, value: `${r.clearance.min} to ${r.clearance.max}`, display: r.type, inputs: { nominal: r.nominal, fit: r.fit } };
+    }
+    case 'stackup': {
+      const dims = [].concat(o.dim || []).map((d) => {
+        const neg = String(d).startsWith('-');
+        const [nm, nom, tol] = String(d).replace(/^-/, '').split(':');
+        return { name: nm, nominal: Number(nom), tol: Number(tol || 0), sign: neg ? -1 : 1 };
+      });
+      const r = mech.stackup({ dims, min_gap: n(o['min-gap']), max_gap: n(o['max-gap']) });
+      return { ...r, display: `worst ${r.worst.min} to ${r.worst.max}, RSS ${r.rss.min} to ${r.rss.max}${r.ok ? '' : r.ok_rss ? '  (worst case fails)' : '  (FAILS)'}`, inputs: {} };
+    }
+    case 'bolt': return { ...mech.bolt({ size: o.size, class: o.class || '8.8', count: n(o.count) ?? 1, load_n: n(o.load), mode: o.mode || 'shear', plate_mm: n(o.plate), plate_material: o.material || 'PLA', sf: n(o.sf) ?? 2 }), inputs: { size: o.size, count: n(o.count) ?? 1, load_n: n(o.load) } };
+    case 'beam': return { ...mech.beam({ length_mm: n(o.len), section: o.od ? { type: o.id ? 'tube' : 'round', od: n(o.od), id: n(o.id) } : o.wall ? { type: 'box', w: n(o.width), h: n(o.height), t: n(o.wall) } : { type: 'rect', w: n(o.width), h: n(o.height) }, tip_load_n: n(o.force), moment_nmm: n(o.moment), material: o.material || 'PLA', fill: n(o.fill) ?? 0.6, layer: o.layer || 'xy', sf: n(o.sf) ?? 2 }), inputs: { length_mm: n(o.len) } };
+    case 'gear': {
+      const r = mech.gear({ module: n(o.module), z1: n(o.z1), z2: n(o.z2), torque_nm: n(o.torque), face_mm: n(o.face), material: o.material || 'PLA', process: o.process || 'fdm' });
+      return { ...r, display: `centre distance ${r.centre_distance_mm} mm`, warnings: [...r.warnings, ...r.problems.map((p) => `${p.level.toUpperCase()}: ${p.text}`)], inputs: { module: n(o.module), z1: n(o.z1), z2: n(o.z2) } };
+    }
+    case 'lead': return { ...mech.linearDrive({ torque_nm: n(o.torque), lead_mm: n(o.lead), efficiency: n(o.eff) ?? 0.35 }), inputs: { torque_nm: n(o.torque), lead_mm: n(o.lead) } };
+    case 'drone': {
+      const r = mech.drone({ auw_g: n(o.auw), thrust_g: n(o.thrust), motors: n(o.motors) ?? 4, current_a: n(o.current), frame_mm: n(o.frame), prop_in: n(o.prop), battery: o.mah ? { mah: n(o.mah), c: n(o.c) } : undefined, esc_a: n(o.esc) });
+      return { ...r, value: r.twr, unit: ': 1 thrust-to-weight', display: r.flight_min ? `about ${r.flight_min} min hover` : undefined, formula: 'TWR = n × thrust / weight; hover current ∝ thrust^1.5', warnings: r.problems.map((p) => `${p.level.toUpperCase()}: ${p.text}`), inputs: {} };
+    }
+    case 'rover': {
+      const r = mech.rover({ mass_g: n(o.mass), wheel_d_mm: n(o.wheel), driven_wheels: n(o.driven) ?? 2, wheels: n(o.wheels), slope_deg: n(o.slope), stall_nm: n(o.stall), no_load_rpm: n(o.rpm) });
+      return { ...r, value: r.torque_per_wheel_nm, unit: 'N·m per driven wheel', display: `${r.torque_per_wheel_kgcm} kg·cm`, formula: 'τ = (m g (sin θ + Crr cos θ) + m a) × r / driven wheels', warnings: r.problems.map((p) => `${p.level.toUpperCase()}: ${p.text}`), inputs: {} };
+    }
+    case 'kgcm': return { value: Number(mech.kgcmToNm(n(o.value)).toFixed(4)), unit: 'N·m', inputs: { kgcm: n(o.value) }, formula: 'N·m = kgf·cm × 9.80665 / 100', steps: [], warnings: [], label: 'calculated' };
     default: throw Object.assign(new Error(`unknown calculator "${name}"`), { usage: true });
   }
 }

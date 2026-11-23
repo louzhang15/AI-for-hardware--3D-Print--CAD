@@ -20,6 +20,13 @@ export const GLOSSARY = [
   [/^(rx\d*|rxd)$/i, 'RX means receive. It goes to the TX pin of the other board.'],
   [/^(gpio\d+|d\d+|gp\d+|io\d+)$/i, 'A GPIO pin is a general input or output pin the code controls. On an ESP32 it handles 3.3 V only.'],
   [/^(en|enable|stby|standby|oe)$/i, 'EN, STBY or OE turn a chip on or off. Leaving them unconnected can make a board do nothing.'],
+  [/^(rst|reset|nrst|res)$/i, 'RST or RESET restarts the board when it is pulled to GND, which is what the reset button does. Leave it unwired unless the board notes say otherwise.'],
+  [/^(tolerance|tolerances)$/i, 'A tolerance is how far a real size may differ from the drawing. A 3D printer holds about ±0.1 to 0.2 mm, so printed holes need extra clearance.'],
+  [/^(clearance)$/i, 'Clearance is the gap between a hole and what goes in it. Wiremap gives per-side values for press, snug, sliding and free fits on your printer.'],
+  [/^(torque)$/i, 'Torque is turning force: force times distance from the joint. A servo rated 1.8 kg·cm can just hold 1.8 kg at 1 cm, or 180 g at 10 cm, at stall.'],
+  [/^(infill)$/i, 'Infill is the pattern inside a print. Walls carry most of the load in bending, so more walls usually helps more than more infill.'],
+  [/^(supports?)$/i, 'Supports hold up overhangs while printing and are removed after. Orient parts so few surfaces overhang more than about 45°.'],
+  [/^(brim)$/i, 'A brim is a thin skirt of extra plastic around the first layer that keeps small or tall parts stuck to the bed.'],
   [/^(i2c)$/i, 'I2C is a two-wire bus (SDA and SCL) that lets one controller talk to many sensors and drivers.'],
   [/^(breadboard)$/i, 'A breadboard is a board with holes joined in strips of five, so you can connect parts without soldering.'],
 ];

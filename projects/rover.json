@@ -479,5 +479,48 @@
       ],
       "done": false
     }
-  ]
+  ],
+  "mechanics": {
+    "material": "PLA",
+    "safety_factor": 2,
+    "rover": {
+      "note": "Mass and wheel size are the reference starting point. Weigh your rover and update them.",
+      "mass_g": 600,
+      "wheel_d_mm": 65,
+      "driven_wheels": 2,
+      "wheels": 3,
+      "slope_deg": 10,
+      "crr": 0.03,
+      "accel_m_s2": 0.5,
+      "friction": 0.6,
+      "motor": "motor-left",
+      "supply_v": 5,
+      "cg_height_mm": 35,
+      "track_mm": 130
+    },
+    "fits": [
+      {
+        "id": "TT motor shaft in printed hub (D-shaft 5.4 mm)",
+        "nominal": 5.4,
+        "fit": "press",
+        "feature": "hole",
+        "designed": 5.5
+      }
+    ],
+    "bolts": [
+      {
+        "id": "motor mount (2 × M3 through the TT motor)",
+        "size": "M3",
+        "class": "A2-70",
+        "count": 2,
+        "load_n": 15,
+        "mode": "shear",
+        "plate_mm": 3
+      }
+    ],
+    "assembly": {
+      "allow_overlap": [],
+      "rests_on": {}
+    }
+  }
 }

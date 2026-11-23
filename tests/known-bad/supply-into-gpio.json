@@ -1,0 +1,41 @@
+{
+  "meta": {
+    "name": "USB 5 V wired to an ESP32 RX pin",
+    "description": "Deliberately incorrect checker fixture. Never use as a build guide."
+  },
+  "parts": [
+    {
+      "id": "usb",
+      "library": "usb-5v"
+    },
+    {
+      "id": "esp",
+      "library": "esp32-devkit-v1"
+    }
+  ],
+  "wires": [
+    {
+      "id": "w1",
+      "from": "usb.5V",
+      "to": "esp.GPIO3",
+      "color": "red",
+      "gauge": 24
+    },
+    {
+      "id": "w2",
+      "from": "usb.GND",
+      "to": "esp.GND",
+      "color": "black",
+      "gauge": 24
+    }
+  ],
+  "expect": [
+    {
+      "rule": "over-voltage",
+      "level": "error",
+      "pins": [
+        "esp.GPIO3"
+      ]
+    }
+  ]
+}

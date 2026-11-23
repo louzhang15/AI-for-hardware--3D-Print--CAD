@@ -1,0 +1,47 @@
+{
+  "meta": {
+    "name": "Three spacers longer than the slot",
+    "description": "Deliberately incorrect mechanical checker fixture. Never use as a build guide."
+  },
+  "parts": [],
+  "wires": [],
+  "mechanics": {
+    "stackups": [
+      {
+        "id": "spacer stack",
+        "dims": [
+          {
+            "name": "slot",
+            "nominal": 30,
+            "tol": 0.1
+          },
+          {
+            "name": "spacer A",
+            "nominal": 10.1,
+            "tol": 0.1,
+            "sign": -1
+          },
+          {
+            "name": "spacer B",
+            "nominal": 10.1,
+            "tol": 0.1,
+            "sign": -1
+          },
+          {
+            "name": "spacer C",
+            "nominal": 10.0,
+            "tol": 0.1,
+            "sign": -1
+          }
+        ],
+        "min_gap": 0
+      }
+    ]
+  },
+  "expect": [
+    {
+      "rule": "mech-stackup",
+      "level": "error"
+    }
+  ]
+}

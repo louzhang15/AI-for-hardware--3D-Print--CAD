@@ -107,7 +107,7 @@ test('SOLIDWORKS snapshot becomes plain chatbot context and a panel status', asy
   assert.match(text, /Coincident3 \[MateCoincident\] warning/);
   assert.match(text, /Selected \(1\): Face<1> \(face\)/);
   assert.doesNotMatch(text, /Origin \[/, 'reference features are left out');
-  assert.deepEqual(sw.sessionStatus(report), { active: true, title: 'servo-bracket.SLDPRT', type: 'part', selected: 1, problems: 2,
+  assert.deepEqual(sw.sessionStatus(report), { active: true, title: 'servo-bracket.SLDPRT', type: 'part', selected: 1, problems: 2, selectionNames: ['Face<1>'],
     text: 'servo-bracket.SLDPRT · part · 1 selected · 2 rebuild problems' });
   delete process.env.WIREMAP_SOLIDWORKS_FIXTURE;
 });

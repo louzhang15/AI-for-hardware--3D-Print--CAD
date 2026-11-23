@@ -9,7 +9,10 @@ const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const COMMANDS = {
   check: ['check.mjs', 'Run the electrical checker on a project'],
   'layout-breadboard': ['layout-breadboard.mjs', 'Place parts and jumpers on a breadboard'],
-  calc: ['calc.mjs', 'Deterministic calculators (divider, led, wire, fuse, runtime, insert, screw, fit, regulator)'],
+  calc: ['calc.mjs', 'Calculators: electrical (divider, led, wire, fuse, runtime, regulator) and mechanical (fit, iso-fit, stackup, bolt, beam, gear, drone, rover)'],
+  compare: ['compare.mjs', 'Compare parts for a role and explain why one beats another (torque, current, mass, heat)'],
+  'cad-check': ['cad-check.mjs', 'Check STL/3MF prints and the assembly: dimensions, overhangs, bed contact, interference, fastener access'],
+  overlay: ['overlay.mjs', 'Auto-open the Wiremap overlay when Bambu Studio, a slicer or CAD app starts'],
   'fit-printer': ['fit-printer.mjs', "Check parts against a printer's build volume and materials"],
   'split-part': ['split-part.mjs', 'Split an STL that is too big for the printer'],
   'export-print': ['export-print.mjs', 'Per-part print folders, settings cards and plate 3MF'],

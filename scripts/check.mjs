@@ -5,7 +5,7 @@ import { existsSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { checkProject } from '../lib/check.js';
-import { loadLibrary, readProject } from '../lib/node/library.js';
+import { loadLibrary, loadPrinters, readProject } from '../lib/node/library.js';
 
 const HELP = `Usage: wiremap check <projects/name.json> [--json] [--strict]
 
@@ -20,6 +20,11 @@ export function libraryFor(projectFile) {
   const local = join(dirname(resolve(projectFile)), '..', 'library');
   return existsSync(local) && resolve(local) !== resolve(new URL('../library', import.meta.url).pathname)
     ? loadLibrary(undefined, local) : loadLibrary();
+}
+
+/** Printer profiles for printed-fit checks (empty if the folder is missing). */
+export function safePrinters() {
+  try { return loadPrinters(); } catch { return {}; }
 }
 
 export function formatReport(res, name = '') {
@@ -38,6 +43,22 @@ export function formatReport(res, name = '') {
     }
     for (const b of res.power.runtime) lines.push(`    ${b.battery}: about ${b.hours} h at ${b.avg} A average (${b.formula})`);
   }
+  const M = res.mechanics;
+  if (M && M.arm) {
+    lines.push('', `  Arm joints (worst pose over the joint range, SF ${M.arm.sf}):`);
+    for (const j of M.arm.joints) {
+      if (j.type === 'gripper') continue;
+      lines.push(`    ${String(j.id).padEnd(12)} needs ${String(j.load_kgcm).padStart(5)} kg·cm  has ${j.stall_kgcm ?? '?'} kg·cm  margin ${j.margin ?? '?'}×`);
+    }
+    lines.push(`    reach ${M.arm.reach_mm} mm, tip repeatability about ±${M.arm.tip_error_mm} mm, arm mass ${M.arm.total_mass_g} g`);
+  }
+  if (M && M.fits && M.fits.length) {
+    lines.push('', '  Fits:');
+    for (const f of M.fits) {
+      if (f.kind === 'iso') lines.push(`    ${f.id}: Ø${f.nominal} ${f.fit} ${f.type}, clearance ${f.clearance.min} to ${f.clearance.max} mm`);
+      else lines.push(`    ${f.id}: model ${f.feature} at ${f.recommended} mm (${f.fit}, ${f.clearance_per_side} mm per side${f.designed !== null ? `; modelled ${f.designed}` : ''})`);
+    }
+  }
   lines.push('', `  ${res.errors} error(s), ${res.warnings} warning(s), ${res.infos} note(s). ${res.summary}`);
   if (!res.errors) lines.push('  Not checked: ' + res.notChecked.map((x) => x.split(':')[0]).join('; ') + '.');
   return lines.join('\n');
@@ -51,9 +72,9 @@ export async function main(argv) {
   for (const file of args) {
     let project;
     try { project = readProject(file); } catch (e) { console.error(e.message); return 2; }
-    const res = checkProject(project, libraryFor(file));
+    const res = checkProject(project, libraryFor(file), { printers: safePrinters() });
     if (argv.includes('--json')) {
-      all.push({ file, ok: res.ok, errors: res.errors, warnings: res.warnings, infos: res.infos, summary: res.summary, issues: res.issues, power: res.power, wireInfo: res.wireInfo, notChecked: res.notChecked });
+      all.push({ file, ok: res.ok, errors: res.errors, warnings: res.warnings, infos: res.infos, summary: res.summary, issues: res.issues, power: res.power, mechanics: res.mechanics, wireInfo: res.wireInfo, notChecked: res.notChecked });
     } else {
       console.log(formatReport(res, file));
     }

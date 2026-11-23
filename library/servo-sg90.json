@@ -30,5 +30,22 @@
     "keepout": [],
     "connectors": [{ "name": "servo lead", "pos": [0, 6.1], "side": "left" }],
     "confidence": "confirm"
+  },
+  "mechanical": {
+    "kind": "positional",
+    "mass_g": 9,
+    "torque": [
+      {
+        "v": 4.8,
+        "stall_nm": 0.177,
+        "kgcm": 1.8
+      }
+    ],
+    "speed_s_per_60": 0.1,
+    "deadband_deg": 1,
+    "spline": "21T plastic",
+    "side_load": "low: add a bearing for any bending load",
+    "confidence": "confirm",
+    "source": "TowerPro SG90 datasheet: 1.8 kgf·cm at 4.8 V, 0.1 s/60°, 9 g, dead band 10 µs"
   }
 }

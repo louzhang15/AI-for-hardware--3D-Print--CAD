@@ -27,5 +27,24 @@
     "connectors": [{ "name": "servo lead", "pos": [0, 6.1], "side": "left" }],
     "confidence": "confirm"
   },
-  "continuous": true
+  "continuous": true,
+  "mechanical": {
+    "kind": "continuous",
+    "mass_g": 9,
+    "torque": [
+      {
+        "v": 4.8,
+        "stall_nm": 0.127,
+        "kgcm": 1.3
+      },
+      {
+        "v": 6,
+        "stall_nm": 0.147,
+        "kgcm": 1.5
+      }
+    ],
+    "no_load_rpm": 110,
+    "confidence": "confirm",
+    "source": "FEETECH FS90R spec as listed by resellers: 1.3 kgf·cm at 4.8 V, 1.5 at 6 V, ~110 rpm at 4.8 V. Continuous rotation: it cannot hold an angle."
+  }
 }

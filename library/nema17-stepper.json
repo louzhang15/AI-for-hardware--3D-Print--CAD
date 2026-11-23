@@ -28,5 +28,19 @@
     "shaft": { "d": 5, "length": 24, "flat": true },
     "confidence": "verified",
     "note": "NEMA 17 standard face: 42.3 mm square, M3 holes on a 31 mm square, 22 mm boss, 5 mm shaft. Holes and shaft are on the front face (top view here)."
+  },
+  "mechanical": {
+    "kind": "stepper",
+    "mass_g": 280,
+    "holding_nm": 0.4,
+    "torque": [
+      {
+        "v": 12,
+        "stall_nm": 0.2
+      }
+    ],
+    "step_deg": 1.8,
+    "confidence": "confirm",
+    "source": "17HS4401 datasheet: 0.4 N·m holding. Running torque falls with speed; 50 % of holding is used as the usable torque at moderate speed."
   }
 }
