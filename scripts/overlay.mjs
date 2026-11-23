@@ -25,7 +25,8 @@ import { APPS, KIND_LABEL, primaryApp } from '../lib/apps.js';
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const IS_WIN = platform() === 'win32';
 const IS_MAC = platform() === 'darwin';
-const PROFILE_DIR = join(ROOT, '.wiremap', 'overlay-browser');
+// A fresh folder for the overlay browser (the first Windows run left a synced Edge profile in overlay-browser).
+const PROFILE_DIR = join(ROOT, '.wiremap', 'overlay-window');
 
 const HELP = `Usage: wiremap overlay [--install | --uninstall | --once | --open | --apps]
                        [--project name] [--port 4321] [--keep] [--yes] [--dry-run]
