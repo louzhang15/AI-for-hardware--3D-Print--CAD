@@ -64,18 +64,24 @@ export function overlayUrl(base, { app, project } = {}) {
   return `${base.replace(/\/$/, '')}/?${q}${project ? `#/p/${encodeURIComponent(project)}` : ''}`;
 }
 
-async function serverUp(port) {
+/**
+ * 'overlay': a Wiremap viewer that serves the overlay; 'other': something else
+ * (often an older Wiremap checkout) holds the port; 'free': nothing answers.
+ */
+async function probe(port) {
   try {
-    const r = await fetch(`http://127.0.0.1:${port}/api/projects`, { signal: AbortSignal.timeout(1500) });
-    return r.ok;
-  } catch { return false; }
+    const r = await fetch(`http://127.0.0.1:${port}/api/apps`, { signal: AbortSignal.timeout(3000) });
+    return r.ok ? 'overlay' : 'other';
+  } catch { return 'free'; }
 }
 
-/** Reuse a running viewer on the port, or start one in this process. */
+/** Reuse a running viewer that has the overlay, else start this checkout's viewer (on another port if needed). */
 async function ensureServer(port) {
-  if (await serverUp(port)) return { url: `http://127.0.0.1:${port}`, own: null };
+  const state = await probe(port);
+  if (state === 'overlay') return { url: `http://127.0.0.1:${port}`, own: null };
   const { startServer } = await import('../viewer/serve.mjs');
-  const srv = await startServer({ port, projectsDir: join(ROOT, 'projects') });
+  if (state === 'other') console.log(`Port ${port} is used by another server (an older Wiremap?). Starting this one on a free port.`);
+  const srv = await startServer({ port: state === 'other' ? 0 : port, projectsDir: join(ROOT, 'projects') });
   return { url: srv.url.replace(/\/$/, ''), own: srv };
 }
 

@@ -188,3 +188,22 @@ test('/api/apps and the overlay page follow the open app', { timeout: 90000 }, a
   assert.equal(await sw.locator('.ov-focus').count(), 1, 'focus card stays above the tolerance table');
   assert.deepEqual(errors, []);
 });
+
+test('overlay skips an older Wiremap server that has no overlay and starts its own', { timeout: 30000 }, async () => {
+  const http = await import('node:http');
+  const { spawn } = await import('node:child_process');
+  const old = http.createServer((q, r) => { r.statusCode = q.url === '/api/projects' ? 200 : 404; r.end('{}'); });
+  await new Promise((res) => old.listen(0, '127.0.0.1', res));
+  const port = old.address().port;
+  const out = await new Promise((res) => {
+    const c = spawn(process.execPath, [join(root, 'bin', 'wiremap.mjs'), 'overlay', '--port', String(port), '--dry-run', '--open'], { env: { ...process.env, WIREMAP_APPS_FIXTURE: join(tmp, 'none.json') } });
+    let text = '';
+    c.stdout.on('data', (d) => { text += d; if (/would open/.test(text)) { c.kill(); } });
+    c.on('exit', () => res(text));
+    setTimeout(() => c.kill(), 15000);
+  });
+  old.close();
+  assert.match(out, /used by another server/);
+  assert.doesNotMatch(out, new RegExp(`would open http://(127\\.0\\.0\\.1|localhost):${port}/`), 'must not reuse the old server');
+  assert.match(out, /would open http:\/\/\S+\/\?overlay=1/);
+});
