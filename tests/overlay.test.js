@@ -43,6 +43,9 @@ test('open file comes out of the window title', () => {
   assert.equal(fileFromTitle(by('bambu-studio'), 'robot-arm-deck - Bambu Studio'), 'robot-arm-deck');
   assert.equal(fileFromTitle(by('bambu-studio'), 'C:\\prints\\deck.3mf - Bambu Studio'), 'deck.3mf');
   assert.equal(fileFromTitle(by('bambu-studio'), 'Bambu Studio'), null);
+  // Real Windows titles (Bambu Studio 2.x): no space in the name, "*" for unsaved.
+  assert.equal(fileFromTitle(by('bambu-studio'), '* Untitled - BambuStudio'), null);
+  assert.equal(fileFromTitle(by('bambu-studio'), '* robot-arm-deck - BambuStudio'), 'robot-arm-deck');
   const apps = matchApps(PROCS);
   assert.deepEqual(apps.map((a) => a.id).sort(), ['arduino-ide', 'bambu-studio', 'solidworks']);
   assert.equal(primaryApp(apps).id, 'bambu-studio', 'slicer wins when nothing is in front');
@@ -91,6 +94,9 @@ test('slicer settings: Bambu/Orca JSON and PrusaSlicer INI', () => {
   assert.deepEqual(b.filaments, ['Bambu PLA Basic']);
   assert.deepEqual(b.recent, ['a.3mf', 'b.3mf']);
   assert.equal(parseBambuConf('not json'), null);
+  // Real BambuStudio.conf mixes names with colour and AMS keys.
+  const real = parseBambuConf(JSON.stringify({ presets: { machine: 'Bambu Lab A1 0.4 nozzle', filaments: ['Generic PETG', 'Bambu PLA Basic @BBL A1'], filament_colors: '#000000,#C12E1F', filament_ams: '1,1,1', filament_map: '0,0,0', filament_extra: ';;' } }));
+  assert.deepEqual(real.filaments, ['Generic PETG', 'Bambu PLA Basic @BBL A1']);
   const p = parsePrusaIni('[presets]\nprinter = Original Prusa MK4\nfilament = Prusament PETG\n[recent_projects]\n1 = C:/a.3mf\n');
   assert.equal(p.printer, 'Original Prusa MK4');
   assert.deepEqual(p.filaments, ['Prusament PETG']);
@@ -112,6 +118,7 @@ test('overlay window, URL and login item', () => {
   assert.equal(overlayUrl('http://127.0.0.1:4321/', { app: 'bambu-studio', project: 'robot-arm' }), 'http://127.0.0.1:4321/?overlay=1&app=bambu-studio#/p/robot-arm');
   const args = overlayArgs('http://x/?overlay=1', '/tmp/prof');
   assert.ok(args.includes('--app=http://x/?overlay=1') && args.some((a) => a.startsWith('--user-data-dir=')));
+  assert.ok(args.includes('--disable-extensions') && args.includes('--disable-sync'), 'no synced extensions or welcome tabs');
   const plan = autostartPlan({ project: 'robot-arm' });
   assert.match(plan.body, /overlay/);
   assert.match(plan.body, /--project robot-arm/);
