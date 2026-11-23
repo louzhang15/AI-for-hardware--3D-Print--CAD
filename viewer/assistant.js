@@ -231,7 +231,7 @@ export function interpret(app, text) {
   const term = /^(?:what(?:'s| is| does| are)|explain|meaning of)\s+(?:a\s+|an\s+|the\s+)?([a-z0-9+_.-]+)(?:\s+(?:mean|pin|do|for))?$/.exec(q);
   if (term && explainTerm(term[1])) return { kind: 'explain', text: explainTerm(term[1]), term: term[1] };
 
-  if (/\b(solidworks|sldprt|sldasm|feature tree|rebuild|sketch|extrude|fillet|mate|my model|this part|my part)\b/.test(q)) return { kind: 'ask', text };
+  if (/\b(solidworks|sldprt|sldasm|feature tree|rebuild|sketch|extrude|fillet|mate|my model|this part|my part|bambu|slicer|slice|sliced|infill|supports?|brim|layer height|plate|filament|print time|faster|warnings?|warping|stringing|first layer|nozzle|bed temp)\b/.test(q)) return { kind: 'ask', text };
   const parts = findParts(app, q);
   const fix = troubleshoot(app, q, parts.flatMap((g) => g.parts.map((p) => p.id)));
   if (fix) return { kind: 'trouble', ...fix, groups: parts };

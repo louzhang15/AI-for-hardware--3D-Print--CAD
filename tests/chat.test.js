@@ -128,3 +128,20 @@ test('chat route sends live SOLIDWORKS context unless the user turns it off', { 
   assert.equal(status.active, true);
   assert.equal(status.problems, 2);
 });
+
+test('chat route adds the saved Bambu Studio project unless the user turns it off', { skip }, async (t) => {
+  process.env.WIREMAP_BAMBU_FILE = fileURLToPath(new URL('./fixtures/bambu/servo-bracket.3mf', import.meta.url));
+  process.env.WIREMAP_BAMBU_CONF = join(dir, 'no-conf.json');
+  t.after(() => { delete process.env.WIREMAP_BAMBU_FILE; delete process.env.WIREMAP_BAMBU_CONF; });
+  const { startServer } = await import('../viewer/serve.mjs');
+  const server = await startServer({ port: 0, projectsDir: fileURLToPath(new URL('../projects', import.meta.url)) });
+  t.after(() => server.close());
+  const origin = new URL(server.url).origin;
+  const post = (body) => fetch(new URL('/api/chat', server.url), { method: 'POST', headers: { 'Content-Type': 'application/json', Origin: origin }, body: JSON.stringify(body) });
+  assert.equal((await post({ question: 'does this print need supports?' })).status, 200);
+  assert.match(calls().at(-1).input, /Bambu Studio project "servo-bracket\.3mf"[\s\S]*slicer warnings: Enclosure recommended for ABS/);
+  assert.equal((await post({ question: 'does this print need supports?', bambu: false })).status, 200);
+  assert.doesNotMatch(calls().at(-1).input, /servo-bracket\.3mf/);
+  const status = await (await fetch(new URL('/api/bambu', server.url))).json();
+  assert.equal(status.text, 'servo-bracket.3mf · 45 min, 8.12 g · 1 warning');
+});

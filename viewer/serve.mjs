@@ -525,6 +525,10 @@ export async function startServer(opts = {}) {
       const report = await sw.readSession();
       return json(res, 200, { ...sw.sessionStatus(report), status: report.status });
     }
+    if (pathname === '/api/bambu' && req.method === 'GET') {
+      const bambu = await import('../lib/node/bambu.js');
+      return json(res, 200, bambu.bambuStatus(bambu.readBambuSession()));
+    }
     if (pathname === '/api/chat/providers' && req.method === 'GET') {
       const { detectProviders } = await import('../lib/node/chat.js');
       return json(res, 200, await detectProviders(true));
@@ -547,6 +551,15 @@ export async function startServer(opts = {}) {
           const sw = await import('../scripts/solidworks-session.mjs');
           const report = await sw.readSession();
           if (report.status === 'active') swContext = sw.describeSession(report);
+        }
+        if (body.bambu !== false) {
+          const bambu = await import('../lib/node/bambu.js');
+          const report = bambu.readBambuSession();
+          if (report.status !== 'unavailable') {
+            const { loadPrinters } = await import('../lib/node/library.js');
+            const printerLib = await import('../lib/printer.js');
+            swContext = [swContext, bambu.describeBambu(report, loadPrinters(path.join(ROOT, 'printers')), printerLib)].filter(Boolean).join('\n');
+          }
         }
         const out = await chat({
           question, project: name, projectFile, wiremapRoot: ROOT, cwd: repoDir,

@@ -50,11 +50,29 @@ export function createCompanion(app) {
     onchange: () => { swOn = swBox.checked; store.set('wiremap.solidworks', swOn); refreshSw(); } });
   const swLine = h('label.cmp-sw', { hidden: true, title: 'When on, the AI sees the open SOLIDWORKS document, its feature tree errors, size, mass and your selection.' },
     swBox, h('b', null, 'SOLIDWORKS'), swText);
-  async function refreshSw() {
+  async function refreshSolidworks() {
     try { swInfo = JSON.parse(await api('/api/solidworks')); } catch { swInfo = null; }
     swLine.hidden = !swInfo || swInfo.status === 'unsupported';
     swLine.classList.toggle('active', Boolean(swInfo?.active && swOn));
     swText.textContent = !swOn ? 'off' : swInfo?.active ? swInfo.text : (swInfo?.text || 'not found');
+  }
+  // Bambu Studio: reads the saved project file; same switch pattern.
+  let bbOn = store.get('wiremap.bambu', true) !== false;
+  let bbInfo = null;
+  const bbText = h('span.cmp-sw-text', null, 'Looking for Bambu Studio…');
+  const bbBox = h('input', { type: 'checkbox', checked: bbOn, 'aria-label': 'Share the Bambu Studio project with the AI',
+    onchange: () => { bbOn = bbBox.checked; store.set('wiremap.bambu', bbOn); refreshSw(); } });
+  const bbLine = h('label.cmp-sw', { hidden: true, title: 'When on, the AI sees your last saved Bambu Studio project: printer, settings, print time, filament and slicer warnings. Save the project (Ctrl+S) after changes.' },
+    bbBox, h('b', null, 'BAMBU'), bbText);
+  async function refreshBambu() {
+    try { bbInfo = JSON.parse(await api('/api/bambu')); } catch { bbInfo = null; }
+    bbLine.hidden = !bbInfo || bbInfo.status === 'unavailable';
+    bbLine.classList.toggle('active', Boolean(bbInfo?.active && bbOn));
+    bbText.textContent = !bbOn ? 'off' : bbInfo?.text || 'not found';
+  }
+  /** Refresh both app links and the suggested questions. */
+  async function refreshSw() {
+    await Promise.all([refreshSolidworks(), refreshBambu()]);
     renderChips();
   }
   setInterval(() => { if (!panel.hidden && !document.hidden) refreshSw(); }, 15000);
@@ -64,6 +82,7 @@ export function createCompanion(app) {
       h('button.cmp-close', { type: 'button', 'aria-label': 'Close', onclick: () => toggle(false) }, icon('x', 14))),
     h('div.cmp-settings', null, providerSel, accessSel),
     swLine,
+    bbLine,
     log, chips,
     h('div.cmp-row', null, input, mic),
     h('div.cmp-actions', null,
@@ -97,6 +116,10 @@ export function createCompanion(app) {
       swInfo.selected ? 'What did I select in SOLIDWORKS?' : null,
       swInfo.type === 'part' ? 'Will this part fit my printer?' : null,
     ].filter(Boolean) : [];
+    if (bbOn && bbInfo?.active) {
+      if (bbInfo.warnings) sw.unshift('What do the Bambu Studio warnings mean?');
+      sw.push(bbInfo.sliced ? 'How can I make this print faster?' : 'Are my print settings OK for this part?', 'Does this print need supports?');
+    }
     chips.replaceChildren(...[...sw, ...suggestions(app)].slice(0, 8).map((q) => h('button.cmp-chip', { type: 'button', onclick: () => handle(q) }, q)));
   }
   function add(who, text, extra) {
@@ -241,7 +264,7 @@ export function createCompanion(app) {
     setState('thinking');
     try {
       const res = await postJSON('/api/chat', {
-        question: text, project: app.data?.name, provider, access, solidworks: swOn,
+        question: text, project: app.data?.name, provider, access, solidworks: swOn, bambu: bbOn,
         step: step ? `${step.title}: ${step.text || ''}` : '',
         selection: sel ? `${sel.type} ${sel.id || ''}` : '',
         history: history.slice(-7, -1),
